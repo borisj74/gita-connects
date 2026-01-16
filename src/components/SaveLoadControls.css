@@ -1,0 +1,362 @@
+.save-load-controls {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.control-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 28px;
+  border: 1px solid var(--beige-300);
+  border-radius: 6px;
+  background: white;
+  color: var(--brown-700);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  font-family: var(--font-ui);
+}
+
+.control-button:hover:not(:disabled) {
+  background: var(--beige-100);
+  border-color: var(--brown-300);
+  transform: translateY(-1px);
+}
+
+.control-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.save-button {
+  color: var(--terracotta-600);
+  border-color: var(--terracotta-200);
+}
+
+.save-button:hover:not(:disabled) {
+  background: var(--terracotta-50);
+  border-color: var(--terracotta-300);
+}
+
+.load-button {
+  color: var(--brown-700);
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal-backdrop);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease-out;
+}
+
+.modal-content.load-modal {
+  max-width: 600px;
+}
+
+.modal-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--beige-200);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--brown-900);
+  margin: 0;
+  font-family: var(--font-ui);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--brown-600);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close:hover {
+  background: var(--beige-200);
+  color: var(--brown-900);
+}
+
+.modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-description {
+  color: var(--brown-600);
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.network-name-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--beige-300);
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: var(--font-ui);
+  transition: all var(--transition-base);
+}
+
+.network-name-input:focus {
+  outline: none;
+  border-color: var(--terracotta-400);
+  box-shadow: 0 0 0 3px var(--terracotta-100);
+}
+
+.network-info {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.875rem;
+  color: var(--brown-600);
+}
+
+.modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--beige-200);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.modal-button {
+  padding: 0.625rem 1.25rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  border: none;
+  font-family: var(--font-ui);
+}
+
+.cancel-button {
+  background: transparent;
+  color: var(--brown-700);
+  border: 1px solid var(--beige-300);
+}
+
+.cancel-button:hover {
+  background: var(--beige-100);
+}
+
+.save-modal-button {
+  background: var(--terracotta-500);
+  color: white;
+}
+
+.save-modal-button:hover:not(:disabled) {
+  background: var(--terracotta-600);
+  transform: translateY(-1px);
+}
+
+.save-modal-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Load Modal Styles */
+.empty-networks {
+  text-align: center;
+  padding: 3rem 2rem;
+}
+
+.empty-icon {
+  color: var(--brown-400);
+  margin-bottom: 1rem;
+}
+
+.empty-networks p {
+  color: var(--brown-700);
+  margin-bottom: 0.5rem;
+}
+
+.empty-hint {
+  font-size: 0.875rem;
+  color: var(--brown-500);
+}
+
+.networks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.network-item {
+  background: var(--beige-50);
+  border: 1px solid var(--beige-300);
+  border-radius: 8px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.network-item:hover {
+  background: var(--beige-100);
+  border-color: var(--terracotta-300);
+  transform: translateX(2px);
+}
+
+.network-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.network-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--brown-900);
+  margin: 0;
+  font-family: var(--font-ui);
+}
+
+.delete-button {
+  background: transparent;
+  border: none;
+  color: var(--brown-500);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-button:hover {
+  background: var(--terracotta-100);
+  color: var(--terracotta-600);
+}
+
+.network-meta {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.8125rem;
+  color: var(--brown-600);
+}
+
+.network-date {
+  color: var(--brown-500);
+}
+
+/* Input States */
+.input-wrapper {
+  position: relative;
+}
+
+.network-name-input.has-error {
+  border-color: var(--terracotta-500);
+}
+
+.network-name-input.has-error:focus {
+  box-shadow: 0 0 0 3px var(--terracotta-100);
+}
+
+.input-error {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: 0.5rem;
+  color: var(--terracotta-600);
+  font-size: 0.8125rem;
+}
+
+.input-success {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: 0.5rem;
+  color: var(--sage-600);
+  font-size: 0.8125rem;
+}
+
+/* Delete Modal */
+.delete-modal {
+  max-width: 400px;
+}
+
+.delete-warning {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.warning-icon {
+  color: var(--terracotta-500);
+  flex-shrink: 0;
+}
+
+.delete-warning p {
+  color: var(--brown-700);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.delete-confirm-button {
+  background: var(--terracotta-500);
+  color: white;
+}
+
+.delete-confirm-button:hover {
+  background: var(--terracotta-600);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

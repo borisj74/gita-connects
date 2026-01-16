@@ -1,0 +1,289 @@
+.verse-network {
+  flex: 1;
+  height: 100%;
+  position: relative;
+  background: #FBF8F4;
+}
+
+.react-flow__node {
+  pointer-events: all;
+}
+
+.react-flow__edge {
+  pointer-events: all;
+}
+
+.react-flow__edge-path {
+  stroke-width: 2;
+  transition: stroke-width var(--transition-base);
+}
+
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke-width: 3;
+}
+
+.react-flow__edge-text {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: capitalize;
+  fill: var(--brown-900);
+  background: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.react-flow__background {
+  background: #FBF8F4;
+}
+
+.react-flow__attribution {
+  display: none;
+}
+
+/* Custom Controls */
+.controls {
+  background: white;
+  border: 1px solid var(--beige-300);
+  border-radius: 8px;
+  padding: 0.5rem;
+  box-shadow: var(--shadow-md);
+}
+
+.react-flow__controls-button {
+  background: transparent;
+  border: 1px solid transparent;
+  border-bottom-color: transparent;
+  color: var(--brown-600);
+  transition: all var(--transition-base);
+}
+
+.react-flow__controls-button:first-child {
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+
+.react-flow__controls-button:last-child {
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+  border-bottom-color: transparent;
+}
+
+.react-flow__controls-button:hover {
+  background: var(--beige-100);
+  border-color: var(--beige-300);
+}
+
+.react-flow__controls-button svg {
+  fill: var(--brown-600);
+}
+
+/* Connection Legend */
+.connection-legend {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 1.5rem;
+  background: white;
+  border: 1px solid var(--beige-300);
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: var(--shadow-md);
+  z-index: 5;
+  animation: fadeIn 0.5s ease-out 0.3s backwards;
+}
+
+.legend-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--brown-900);
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.legend-item:last-child {
+  margin-bottom: 0;
+}
+
+.filter-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: rgb(177, 93, 67);
+}
+
+.filter-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.legend-color {
+  width: 24px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.legend-label {
+  font-size: 0.8125rem;
+  color: var(--brown-800);
+  text-transform: capitalize;
+  font-weight: 500;
+}
+
+/* Drop Hint */
+.drop-hint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 1;
+  pointer-events: none;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.hint-icon {
+  font-size: 3rem;
+  color: var(--terracotta-400);
+  margin-bottom: 1rem;
+  animation: float 3s ease-in-out infinite;
+  opacity: 0.5;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.hint-text {
+  font-size: 1.125rem;
+  color: var(--brown-600);
+  font-weight: 400;
+  max-width: 300px;
+  opacity: 0.8;
+}
+
+/* Hide hint when nodes are present */
+.verse-network:has(.react-flow__node) .drop-hint {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Network Actions */
+.network-actions {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  gap: 0.75rem;
+  z-index: 5;
+}
+
+.action-button {
+  padding: 0.625rem 1.25rem !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.arrange-button {
+  background: rgb(125, 138, 110) !important;
+  box-shadow: 0 2px 8px rgba(125, 138, 110, 0.3) !important;
+}
+
+.arrange-button:hover {
+  background: rgb(105, 118, 90) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(125, 138, 110, 0.4) !important;
+}
+
+.clear-button {
+  background: rgb(177, 93, 67) !important;
+  box-shadow: 0 2px 8px rgba(177, 93, 67, 0.3) !important;
+}
+
+.clear-button:hover {
+  background: rgb(157, 73, 47) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(177, 93, 67, 0.4) !important;
+}
+
+.action-button:active {
+  transform: translateY(0);
+}
+
+/* Empty State */
+.network-empty-state {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border: 0.7px solid rgb(177, 93, 67);
+  border-radius: 16px;
+  padding: 2rem;
+  width: 400px;
+  max-width: 400px;
+  z-index: 5;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.5s ease-out;
+}
+
+.network-empty-state-title {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 500;
+  color: var(--brown-900);
+  margin-bottom: 1rem;
+}
+
+.network-empty-state-description {
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  color: var(--brown-700);
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.network-empty-state-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+}
+
+.network-empty-state-list li {
+  font-family: var(--font-ui);
+  font-size: 0.9375rem;
+  color: var(--brown-600);
+  line-height: 1.8;
+  padding-left: 1.5rem;
+  position: relative;
+  margin-bottom: 0.75rem;
+}
+
+.network-empty-state-list li:before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: rgb(177, 93, 67);
+  font-size: 1.2rem;
+}

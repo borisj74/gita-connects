@@ -1,0 +1,95 @@
+.connection-filters {
+  position: relative;
+}
+
+.filters-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: white;
+  border: 1px solid var(--beige-300);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
+}
+
+.filters-button:hover {
+  border-color: var(--beige-400);
+  box-shadow: var(--shadow);
+}
+
+.filters-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--brown-700);
+}
+
+.chevron {
+  transition: transform var(--transition-base);
+  color: var(--brown-600);
+}
+
+.chevron.open {
+  transform: rotate(180deg);
+}
+
+.filters-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  background: white;
+  border: 1px solid var(--beige-300);
+  border-radius: 8px;
+  box-shadow: var(--shadow-lg);
+  padding: 0.5rem;
+  min-width: 200px;
+  z-index: 100;
+  animation: dropdownFadeIn 0.2s ease-out;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.filter-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 4px;
+  transition: background var(--transition-base);
+}
+
+.filter-item:hover {
+  background: var(--beige-100);
+}
+
+.filter-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: rgb(177, 93, 67);
+}
+
+.filter-color {
+  width: 20px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.filter-text {
+  font-size: 0.875rem;
+  color: var(--brown-800);
+  font-weight: 500;
+}
