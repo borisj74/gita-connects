@@ -34,6 +34,10 @@ function VerseNode({ data }: VerseNodeProps) {
     >
       <Handle type="target" position={Position.Top} className="node-handle" />
 
+      <div className="node-drag-handle" title="Drag to move">
+        <span className="node-drag-dots">⠿</span>
+      </div>
+
       <button className="node-remove" onClick={handleRemove} aria-label="Remove verse">
         ×
       </button>
@@ -44,13 +48,11 @@ function VerseNode({ data }: VerseNodeProps) {
       </div>
 
       <div className="node-sanskrit">{verse.sanskrit}</div>
-
       <div className="node-transliteration">{verse.transliteration}</div>
-
       <div className="node-translation">{verse.translation}</div>
 
       <div className="node-concepts">
-        {verse.concepts.map(concept => (
+        {verse.concepts.map((concept) => (
           <span key={concept} className="node-concept">{concept}</span>
         ))}
       </div>
@@ -58,7 +60,9 @@ function VerseNode({ data }: VerseNodeProps) {
       {connectedCount > 0 && (
         <button className="node-expand" onClick={handleExpand} aria-label="Expand network">
           <span className="expand-icon">+</span>
-          <span className="expand-text">Show {connectedCount} connected verse{connectedCount !== 1 ? 's' : ''}</span>
+          <span className="expand-text">
+            Show {connectedCount} connected verse{connectedCount !== 1 ? 's' : ''}
+          </span>
         </button>
       )}
 

@@ -447,6 +447,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         onConnect={onConnect}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
+        nodesDraggable
         fitView
         minZoom={0.2}
         maxZoom={1.5}
