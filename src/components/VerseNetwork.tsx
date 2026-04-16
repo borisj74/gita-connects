@@ -187,8 +187,8 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
   const handleAutoArrange = useCallback(() => {
     setNodes((nds) => {
       const cols = Math.ceil(Math.sqrt(nds.length));
-      const horizontalSpacing = 480;
-      const verticalSpacing = 650;
+      const horizontalSpacing = 550;
+      const verticalSpacing = 750;
 
       return nds.map((node, index) => {
         const col = index % cols;
@@ -219,7 +219,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
 
     setNodes((currentNodes) => {
       const lastNode = currentNodes[currentNodes.length - 1];
-      const startX = lastNode ? lastNode.position.x + 480 : 200;
+      const startX = lastNode ? lastNode.position.x + 550 : 200;
       const startY = lastNode ? lastNode.position.y : 100;
 
       const newNodes: Node[] = connectedVerseIds.map((vId, index) => {
@@ -235,8 +235,8 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
           id: vId,
           type: 'verseNode',
           position: {
-            x: startX + (index % 3) * 480,
-            y: startY + Math.floor(index / 3) * 650,
+            x: startX + (index % 3) * 550,
+            y: startY + Math.floor(index / 3) * 750,
           },
           data: {
             verse,
