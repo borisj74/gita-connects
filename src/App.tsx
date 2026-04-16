@@ -17,6 +17,7 @@ import './App.css';
 
 function App() {
   const [selectedVerseId, setSelectedVerseId] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [customTypes, setCustomTypes] = useState<ConnectionTypeDef[]>(() =>
     loadCustomConnectionTypes(),
   );
@@ -125,20 +126,40 @@ function App() {
       </div>
 
       <div className="app-body">
-        <div className="sidebar-wrapper">
+        <div className={`sidebar-wrapper ${!sidebarOpen ? 'collapsed' : ''}`}>
           <div className="section-header">
             <div className="section-info">
               <h2 className="section-title">Chapters & Verses</h2>
               <p className="section-subtitle">Drag verses to explore connections</p>
             </div>
+            <button
+              className="sidebar-toggle"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+              aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+            >
+              {sidebarOpen ? '‹' : '›'}
+            </button>
           </div>
-          <ChapterSidebar
-            onVerseSelect={handleVerseSelect}
-            selectedVerseId={selectedVerseId}
-          />
+          {sidebarOpen && (
+            <ChapterSidebar
+              onVerseSelect={handleVerseSelect}
+              selectedVerseId={selectedVerseId}
+            />
+          )}
         </div>
 
         <div className="main-content">
+          {!sidebarOpen && (
+            <button
+              className="sidebar-expand-fab"
+              onClick={() => setSidebarOpen(true)}
+              title="Expand sidebar"
+              aria-label="Expand sidebar"
+            >
+              ›
+            </button>
+          )}
           <div className="section-header">
             <div className="section-info">
               <h2 className="section-title">Connection Network</h2>
