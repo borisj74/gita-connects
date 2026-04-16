@@ -177,6 +177,13 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     [selectedVerseId, onVerseSelect, setNodes, setAllEdges],
   );
 
+  const handleNodesDelete = useCallback(
+    (deleted: Node[]) => {
+      deleted.forEach((node) => handleRemoveNode(node.id));
+    },
+    [handleRemoveNode],
+  );
+
   const handleClearAll = useCallback(() => {
     setNodes([]);
     setAllEdges([]);
@@ -445,8 +452,10 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onNodesDelete={handleNodesDelete}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
+        deleteKeyCode={['Delete', 'Backspace']}
         fitView
         minZoom={0.2}
         maxZoom={1.5}

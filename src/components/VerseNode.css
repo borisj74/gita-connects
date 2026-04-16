@@ -25,7 +25,7 @@
   height: 24px;
   border-radius: 50%;
   border: none;
-  background: rgba(177, 93, 67, 0.1);
+  background: rgba(177, 93, 67, 0.12);
   color: rgb(177, 93, 67);
   font-size: 1.25rem;
   line-height: 0;
@@ -33,14 +33,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0;
+  opacity: 1;
   transition: all var(--transition-base);
   z-index: 10;
   padding: 0;
-}
-
-.verse-node:hover .node-remove {
-  opacity: 1;
 }
 
 .node-remove:hover {
