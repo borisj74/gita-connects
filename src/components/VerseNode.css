@@ -194,32 +194,3 @@
 .expand-text {
   letter-spacing: 0.01em;
 }
-
-/* Drag handle */
-.node-drag-handle {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 2px 8px;
-  cursor: grab;
-  color: var(--beige-400);
-  line-height: 1;
-  border-radius: 0 0 6px 6px;
-  transition: color var(--transition-base);
-  z-index: 5;
-}
-
-.verse-node:hover .node-drag-handle {
-  color: var(--brown-400);
-}
-
-.node-drag-handle:active {
-  cursor: grabbing;
-}
-
-.node-drag-dots {
-  font-size: 1rem;
-  letter-spacing: 2px;
-  user-select: none;
-}
