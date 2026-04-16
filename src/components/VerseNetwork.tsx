@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, forwardRef, useImperativeHandle } from 'react';
 import ReactFlow, {
   useNodesState,
   useEdgesState,
@@ -8,7 +8,7 @@ import ReactFlow, {
   useReactFlow,
   type Node,
   type Edge,
-  type Connection,
+  type Connection as RFConnection,
   type NodeTypes,
   type EdgeTypes,
 } from 'reactflow';
@@ -16,6 +16,9 @@ import 'reactflow/dist/style.css';
 import { verses, connections } from '../data.js';
 import VerseNode from './VerseNode.js';
 import ConnectionEdge from './ConnectionEdge.js';
+import ConnectionDialog from './ConnectionDialog.js';
+import type { ConnectionTypeDef } from '../connectionTypes.js';
+import { getTypeColor, getTypeLabel } from '../connectionTypes.js';
 import './VerseNetwork.css';
 
 interface VerseNetworkProps {
@@ -24,6 +27,8 @@ interface VerseNetworkProps {
   activeFilters: Set<string>;
   onToggleFilter?: (type: string) => void;
   onNetworkVersesChange: (verses: Set<string>) => void;
+  connectionTypes: ConnectionTypeDef[];
+  onAddCustomType: (type: ConnectionTypeDef) => void;
 }
 
 export interface VerseNetworkRef {
@@ -31,6 +36,7 @@ export interface VerseNetworkRef {
   handleClearAll: () => void;
   getNetworkState: () => { nodes: Node[]; edges: Edge[] };
   loadNetwork: (nodes: Node[], edges: Edge[]) => void;
+  removeEdgesByType?: (typeId: string) => void;
 }
 
 const nodeTypes: NodeTypes = {
@@ -41,95 +47,115 @@ const edgeTypes: EdgeTypes = {
   connectionEdge: ConnectionEdge,
 };
 
-// Connection type colors
-const connectionColors = {
-  thematic: '#ca7558', // terracotta
-  conceptual: '#7d8a6e', // sage
-  practical: '#8d7a66', // brown
-};
+function pairKey(a: string, b: string): string {
+  return [a, b].sort().join('::');
+}
+
+function buildEdge(
+  conn: { from: string; to: string; type: string; description: string; strength: number },
+  connectionTypes: ConnectionTypeDef[],
+  idSuffix?: string,
+): Edge {
+  const color = getTypeColor(connectionTypes, conn.type);
+  const label = getTypeLabel(connectionTypes, conn.type);
+  const baseId = `${conn.from}-${conn.to}-${conn.type}`;
+  return {
+    id: idSuffix ? `${baseId}-${idSuffix}` : baseId,
+    source: conn.from,
+    target: conn.to,
+    type: 'connectionEdge',
+    animated: false,
+    label,
+    style: {
+      stroke: color,
+      strokeWidth: Math.max(1, conn.strength / 3),
+    },
+    markerEnd: {
+      type: MarkerType.ArrowClosed,
+      color,
+    },
+    data: {
+      typeId: conn.type,
+      description: conn.description,
+      strength: conn.strength,
+      color,
+    },
+  };
+}
 
 const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
-  ({ onVerseSelect, selectedVerseId, activeFilters, onNetworkVersesChange }, ref) => {
+  (
+    {
+      onVerseSelect,
+      selectedVerseId,
+      activeFilters,
+      onNetworkVersesChange,
+      connectionTypes,
+      onAddCustomType,
+    },
+    ref,
+  ) => {
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
     const [allEdges, setAllEdges] = useState<Edge[]>([]);
     const [networkVerses, setNetworkVerses] = useState<Set<string>>(new Set());
+    const [pendingConnection, setPendingConnection] = useState<{
+      source: string;
+      target: string;
+    } | null>(null);
+    const expandRef = useRef<(verseId: string) => void>(() => {});
     const { fitView } = useReactFlow();
 
-    // Notify parent when network verses change
     useEffect(() => {
       onNetworkVersesChange(networkVerses);
     }, [networkVerses, onNetworkVersesChange]);
 
-    const onConnect = useCallback(
-      (params: Connection) => {
-        if (!params.source || !params.target) return;
+    const onConnect = useCallback((params: RFConnection) => {
+      if (!params.source || !params.target) return;
+      if (params.source === params.target) return;
+      setPendingConnection({ source: params.source, target: params.target });
+    }, []);
 
-        // Check if this connection already exists in our data
-        const existingConnection = connections.find(
-          conn =>
-            (conn.from === params.source && conn.to === params.target) ||
-            (conn.from === params.target && conn.to === params.source)
-        );
+    const handleConfirmConnection = useCallback(
+      ({
+        typeId,
+        description,
+        strength,
+        newType,
+      }: {
+        typeId: string;
+        description: string;
+        strength: number;
+        newType?: ConnectionTypeDef;
+      }) => {
+        if (!pendingConnection) return;
 
-        // Get the verse data to determine connection type
-        const sourceVerse = verses.find(v => v.id === params.source);
-        const targetVerse = verses.find(v => v.id === params.target);
-
-        let connectionType: 'thematic' | 'conceptual' | 'practical' = 'conceptual';
-        let description = 'User-created connection';
-        let strength = 5;
-
-        if (existingConnection) {
-          // Use predefined connection data
-          connectionType = existingConnection.type;
-          description = existingConnection.description;
-          strength = existingConnection.strength;
-        } else if (sourceVerse && targetVerse) {
-          // Determine connection type based on verse analysis
-          const sharedConcepts = sourceVerse.concepts.filter(c =>
-            targetVerse.concepts.includes(c)
-          );
-
-          if (sourceVerse.chapter === targetVerse.chapter) {
-            connectionType = 'thematic';
-            description = `Both verses from Chapter ${sourceVerse.chapter}${sharedConcepts.length > 0 ? `, exploring ${sharedConcepts[0]}` : ''}`;
-          } else if (sharedConcepts.length > 0) {
-            connectionType = 'conceptual';
-            description = `Connected through shared concepts: ${sharedConcepts.slice(0, 2).join(', ')}`;
-          } else {
-            connectionType = 'practical';
-            description = 'Related verses from different contexts';
-          }
+        if (newType) {
+          onAddCustomType(newType);
         }
 
-        const newEdge: Edge = {
-          id: `${params.source}-${params.target}`,
-          source: params.source,
-          target: params.target,
-          type: 'connectionEdge',
-          animated: false,
-          label: connectionType,
-          style: {
-            stroke: connectionColors[connectionType],
-            strokeWidth: Math.max(1, strength / 3),
-          },
-          markerEnd: {
-            type: MarkerType.ArrowClosed,
-            color: connectionColors[connectionType],
-          },
-          data: {
+        const effectiveTypes = newType
+          ? [...connectionTypes, newType]
+          : connectionTypes;
+
+        const newEdge = buildEdge(
+          {
+            from: pendingConnection.source,
+            to: pendingConnection.target,
+            type: typeId,
             description,
             strength,
           },
-        };
+          effectiveTypes,
+          `user-${Date.now().toString(36)}`,
+        );
 
         setAllEdges((eds) => [...eds, newEdge]);
+        setPendingConnection(null);
       },
-      [setAllEdges]
+      [pendingConnection, connectionTypes, onAddCustomType],
     );
 
-  // Handle drop from sidebar
   const handleDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'copy';
@@ -148,7 +174,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         onVerseSelect('');
       }
     },
-    [selectedVerseId, onVerseSelect, setNodes, setAllEdges]
+    [selectedVerseId, onVerseSelect, setNodes, setAllEdges],
   );
 
   const handleClearAll = useCallback(() => {
@@ -161,8 +187,8 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
   const handleAutoArrange = useCallback(() => {
     setNodes((nds) => {
       const cols = Math.ceil(Math.sqrt(nds.length));
-      const horizontalSpacing = 480; // spacing between nodes horizontally
-      const verticalSpacing = 650; // spacing between nodes vertically (cards are tall)
+      const horizontalSpacing = 480;
+      const verticalSpacing = 650;
 
       return nds.map((node, index) => {
         const col = index % cols;
@@ -178,33 +204,28 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       });
     });
 
-    // Fit view after arranging
     setTimeout(() => {
       fitView({ duration: 400, padding: 0.2 });
     }, 50);
   }, [setNodes, fitView]);
 
   const handleExpandNetwork = useCallback((verseId: string) => {
-    // Find all verses connected to this verse
     const connectedVerseIds = connections
       .filter(conn => conn.from === verseId || conn.to === verseId)
       .map(conn => conn.from === verseId ? conn.to : conn.from)
-      .filter(id => !networkVerses.has(id)); // Only add verses not already in network
+      .filter(id => !networkVerses.has(id));
 
     if (connectedVerseIds.length === 0) return;
 
-    // Use setNodes with callback to access current nodes without adding to dependencies
     setNodes((currentNodes) => {
       const lastNode = currentNodes[currentNodes.length - 1];
       const startX = lastNode ? lastNode.position.x + 480 : 200;
       const startY = lastNode ? lastNode.position.y : 100;
 
-      // Create new nodes for connected verses
       const newNodes: Node[] = connectedVerseIds.map((vId, index) => {
         const verse = verses.find(v => v.id === vId);
         if (!verse) return null;
 
-        // Calculate connected count for the new verse
         const newConnectedCount = connections
           .filter(conn => conn.from === vId || conn.to === vId)
           .map(conn => conn.from === vId ? conn.to : conn.from)
@@ -221,7 +242,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
             verse,
             onSelect: () => onVerseSelect(vId),
             onRemove: () => handleRemoveNode(vId),
-            onExpand: () => handleExpandNetwork(vId),
+            onExpand: () => expandRef.current(vId),
             isSelected: selectedVerseId === vId,
             connectedCount: newConnectedCount,
           },
@@ -231,7 +252,6 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       return [...currentNodes, ...newNodes];
     });
 
-    // Create edges for new connections
     const newEdges: Edge[] = [];
     connections.forEach(conn => {
       const isRelevant =
@@ -239,37 +259,21 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         (conn.to === verseId && connectedVerseIds.includes(conn.from));
 
       if (isRelevant) {
-        newEdges.push({
-          id: `${conn.from}-${conn.to}`,
-          source: conn.from,
-          target: conn.to,
-          type: 'connectionEdge',
-          animated: false,
-          label: conn.type,
-          style: {
-            stroke: connectionColors[conn.type],
-            strokeWidth: Math.max(1, conn.strength / 3),
-          },
-          markerEnd: {
-            type: MarkerType.ArrowClosed,
-            color: connectionColors[conn.type],
-          },
-          data: {
-            description: conn.description,
-            strength: conn.strength,
-          },
-        });
+        newEdges.push(buildEdge(conn, connectionTypes));
       }
     });
 
     setAllEdges((eds) => [...eds, ...newEdges]);
     setNetworkVerses(prev => new Set([...prev, ...connectedVerseIds]));
 
-    // Auto-arrange after expansion
     setTimeout(() => {
       fitView({ duration: 400, padding: 0.2 });
     }, 100);
-  }, [networkVerses, selectedVerseId, onVerseSelect, handleRemoveNode, setNodes, setAllEdges, fitView]);
+  }, [networkVerses, selectedVerseId, onVerseSelect, handleRemoveNode, setNodes, setAllEdges, fitView, connectionTypes]);
+
+  useEffect(() => {
+    expandRef.current = handleExpandNetwork;
+  }, [handleExpandNetwork]);
 
   const handleDrop = useCallback(
     (event: React.DragEvent) => {
@@ -287,7 +291,6 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         y: event.clientY - reactFlowBounds.top - 50,
       };
 
-      // Calculate how many connected verses are not yet in network
       const connectedCount = connections
         .filter(conn => conn.from === verseId || conn.to === verseId)
         .map(conn => conn.from === verseId ? conn.to : conn.from)
@@ -301,7 +304,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
           verse,
           onSelect: () => onVerseSelect(verseId),
           onRemove: () => handleRemoveNode(verseId),
-          onExpand: () => handleExpandNetwork(verseId),
+          onExpand: () => expandRef.current(verseId),
           isSelected: selectedVerseId === verseId,
           connectedCount,
         },
@@ -310,52 +313,13 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       setNodes((nds) => [...nds, newNode]);
       setNetworkVerses(prev => new Set([...prev, verseId]));
 
-      // Add edges for connected verses that are already in the network
       const newEdges: Edge[] = [];
       connections.forEach(conn => {
-        if (conn.from === verseId && networkVerses.has(conn.to)) {
-          newEdges.push({
-            id: `${conn.from}-${conn.to}`,
-            source: conn.from,
-            target: conn.to,
-            type: 'connectionEdge',
-            animated: false,
-            label: conn.type,
-            style: {
-              stroke: connectionColors[conn.type],
-              strokeWidth: Math.max(1, conn.strength / 3),
-            },
-            markerEnd: {
-              type: MarkerType.ArrowClosed,
-              color: connectionColors[conn.type],
-            },
-            data: {
-              description: conn.description,
-              strength: conn.strength,
-            },
-          });
-        }
-        if (conn.to === verseId && networkVerses.has(conn.from)) {
-          newEdges.push({
-            id: `${conn.from}-${conn.to}`,
-            source: conn.from,
-            target: conn.to,
-            type: 'connectionEdge',
-            animated: false,
-            label: conn.type,
-            style: {
-              stroke: connectionColors[conn.type],
-              strokeWidth: Math.max(1, conn.strength / 3),
-            },
-            markerEnd: {
-              type: MarkerType.ArrowClosed,
-              color: connectionColors[conn.type],
-            },
-            data: {
-              description: conn.description,
-              strength: conn.strength,
-            },
-          });
+        if (
+          (conn.from === verseId && networkVerses.has(conn.to)) ||
+          (conn.to === verseId && networkVerses.has(conn.from))
+        ) {
+          newEdges.push(buildEdge(conn, connectionTypes));
         }
       });
 
@@ -363,19 +327,52 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         setAllEdges((eds) => [...eds, ...newEdges]);
       }
     },
-    [networkVerses, setNodes, setAllEdges, onVerseSelect, selectedVerseId, handleRemoveNode, handleExpandNetwork]
+    [networkVerses, setNodes, setAllEdges, onVerseSelect, selectedVerseId, handleRemoveNode, connectionTypes],
   );
 
-  // Filter edges based on active connection types
-  useEffect(() => {
-    const filteredEdges = allEdges.filter((edge) => {
-      const edgeType = edge.label as string;
-      return activeFilters.has(edgeType);
+  // Re-apply current registry styling, filter, and parallel-edge offsets
+  // entirely in derived state so labels never overlap and color tweaks
+  // propagate immediately.
+  const filteredEdges = useMemo(() => {
+    const enabled = allEdges.filter((edge) => {
+      const typeId = (edge.data?.typeId as string | undefined) ?? (edge.label as string);
+      return activeFilters.has(typeId);
     });
-    setEdges(filteredEdges);
-  }, [allEdges, activeFilters, setEdges]);
 
-  // Update selected state and connected counts when selection or network changes
+    const groups = new Map<string, Edge[]>();
+    enabled.forEach((e) => {
+      const key = pairKey(e.source, e.target);
+      const list = groups.get(key) ?? [];
+      list.push(e);
+      groups.set(key, list);
+    });
+
+    return enabled.map((edge) => {
+      const key = pairKey(edge.source, edge.target);
+      const group = groups.get(key) ?? [edge];
+      const index = group.indexOf(edge);
+      const typeId = (edge.data?.typeId as string | undefined) ?? (edge.label as string);
+      const color = getTypeColor(connectionTypes, typeId);
+      const label = getTypeLabel(connectionTypes, typeId);
+      return {
+        ...edge,
+        label,
+        style: { ...edge.style, stroke: color },
+        markerEnd: { type: MarkerType.ArrowClosed, color },
+        data: {
+          ...edge.data,
+          color,
+          parallelIndex: index,
+          parallelTotal: group.length,
+        },
+      };
+    });
+  }, [allEdges, activeFilters, connectionTypes]);
+
+  useEffect(() => {
+    setEdges(filteredEdges);
+  }, [filteredEdges, setEdges]);
+
   useEffect(() => {
     setNodes((nds) =>
       nds.map((node) => {
@@ -392,7 +389,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
             connectedCount,
           },
         };
-      })
+      }),
     );
   }, [selectedVerseId, networkVerses, setNodes]);
 
@@ -401,92 +398,40 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
   }, [nodes, allEdges]);
 
   const loadNetwork = useCallback((loadedNodes: Node[], loadedEdges: Edge[]) => {
-    // Clear current network first
     setNodes([]);
     setAllEdges([]);
     setNetworkVerses(new Set());
     onVerseSelect('');
 
-    // Load new network
     setTimeout(() => {
       setNodes(loadedNodes);
       setAllEdges(loadedEdges);
 
-      // Extract verse IDs from loaded nodes
       const verseIds = new Set(loadedNodes.map(node => node.id));
       setNetworkVerses(verseIds);
 
-      // Fit view to show all nodes
       setTimeout(() => {
         fitView({ duration: 400, padding: 0.2 });
       }, 100);
     }, 50);
   }, [setNodes, setAllEdges, onVerseSelect, fitView]);
 
-  // Expose methods to parent component via ref
+  const removeEdgesByType = useCallback((typeId: string) => {
+    setAllEdges((eds) =>
+      eds.filter((edge) => {
+        const t = (edge.data?.typeId as string | undefined) ?? (edge.label as string);
+        return t !== typeId;
+      }),
+    );
+  }, []);
+
   useImperativeHandle(ref, () => ({
     handleAutoArrange,
     handleClearAll,
     getNetworkState,
     loadNetwork,
+    removeEdgesByType,
   }));
-
-  // Initialize with empty network to show empty state
-  // useEffect(() => {
-  //   const initialVerses = ['2.47', '3.19', '5.10', '2.14', '12.13'];
-  //   const initialNodes: Node[] = initialVerses.map((vId, index) => {
-  //     const verse = verses.find(v => v.id === vId);
-  //     if (!verse) return null;
-
-  //     return {
-  //       id: vId,
-  //       type: 'verseNode',
-  //       position: {
-  //         x: 200 + (index % 3) * 300,
-  //         y: 100 + Math.floor(index / 3) * 250,
-  //       },
-  //       data: {
-  //         verse,
-  //         onSelect: () => onVerseSelect(vId),
-  //         onRemove: () => handleRemoveNode(vId),
-  //         isSelected: selectedVerseId === vId,
-  //       },
-  //     };
-  //   }).filter(Boolean) as Node[];
-
-  //   setNodes(initialNodes);
-  //   setNetworkVerses(new Set(initialVerses));
-
-  //   // Add edges between initial verses
-  //   const initialEdges: Edge[] = [];
-  //   connections.forEach(conn => {
-  //     if (initialVerses.includes(conn.from) && initialVerses.includes(conn.to)) {
-  //       initialEdges.push({
-  //         id: `${conn.from}-${conn.to}`,
-  //         source: conn.from,
-  //         target: conn.to,
-  //         type: 'smoothstep',
-  //         animated: true,
-  //         label: conn.type,
-  //         style: {
-  //           stroke: connectionColors[conn.type],
-  //           strokeWidth: Math.max(1, conn.strength / 3),
-  //         },
-  //         markerEnd: {
-  //           type: MarkerType.ArrowClosed,
-  //           color: connectionColors[conn.type],
-  //         },
-  //         data: {
-  //           description: conn.description,
-  //           strength: conn.strength,
-  //         },
-  //       });
-  //     }
-  //   });
-
-  //   setAllEdges(initialEdges);
-  // // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, []); // Only run once on mount
 
   return (
     <div
@@ -522,8 +467,19 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
             <li>Connection lines display relationship types with colored badges</li>
             <li>Click verses to discover related teachings</li>
             <li>Drag verses around to organize your network</li>
+            <li>Drag from one verse handle to another to create a custom connection</li>
           </ul>
         </div>
+      )}
+
+      {pendingConnection && (
+        <ConnectionDialog
+          sourceVerseId={pendingConnection.source}
+          targetVerseId={pendingConnection.target}
+          connectionTypes={connectionTypes}
+          onCancel={() => setPendingConnection(null)}
+          onConfirm={handleConfirmConnection}
+        />
       )}
     </div>
   );

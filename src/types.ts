@@ -12,7 +12,7 @@ export interface Verse {
 export interface Connection {
   from: string; // verse id
   to: string; // verse id
-  type: 'thematic' | 'conceptual' | 'practical';
+  type: string; // connection type id (predefined or custom)
   description: string;
   strength: number; // 1-10
 }

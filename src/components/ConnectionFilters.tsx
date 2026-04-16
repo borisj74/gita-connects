@@ -1,19 +1,21 @@
 import { useState, useRef, useEffect } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Trash2 } from 'lucide-react';
+import type { ConnectionTypeDef } from '../connectionTypes.js';
 import './ConnectionFilters.css';
 
 interface ConnectionFiltersProps {
+  connectionTypes: ConnectionTypeDef[];
   activeFilters: Set<string>;
   onToggleFilter: (type: string) => void;
+  onRemoveCustomType?: (typeId: string) => void;
 }
 
-const connectionTypes = [
-  { type: 'thematic', color: '#ca7558', label: 'Thematic' },
-  { type: 'conceptual', color: '#7d8a6e', label: 'Conceptual' },
-  { type: 'practical', color: '#8d7a66', label: 'Practical' },
-];
-
-export default function ConnectionFilters({ activeFilters, onToggleFilter }: ConnectionFiltersProps) {
+export default function ConnectionFilters({
+  connectionTypes,
+  activeFilters,
+  onToggleFilter,
+  onRemoveCustomType,
+}: ConnectionFiltersProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -42,18 +44,36 @@ export default function ConnectionFilters({ activeFilters, onToggleFilter }: Con
 
       {isOpen && (
         <div className="filters-dropdown">
-          {connectionTypes.map(({ type, color, label }) => (
-            <label key={type} className="filter-item">
+          {connectionTypes.map(({ id, color, label, isCustom }) => (
+            <label key={id} className="filter-item">
               <input
                 type="checkbox"
                 className="filter-checkbox"
-                checked={activeFilters.has(type)}
-                onChange={() => onToggleFilter(type)}
+                checked={activeFilters.has(id)}
+                onChange={() => onToggleFilter(id)}
               />
               <span className="filter-color" style={{ background: color }} />
               <span className="filter-text">{label}</span>
+              {isCustom && onRemoveCustomType && (
+                <button
+                  type="button"
+                  className="filter-remove"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onRemoveCustomType(id);
+                  }}
+                  aria-label={`Remove ${label} type`}
+                  title="Remove custom type"
+                >
+                  <Trash2 size={12} />
+                </button>
+              )}
             </label>
           ))}
+          <div className="filters-hint">
+            Drag between two verses to create a new connection.
+          </div>
         </div>
       )}
     </div>

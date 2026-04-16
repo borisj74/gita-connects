@@ -92,4 +92,32 @@
   font-size: 0.875rem;
   color: var(--brown-800);
   font-weight: 500;
+  flex: 1;
+}
+
+.filter-remove {
+  background: none;
+  border: none;
+  padding: 0.2rem;
+  margin-left: auto;
+  color: var(--brown-500);
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  transition: all var(--transition-base);
+}
+
+.filter-remove:hover {
+  background: rgba(220, 53, 69, 0.1);
+  color: #b3354a;
+}
+
+.filters-hint {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--brown-600);
+  border-top: 1px solid var(--beige-200);
+  font-style: italic;
 }

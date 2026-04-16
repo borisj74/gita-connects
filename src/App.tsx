@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ReactFlowProvider } from 'reactflow';
 import type { Node, Edge } from 'reactflow';
 import ChapterSidebar from './components/ChapterSidebar.js';
@@ -7,13 +7,33 @@ import VerseDetail from './components/VerseDetail.js';
 import SearchBar from './components/SearchBar.js';
 import ConnectionFilters from './components/ConnectionFilters.js';
 import SaveLoadControls from './components/SaveLoadControls.js';
+import {
+  PREDEFINED_CONNECTION_TYPES,
+  loadCustomConnectionTypes,
+  saveCustomConnectionTypes,
+  type ConnectionTypeDef,
+} from './connectionTypes.js';
 import './App.css';
 
 function App() {
   const [selectedVerseId, setSelectedVerseId] = useState<string | null>(null);
-  const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set(['thematic', 'conceptual', 'practical']));
+  const [customTypes, setCustomTypes] = useState<ConnectionTypeDef[]>(() =>
+    loadCustomConnectionTypes(),
+  );
+  const connectionTypes = useMemo(
+    () => [...PREDEFINED_CONNECTION_TYPES, ...customTypes],
+    [customTypes],
+  );
+  const [activeFilters, setActiveFilters] = useState<Set<string>>(
+    () => new Set(PREDEFINED_CONNECTION_TYPES.map((t) => t.id)),
+  );
   const [networkVerses, setNetworkVerses] = useState<Set<string>>(new Set());
   const verseNetworkRef = useRef<VerseNetworkRef>(null);
+
+  // Persist custom types whenever they change.
+  useEffect(() => {
+    saveCustomConnectionTypes(customTypes);
+  }, [customTypes]);
 
   const handleVerseSelect = (verseId: string) => {
     setSelectedVerseId(verseId);
@@ -33,6 +53,29 @@ function App() {
       }
       return updated;
     });
+  }, []);
+
+  const handleAddCustomType = useCallback((type: ConnectionTypeDef) => {
+    setCustomTypes((prev) => {
+      if (prev.some((t) => t.id === type.id)) return prev;
+      return [...prev, type];
+    });
+    setActiveFilters((prev) => {
+      if (prev.has(type.id)) return prev;
+      const updated = new Set(prev);
+      updated.add(type.id);
+      return updated;
+    });
+  }, []);
+
+  const handleRemoveCustomType = useCallback((typeId: string) => {
+    setCustomTypes((prev) => prev.filter((t) => t.id !== typeId));
+    setActiveFilters((prev) => {
+      const updated = new Set(prev);
+      updated.delete(typeId);
+      return updated;
+    });
+    verseNetworkRef.current?.removeEdgesByType?.(typeId);
   }, []);
 
   const handleAutoArrange = () => {
@@ -72,8 +115,10 @@ function App() {
           <div className="header-controls">
             <SearchBar onVerseSelect={handleVerseSelect} />
             <ConnectionFilters
+              connectionTypes={connectionTypes}
               activeFilters={activeFilters}
               onToggleFilter={handleToggleFilter}
+              onRemoveCustomType={handleRemoveCustomType}
             />
           </div>
         </div>
@@ -122,6 +167,8 @@ function App() {
                 activeFilters={activeFilters}
                 onToggleFilter={handleToggleFilter}
                 onNetworkVersesChange={setNetworkVerses}
+                connectionTypes={connectionTypes}
+                onAddCustomType={handleAddCustomType}
               />
             </ReactFlowProvider>
           </div>
