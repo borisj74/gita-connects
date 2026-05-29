@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { BaseEdge, EdgeLabelRenderer, getSmoothStepPath, type EdgeProps } from 'reactflow';
+import { Scissors } from 'lucide-react';
 import './ConnectionEdge.css';
 
 const PARALLEL_OFFSET_PX = 36;
@@ -67,6 +68,20 @@ export default function ConnectionEdge({
             />
             {label}
           </div>
+
+          {typeof data?.onDelete === 'function' && (
+            <button
+              className="edge-delete-btn"
+              style={{ borderColor, color: borderColor }}
+              onClick={(e) => {
+                e.stopPropagation();
+                (data.onDelete as (id: string) => void)(id);
+              }}
+              aria-label="Remove connection"
+            >
+              <Scissors size={14} strokeWidth={2} />
+            </button>
+          )}
 
           {showTooltip && data?.description && (
             <div className="edge-tooltip" style={{ borderColor }}>

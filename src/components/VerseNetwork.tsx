@@ -340,6 +340,10 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
   // Re-apply current registry styling, filter, and parallel-edge offsets
   // entirely in derived state so labels never overlap and color tweaks
   // propagate immediately.
+  const handleDeleteEdge = useCallback((edgeId: string) => {
+    setAllEdges((eds) => eds.filter((e) => e.id !== edgeId));
+  }, []);
+
   const filteredEdges = useMemo(() => {
     const enabled = allEdges.filter((edge) => {
       const typeId = (edge.data?.typeId as string | undefined) ?? (edge.label as string);
@@ -371,10 +375,11 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
           color,
           parallelIndex: index,
           parallelTotal: group.length,
+          onDelete: handleDeleteEdge,
         },
       };
     });
-  }, [allEdges, activeFilters, connectionTypes]);
+  }, [allEdges, activeFilters, connectionTypes, handleDeleteEdge]);
 
   useEffect(() => {
     setEdges(filteredEdges);

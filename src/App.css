@@ -174,49 +174,6 @@
   position: relative;
 }
 
-/* Decorative Background Elements */
-.app::before {
-  content: '';
-  position: fixed;
-  top: -50%;
-  right: -50%;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(circle,
-    rgba(212, 201, 184, 0.15) 0%,
-    transparent 70%
-  );
-  pointer-events: none;
-  animation: float 20s ease-in-out infinite;
-}
-
-.app::after {
-  content: '';
-  position: fixed;
-  bottom: -50%;
-  left: -50%;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(circle,
-    rgba(202, 117, 88, 0.08) 0%,
-    transparent 70%
-  );
-  pointer-events: none;
-  animation: float 25s ease-in-out infinite reverse;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translate(0, 0) rotate(0deg);
-  }
-  33% {
-    transform: translate(30px, -30px) rotate(120deg);
-  }
-  66% {
-    transform: translate(-20px, 20px) rotate(240deg);
-  }
-}
-
 /* Responsive Design */
 @media (max-width: 1400px) {
   .app-title {
