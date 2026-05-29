@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { BaseEdge, EdgeLabelRenderer, getSmoothStepPath, type EdgeProps } from 'reactflow';
 import { Scissors } from 'lucide-react';
 import './ConnectionEdge.css';
@@ -18,8 +17,6 @@ export default function ConnectionEdge({
   label,
   data,
 }: EdgeProps) {
-  const [showTooltip, setShowTooltip] = useState(false);
-
   const parallelIndex = (data?.parallelIndex as number | undefined) ?? 0;
   const parallelTotal = (data?.parallelTotal as number | undefined) ?? 1;
   const offsetStep = parallelIndex - (parallelTotal - 1) / 2;
@@ -55,8 +52,6 @@ export default function ConnectionEdge({
             pointerEvents: 'all',
           }}
           className="edge-label-wrapper"
-          onMouseEnter={() => setShowTooltip(true)}
-          onMouseLeave={() => setShowTooltip(false)}
         >
           <div
             className="edge-label"
@@ -83,19 +78,6 @@ export default function ConnectionEdge({
             </button>
           )}
 
-          {showTooltip && data?.description && (
-            <div className="edge-tooltip" style={{ borderColor }}>
-              <div className="tooltip-type" style={{ color: borderColor }}>
-                {label}
-              </div>
-              <div className="tooltip-description">{data.description}</div>
-              {data?.strength && (
-                <div className="tooltip-strength">
-                  Strength: {data.strength}/10
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </EdgeLabelRenderer>
     </>
