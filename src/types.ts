@@ -7,6 +7,7 @@ export interface Verse {
   translation: string;
   theme: string;
   concepts: string[];
+  purport?: string;
 }
 
 export interface Connection {

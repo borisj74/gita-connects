@@ -1,4 +1,4 @@
-import { BookMarked, Tag, Network, X } from 'lucide-react';
+import { BookMarked, Tag, Network, X, ScrollText } from 'lucide-react';
 import { verses, connections } from '../data.js';
 import './VerseDetail.css';
 
@@ -80,6 +80,17 @@ export default function VerseDetail({ verseId, onClose, networkVerses }: VerseDe
           <div className="section-label">Translation</div>
           <div className="translation-text">{verse.translation}</div>
         </div>
+
+        {/* Purport / Commentary */}
+        {verse.purport && (
+          <div className="detail-section">
+            <div className="section-label">
+              <ScrollText size={14} />
+              Purport
+            </div>
+            <div className="purport-text">{verse.purport}</div>
+          </div>
+        )}
 
         {/* Concepts */}
         <div className="detail-section">

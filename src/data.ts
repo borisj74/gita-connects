@@ -31,6 +31,7 @@ export const verses: Verse[] = [
     translation: 'You have a right to perform your prescribed duty, but you are not entitled to the fruits of action. Never consider yourself the cause of the results of your activities, and never be attached to not doing your duty.',
     theme: 'Selfless Action',
     concepts: ['karma', 'detachment', 'duty', 'renunciation'],
+    purport: 'This is the cornerstone of *karma-yoga*. You have authority over action alone, never over its results. Do not act for reward, but never withdraw into inaction either. This dual injunction — engage fully, release the outcome — is the path to inner freedom and the antidote to anxiety.',
   },
   {
     chapter: 3,
@@ -41,6 +42,7 @@ export const verses: Verse[] = [
     translation: 'Therefore, without being attached to the fruits of activities, one should act as a matter of duty, for by working without attachment one attains the Supreme.',
     theme: 'Path to Liberation',
     concepts: ['karma', 'detachment', 'liberation', 'duty'],
+    purport: 'Continuing 2.47: act always without attachment to results, as a matter of duty alone. *Asakto hi acharan karma param apnoti purushah* — by acting without clinging, one attains the Supreme. Duty performed selflessly becomes the very vehicle of liberation.',
   },
   {
     chapter: 2,
@@ -51,6 +53,7 @@ export const verses: Verse[] = [
     translation: 'O son of Kunti, the contact between the senses and the sense objects gives rise to fleeting perceptions of happiness and distress. These are non-permanent, and come and go like the winter and summer seasons. O descendent of Bharat, one must learn to tolerate them without being disturbed.',
     theme: 'Equanimity',
     concepts: ['detachment', 'tolerance', 'impermanence', 'equanimity'],
+    purport: 'Sensations of heat and cold, joy and sorrow, arise from contact between senses and their objects. Krishna calls these *agama-apayinah* — coming and going — like seasons. The wise neither chase pleasure nor flee pain; they cultivate *titiksha* (forbearance), recognizing that all sensory experience is transient.',
   },
   {
     chapter: 6,
@@ -61,6 +64,7 @@ export const verses: Verse[] = [
     translation: 'Elevate yourself through the power of your mind, and not degrade yourself, for the mind can be the friend and also the enemy of the self.',
     theme: 'Self-Mastery',
     concepts: ['self-discipline', 'meditation', 'mind-control', 'self-development'],
+    purport: 'Lift yourself by your own self; do not let your self be degraded. The self alone is the friend of the self, and the self alone is its enemy. *Atman* here means the mind: a disciplined mind is one\'s greatest ally; an undisciplined mind, one\'s worst foe.',
   },
   {
     chapter: 18,
@@ -71,6 +75,7 @@ export const verses: Verse[] = [
     translation: 'Abandon all varieties of dharmas and simply surrender unto Me alone. I shall liberate you from all sinful reactions; do not fear.',
     theme: 'Complete Surrender',
     concepts: ['surrender', 'devotion', 'liberation', 'grace'],
+    purport: '*Sarva-dharman parityajya mam ekam sharanam vraja* — abandon all dharmas and take refuge in Me alone. I shall liberate you from all sins; do not grieve. The Gita\'s final, ultimate instruction: when all systems exhaust themselves, pure surrender remains.',
   },
   {
     chapter: 4,
@@ -81,6 +86,7 @@ export const verses: Verse[] = [
     translation: 'Whenever there is a decline in righteousness and an increase in unrighteousness, O Arjuna, at that time I manifest Myself on earth.',
     theme: 'Divine Intervention',
     concepts: ['dharma', 'divine-incarnation', 'protection', 'cosmic-order'],
+    purport: '*Yada yada hi dharmasya glanir bhavati* — whenever righteousness declines and unrighteousness rises, the Divine manifests. This is not a one-time event but a cyclical principle: when the world loses its way, grace appears in a form suited to the age.',
   },
   {
     chapter: 9,
@@ -91,6 +97,7 @@ export const verses: Verse[] = [
     translation: 'To those who worship Me with exclusive devotion, meditating on My transcendental form—to them I carry what they lack and preserve what they have.',
     theme: 'Divine Care',
     concepts: ['devotion', 'faith', 'divine-protection', 'surrender'],
+    purport: 'To those who worship Me with single-minded devotion, I carry what they lack and preserve what they have (*yoga-kshemam vahamy aham*). This is not magic but the natural responsiveness of the Divine to total reliance — surrender invites grace.',
   },
   {
     chapter: 12,
@@ -101,6 +108,7 @@ export const verses: Verse[] = [
     translation: 'One who is not envious but is a kind friend to all living entities, who does not think himself a proprietor and is free from false ego, who is equal in both happiness and distress, and who is always satisfied and forgiving.',
     theme: 'Qualities of a Devotee',
     concepts: ['compassion', 'equanimity', 'humility', 'forgiveness'],
+    purport: 'Krishna lists the marks of a devotee: hatred toward none, friendly and compassionate, free from possessiveness and ego, equal in pleasure and pain, forgiving, content, self-controlled, with firm resolve, mind and intellect offered to Me. Inner qualities, not outer signs, reveal the devotee.',
   },
   {
     chapter: 2,
@@ -111,6 +119,7 @@ export const verses: Verse[] = [
     translation: 'While contemplating the objects of the senses, a person develops attachment for them, and from such attachment lust develops, and from lust anger arises.',
     theme: 'Downward Spiral',
     concepts: ['desire', 'attachment', 'anger', 'self-destruction'],
+    purport: 'Krishna traces the chain of bondage: contemplating sense objects breeds attachment; from attachment, desire is born; from desire, anger arises (when desire is frustrated). The downward spiral begins not with action but with where the mind dwells.',
   },
   {
     chapter: 2,
@@ -121,6 +130,7 @@ export const verses: Verse[] = [
     translation: 'From anger, complete delusion arises, and from delusion bewilderment of memory. When memory is bewildered, intelligence is lost, and when intelligence is lost one falls down again into the material pool.',
     theme: 'Path to Ruin',
     concepts: ['anger', 'delusion', 'destruction', 'self-control'],
+    purport: 'Continuing the cascade: anger leads to delusion (*sammoha*); delusion to confused memory; lost memory destroys discrimination (*buddhi*); and once *buddhi* is gone, one is ruined. The sequence is psychological surgery — showing exactly how a single uncontrolled thought ends in self-destruction.',
   },
   {
     chapter: 5,
@@ -131,6 +141,7 @@ export const verses: Verse[] = [
     translation: 'One who performs their duty without attachment, surrendering the results unto the Supreme Lord, is unaffected by sinful action, as the lotus leaf is untouched by water.',
     theme: 'Detached Action',
     concepts: ['karma', 'detachment', 'purity', 'surrender'],
+    purport: 'One who offers all actions to the Supreme, abandoning attachment, is untouched by sin as a lotus leaf is untouched by water. The lotus image is precise: rooted in mud, blooming above, wetted but not soaked. Engagement without contamination.',
   },
   {
     chapter: 3,
@@ -141,6 +152,7 @@ export const verses: Verse[] = [
     translation: 'All activities are carried out by the three modes of material nature. But in ignorance, the soul, deluded by false identification with the body, thinks itself to be the doer.',
     theme: 'False Ego',
     concepts: ['ego', 'illusion', 'modes-of-nature', 'self-knowledge'],
+    purport: 'All actions are performed by the *gunas* (modes of material nature), yet the deluded ego (*ahamkara*) claims authorship: \'I am the doer.\' This false identification binds one to karma. Recognizing nature as the actual agent, the wise remain free.',
   },
   {
     chapter: 6,
@@ -151,6 +163,7 @@ export const verses: Verse[] = [
     translation: 'Undoubtedly, O mighty-armed one, the mind is restless and difficult to restrain, but it is subdued by practice and by detachment.',
     theme: 'Mind Control',
     concepts: ['meditation', 'practice', 'detachment', 'self-discipline'],
+    purport: 'Acknowledging Arjuna\'s complaint that the mind is restless and hard to subdue, Krishna agrees but offers the remedy: *abhyasa* (steady practice) and *vairagya* (dispassion). The mind cannot be conquered by force, but it can be trained by patient repetition.',
   },
   {
     chapter: 7,
@@ -161,6 +174,7 @@ export const verses: Verse[] = [
     translation: 'This divine energy of Mine, consisting of the three modes of material nature, is difficult to overcome. But those who have surrendered unto Me can easily cross beyond it.',
     theme: 'Transcending Illusion',
     concepts: ['maya', 'surrender', 'liberation', 'divine-grace'],
+    purport: 'Krishna\'s *maya* (divine illusion), constituted of the three *gunas*, is very difficult to overcome. But those who surrender to Me alone cross beyond it. Surrender, not personal effort, is the key that unlocks the prison of illusion.',
   },
   {
     chapter: 13,
@@ -171,6 +185,7 @@ export const verses: Verse[] = [
     translation: 'Humility, unpretentiousness, non-violence, forgiveness, simplicity, service to the teacher, cleanliness, steadfastness, and self-control.',
     theme: 'Spiritual Qualities',
     concepts: ['humility', 'non-violence', 'self-control', 'wisdom'],
+    purport: 'Humility, freedom from pretense, non-violence, forbearance, simplicity, service to the teacher, purity, steadfastness, and self-control — these constitute *jnana* (knowledge). Knowledge in the Gita is not information; it is character.',
   },
   {
     chapter: 4,
@@ -181,6 +196,7 @@ export const verses: Verse[] = [
     translation: 'In this world, there is nothing as purifying as divine knowledge. One who has attained purity of mind through prolonged practice of Yoga, receives such knowledge within the heart, in due course of time.',
     theme: 'Supreme Knowledge',
     concepts: ['knowledge', 'purity', 'yoga', 'self-realization'],
+    purport: 'Nothing in this world purifies like spiritual knowledge (*jnana*). One who has perfected *yoga* discovers this knowledge within the self in time. *Jnana* is not borrowed information — it is direct realization that consumes karma as fire consumes fuel.',
   },
   {
     chapter: 15,
@@ -191,6 +207,7 @@ export const verses: Verse[] = [
     translation: 'The embodied souls in this material world are My eternal fragmental parts. But bound by material nature, they are struggling with the six senses including the mind.',
     theme: 'Eternal Soul',
     concepts: ['soul', 'divine-nature', 'bondage', 'struggle'],
+    purport: 'An eternal fragment of My own self, having become a living soul (*jiva-bhuta*) in the world of beings, draws to itself the senses and the mind, which abide in nature. The soul is a *sanatana amsha* — eternal portion of the Divine, not a separate manufactured entity.',
   },
   {
     chapter: 9,
@@ -201,6 +218,7 @@ export const verses: Verse[] = [
     translation: 'Whatever you do, whatever you eat, whatever you offer in sacrifice, whatever you give away, and whatever austerities you perform, O son of Kunti, do it as an offering to Me.',
     theme: 'Dedication to Divine',
     concepts: ['devotion', 'surrender', 'offering', 'dedication'],
+    purport: 'Whatever you do, eat, offer, give, or perform as austerity — do it as an offering to Me. This transforms the whole of life into worship. No separate spiritual hour is needed; every act becomes a sacrament when its fruit is consecrated.',
   },
   {
     chapter: 1,
@@ -211,6 +229,7 @@ export const verses: Verse[] = [
     translation: 'Dhritarashtra said: O Sanjaya, what did my sons and the sons of Pandu do when they assembled on the sacred field of Kurukshetra, eager for battle?',
     theme: 'The Beginning',
     concepts: ['dharma', 'battlefield', 'conflict', 'duty'],
+    purport: 'The Gita opens with the blind king Dhritarashtra anxiously asking about the battlefield outcome. His use of \'my sons\' versus \'sons of Pandu\' betrays attachment and bias — the root of the conflict. The word *dharma-kshetra* (sacred field) signals that this is not merely physical war but a moral inquiry where righteousness will prevail.',
   },
   {
     chapter: 1,
@@ -221,6 +240,7 @@ export const verses: Verse[] = [
     translation: 'Having spoken thus on the battlefield, Arjuna cast aside his bow and arrows, and sat down on the seat of his chariot, his mind overwhelmed with grief.',
     theme: 'Arjuna\'s Despair',
     concepts: ['grief', 'confusion', 'moral-crisis', 'surrender'],
+    purport: 'Arjuna\'s collapse is not weakness but compassion clouded by attachment. Confronted with the duty of fighting his own kin, his bow slips and he sinks down. This existential breakdown is the precondition for divine instruction — only when human reasoning fails does one turn to higher wisdom.',
   },
   {
     chapter: 2,
@@ -231,6 +251,7 @@ export const verses: Verse[] = [
     translation: 'The soul is never born and never dies. Having come into being once, it never ceases to be. It is unborn, eternal, ever-existing, and primeval. It is not slain when the body is slain.',
     theme: 'Eternal Nature of Soul',
     concepts: ['soul', 'immortality', 'self-knowledge', 'eternal'],
+    purport: 'The soul (*atman*) is never born and never dies; it is eternal, unchanging, and primeval. This verse strikes at the foundation of all fear — fear of death rests on identification with the body. Once one knows the self as imperishable, the basis for grief dissolves.',
   },
   {
     chapter: 2,
@@ -241,6 +262,7 @@ export const verses: Verse[] = [
     translation: 'One whose mind remains undisturbed amidst misery, who does not crave for pleasure, and who is free from attachment, fear, and anger, is called a sage of steady wisdom.',
     theme: 'Steady Wisdom',
     concepts: ['equanimity', 'detachment', 'peace', 'wisdom'],
+    purport: 'The *sthita-prajna* (one of steady wisdom) is undisturbed by sorrow, free from craving in joy, beyond attachment, fear, and anger. This is not numbness — it is the stable inner ground from which one acts skillfully without being swept by emotional weather.',
   },
   {
     chapter: 3,
@@ -251,6 +273,7 @@ export const verses: Verse[] = [
     translation: 'No one can remain without action even for a moment. Everyone is compelled to act by the qualities born of material nature.',
     theme: 'Nature of Action',
     concepts: ['karma', 'nature', 'action', 'compulsion'],
+    purport: 'No one can remain inactive even for a moment. The three modes of nature compel everyone to act. Therefore renunciation does not mean withdrawal from action — it means renunciation of the egoic claim on action. Right action, not no-action, is the path.',
   },
   {
     chapter: 3,
@@ -261,6 +284,7 @@ export const verses: Verse[] = [
     translation: 'It is better to perform one\'s own duty imperfectly than to perform another\'s duty perfectly. It is better to die in the discharge of one\'s own duty; the duty of another is fraught with danger.',
     theme: 'Own Duty',
     concepts: ['dharma', 'duty', 'authenticity', 'self'],
+    purport: 'One\'s own *dharma*, however imperfect, is better than another\'s well-performed. Better to die in one\'s own duty — *paradharmo bhayavahah*, another\'s dharma brings fear. Authenticity outweighs imitation; the path that fits your nature is the path that liberates you.',
   },
   {
     chapter: 4,
@@ -271,6 +295,7 @@ export const verses: Verse[] = [
     translation: 'Those who see action in inaction and inaction in action are truly wise amongst humans. They are yogis, having accomplished all actions.',
     theme: 'Wisdom in Action',
     concepts: ['karma', 'wisdom', 'understanding', 'yoga'],
+    purport: 'The seer of truth perceives action in inaction and inaction in action. One who acts without ego-identification is, spiritually, not acting at all. Conversely, one who appears to renounce while inwardly attached is still bound. The measure is inner, not outer.',
   },
   {
     chapter: 5,
@@ -281,6 +306,7 @@ export const verses: Verse[] = [
     translation: 'The truly learned, with the eyes of divine knowledge, see with equal vision a learned scholar, a cow, an elephant, a dog, and a dog-eater.',
     theme: 'Equal Vision',
     concepts: ['equality', 'wisdom', 'vision', 'discrimination'],
+    purport: 'The wise see with equal vision (*sama-darshana*) a learned brahmana, a cow, an elephant, a dog, and an outcaste. Equal vision does not erase distinctions in conduct — it perceives the same eternal essence beneath every form, the foundation of compassion.',
   },
   {
     chapter: 6,
@@ -291,6 +317,7 @@ export const verses: Verse[] = [
     translation: 'Those who are temperate in eating and recreation, balanced in work, and regulated in sleep, can mitigate all sorrows by practicing yoga.',
     theme: 'Balance in Life',
     concepts: ['balance', 'moderation', 'yoga', 'discipline'],
+    purport: '*Yukta-ahara-vihara* — moderation in eating, recreation, action, sleep, and wakefulness — is the foundation of yoga. Extremes (excess or deprivation) both block realization. The middle path makes yoga the destroyer of suffering.',
   },
   {
     chapter: 7,
@@ -301,6 +328,7 @@ export const verses: Verse[] = [
     translation: 'There is nothing higher than Me, O Arjuna. Everything rests upon Me, as pearls are strung on a thread.',
     theme: 'Supreme Reality',
     concepts: ['divine', 'unity', 'supreme', 'connection'],
+    purport: 'There is nothing higher than Me, O Arjuna. All this is strung on Me as pearls on a thread. The pearl-and-thread metaphor reveals the Supreme as the immanent ground holding all diversity in unity — multiplicity without separation.',
   },
   {
     chapter: 8,
@@ -311,6 +339,7 @@ export const verses: Verse[] = [
     translation: 'Whoever departs from the body remembering Me alone at the time of death attains My nature. Of this, there is no doubt.',
     theme: 'Final Thought',
     concepts: ['death', 'remembrance', 'devotion', 'liberation'],
+    purport: 'Whoever, at the time of death, remembers Me alone while leaving the body, attains My nature — there is no doubt of this. The final thought reflects the lifelong orientation; one cannot remember the Divine at death if one has not practiced it in life.',
   },
   {
     chapter: 10,
@@ -321,6 +350,7 @@ export const verses: Verse[] = [
     translation: 'I am the Self, O Arjuna, seated in the hearts of all beings. I am the beginning, the middle, and the end of all beings.',
     theme: 'Divine Presence',
     concepts: ['divine', 'self', 'omnipresence', 'unity'],
+    purport: 'I am the Self, O Arjuna, seated in the hearts of all beings; I am the beginning, the middle, and the end. The Supreme is not distant; it is the innermost reality. Spiritual life is the journey from the periphery to one\'s own center.',
   },
   {
     chapter: 11,
@@ -331,6 +361,7 @@ export const verses: Verse[] = [
     translation: 'Only by exclusive devotion can I be known and seen in this form, and entered into, O Arjuna.',
     theme: 'Devotional Path',
     concepts: ['devotion', 'vision', 'realization', 'unity'],
+    purport: 'Only through undivided devotion (*ananyaya bhaktya*) can one know Me, see Me, and enter into Me. After revealing the cosmic form, Krishna clarifies: not scholarship, not ritual, but love alone grants access to the deepest truth.',
   },
   {
     chapter: 12,
@@ -341,6 +372,7 @@ export const verses: Verse[] = [
     translation: 'Fix your mind on Me alone and let your intellect dwell upon Me. Thereafter you shall surely live in Me. Of this there is no doubt.',
     theme: 'Single-pointed Focus',
     concepts: ['concentration', 'devotion', 'mind-control', 'union'],
+    purport: 'Fix your mind on Me, place your intellect in Me — then you shall abide in Me alone thereafter, no doubt. This is the direct path: where attention rests, identity follows. Sustained remembrance becomes union.',
   },
   {
     chapter: 14,
@@ -351,6 +383,7 @@ export const verses: Verse[] = [
     translation: 'O Pandava, those who do not hate illumination, activity, and delusion when they are present, nor long for them when they disappear.',
     theme: 'Beyond Modes',
     concepts: ['transcendence', 'detachment', 'equanimity', 'freedom'],
+    purport: 'One who transcends the three *gunas* neither hates light, activity, or delusion when present, nor longs for them when absent. The trans-modal sage is neither attracted nor repelled by inner states — they pass through awareness without grip.',
   },
   {
     chapter: 16,
@@ -361,6 +394,7 @@ export const verses: Verse[] = [
     translation: 'Fearlessness, purity of heart, steadfastness in knowledge and yoga, charity, self-control, sacrifice, study of scriptures, austerity, and straightforwardness.',
     theme: 'Divine Qualities',
     concepts: ['virtues', 'righteousness', 'character', 'divinity'],
+    purport: 'Fearlessness, purity of heart, steadiness in knowledge and yoga, charity, self-control, sacrifice, study of scripture, austerity, and uprightness — these are the *daivi sampat* (divine wealth) of one born with a divine nature.',
   },
   {
     chapter: 17,
@@ -371,6 +405,7 @@ export const verses: Verse[] = [
     translation: 'The faith of each person conforms to their nature, O Arjuna. Human beings are made of faith; as one\'s faith is, so one is.',
     theme: 'Nature of Faith',
     concepts: ['faith', 'nature', 'character', 'identity'],
+    purport: 'The faith of every being is in accordance with their inherent nature (*sattva*). Man is made of his faith — as his faith is, so is he. Faith is not chosen intellectually; it expresses the dominant *guna* shaping one\'s consciousness.',
   },
   {
     chapter: 18,
@@ -381,6 +416,7 @@ export const verses: Verse[] = [
     translation: 'By performing one\'s natural occupation, one worships the Creator from whom all beings originate and by whom all this universe is pervaded. By such performance, a person attains perfection.',
     theme: 'Worship Through Work',
     concepts: ['duty', 'worship', 'perfection', 'service'],
+    purport: 'Worshipping through one\'s own duty the One from whom all beings emerge and who pervades all this, a person attains perfection. Work itself, when offered, becomes worship — no separate altar required.',
   },
   {
     chapter: 18,
@@ -391,6 +427,7 @@ export const verses: Verse[] = [
     translation: 'Wherever there is Krishna, the Lord of Yoga, and wherever there is Arjuna, the wielder of the bow, there will also certainly be prosperity, victory, happiness, and righteousness. Of this, I am sure.',
     theme: 'Final Assurance',
     concepts: ['victory', 'righteousness', 'divine-grace', 'conclusion'],
+    purport: 'Wherever Krishna the lord of yoga is, and wherever Arjuna the archer is, there prosperity, victory, well-being, and morality are certain — this is my conviction. Sanjaya\'s closing assurance: divine wisdom united with sincere action yields unfailing success.',
   },
 ];
 
