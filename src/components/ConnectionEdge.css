@@ -3,11 +3,29 @@
   position: relative;
 }
 
+/* Invisible bridge so moving the cursor up to the scissors keeps hover. */
+.edge-label-wrapper::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -48px;
+  transform: translateX(-50%);
+  width: 48px;
+  height: 56px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.edge-label-wrapper:hover::before {
+  pointer-events: auto;
+}
+
 .edge-delete-btn {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) scale(0.9);
+  /* Sit above the chip so the chip stays visible on the line. */
+  transform: translate(-50%, -50%) translateY(-34px) scale(0.9);
   width: 28px;
   height: 28px;
   border-radius: 50%;
@@ -28,21 +46,16 @@
 .edge-label-wrapper:hover .edge-delete-btn {
   opacity: 1;
   pointer-events: auto;
-  transform: translate(-50%, -50%) scale(1);
+  transform: translate(-50%, -50%) translateY(-34px) scale(1);
 }
 
 .edge-delete-btn:hover {
   background: currentColor;
-  transform: translate(-50%, -50%) scale(1.1);
+  transform: translate(-50%, -50%) translateY(-34px) scale(1.1);
 }
 
 .edge-delete-btn:hover svg {
   color: white;
-}
-
-.edge-label-wrapper:hover .edge-label {
-  opacity: 0;
-  pointer-events: none;
 }
 
 .edge-label {
