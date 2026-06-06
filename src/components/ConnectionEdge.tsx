@@ -1,4 +1,4 @@
-import { BaseEdge, EdgeLabelRenderer, getSmoothStepPath, type EdgeProps } from 'reactflow';
+import { BaseEdge, EdgeLabelRenderer, getBezierPath, type EdgeProps } from 'reactflow';
 import { Scissors } from 'lucide-react';
 import './ConnectionEdge.css';
 
@@ -23,15 +23,16 @@ export default function ConnectionEdge({
   const pathOffset = offsetStep * 14;
   const labelOffset = offsetStep * PARALLEL_OFFSET_PX;
 
-  const [edgePath, labelX, labelY] = getSmoothStepPath({
-    sourceX,
+  // Bezier curves give the graph a softer, more fluid feel than stepped
+  // right angles. Parallel edges are separated by nudging their endpoints.
+  const [edgePath, labelX, labelY] = getBezierPath({
+    sourceX: sourceX + pathOffset,
     sourceY,
     sourcePosition,
-    targetX,
+    targetX: targetX + pathOffset,
     targetY,
     targetPosition,
-    offset: 25 + Math.abs(pathOffset),
-    centerX: (sourceX + targetX) / 2 + pathOffset,
+    curvature: 0.3,
   });
 
   const borderColor = (data?.color as string | undefined) ?? 'rgb(177, 93, 67)';
