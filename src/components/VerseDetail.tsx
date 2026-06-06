@@ -48,27 +48,25 @@ export default function VerseDetail({ verseId, onClose, networkVerses, onAddToNe
   return (
     <div className="verse-detail">
       <div className="detail-header">
-        <div className="detail-header-top">
-          <div>
+        <button className="close-button" onClick={onClose} aria-label="Close panel">
+          <X size={20} />
+        </button>
+        <div className="detail-header-row">
+          <div className="detail-header-meta">
             <div className="verse-id-large">{verse.id}</div>
             <div className="chapter-info">
               Chapter {verse.chapter} • Verse {verse.verse}
             </div>
           </div>
-          <button className="close-button" onClick={onClose} aria-label="Close panel">
-            <X size={20} />
+          <button
+            className={`add-to-network-button ${inNetwork ? 'in-network' : ''}`}
+            onClick={() => onAddToNetwork(verse.id)}
+            disabled={inNetwork}
+          >
+            {inNetwork ? <Check size={16} /> : <Plus size={16} />}
+            {inNetwork ? 'In network' : 'Add to network'}
           </button>
         </div>
-
-        {/* Add to network */}
-        <button
-          className={`add-to-network-button ${inNetwork ? 'in-network' : ''}`}
-          onClick={() => onAddToNetwork(verse.id)}
-          disabled={inNetwork}
-        >
-          {inNetwork ? <Check size={16} /> : <Plus size={16} />}
-          {inNetwork ? 'In network' : 'Add to network'}
-        </button>
       </div>
 
       <div className="detail-content">
