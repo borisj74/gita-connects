@@ -174,6 +174,13 @@ function App() {
             <p className="app-subtitle">Verse Explorer</p>
           </div>
           <div className="header-controls">
+            <SearchBar onVerseSelect={handleVerseSelect} />
+            <ConnectionFilters
+              connectionTypes={connectionTypes}
+              activeFilters={activeFilters}
+              onToggleFilter={handleToggleFilter}
+              onRemoveCustomType={handleRemoveCustomType}
+            />
             <button
               className="theme-toggle"
               onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
@@ -182,13 +189,6 @@ function App() {
             >
               {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             </button>
-            <SearchBar onVerseSelect={handleVerseSelect} />
-            <ConnectionFilters
-              connectionTypes={connectionTypes}
-              activeFilters={activeFilters}
-              onToggleFilter={handleToggleFilter}
-              onRemoveCustomType={handleRemoveCustomType}
-            />
           </div>
         </div>
       </div>
