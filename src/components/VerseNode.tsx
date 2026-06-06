@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import { Handle, Position } from 'reactflow';
+import { X, Plus } from 'lucide-react';
 import type { Verse } from '../types.js';
 import './VerseNode.css';
 
@@ -35,7 +36,7 @@ function VerseNode({ data }: VerseNodeProps) {
       <Handle type="target" position={Position.Top} className="node-handle" />
 
       <button className="node-remove" onClick={handleRemove} aria-label="Remove verse">
-        ×
+        <X size={16} strokeWidth={2.5} />
       </button>
 
       <div className="node-header">
@@ -57,7 +58,7 @@ function VerseNode({ data }: VerseNodeProps) {
 
       {connectedCount > 0 && (
         <button className="node-expand" onClick={handleExpand} aria-label="Expand network">
-          <span className="expand-icon">+</span>
+          <Plus size={16} className="expand-icon" />
           <span className="expand-text">Show {connectedCount} connected verse{connectedCount !== 1 ? 's' : ''}</span>
         </button>
       )}

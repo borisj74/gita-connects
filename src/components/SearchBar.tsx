@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, X } from 'lucide-react';
+import { Search, SearchX, X } from 'lucide-react';
 import { verses } from '../data.js';
 import './SearchBar.css';
 
@@ -98,7 +98,7 @@ export default function SearchBar({ onVerseSelect }: SearchBarProps) {
       {isFocused && query && searchResults.length === 0 && (
         <div className="search-results">
           <div className="no-results">
-            <div className="no-results-icon">🔍</div>
+            <div className="no-results-icon"><SearchX size={32} /></div>
             <div className="no-results-text">No verses found</div>
             <div className="no-results-hint">
               Try searching by verse number (e.g., "2.47"), concept (e.g., "karma"), or theme

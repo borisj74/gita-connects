@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ReactFlowProvider } from 'reactflow';
 import type { Node, Edge } from 'reactflow';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import ChapterSidebar from './components/ChapterSidebar.js';
 import VerseNetwork, { type VerseNetworkRef } from './components/VerseNetwork.js';
 import VerseDetail from './components/VerseDetail.js';
@@ -138,7 +139,7 @@ function App() {
               title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
               aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
             >
-              {sidebarOpen ? '‹' : '›'}
+              {sidebarOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
             </button>
           </div>
           {sidebarOpen && (
@@ -157,7 +158,7 @@ function App() {
               title="Expand sidebar"
               aria-label="Expand sidebar"
             >
-              ›
+              <ChevronRight size={18} />
             </button>
           )}
           <div className="section-header">

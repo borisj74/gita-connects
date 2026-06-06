@@ -36,35 +36,15 @@
   overflow: hidden;
 }
 
-.chapter-header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 2px;
-  height: 100%;
-  background: var(--terracotta-400);
-  opacity: 0;
-  transition: opacity var(--transition-base);
-}
-
 .chapter-header:hover {
   background: var(--beige-200);
   border-color: var(--beige-300);
   transform: translateX(2px);
 }
 
-.chapter-header:hover::before {
-  opacity: 1;
-}
-
 .chapter-header.expanded {
   background: var(--beige-200);
   border-color: var(--beige-300);
-}
-
-.chapter-header.expanded::before {
-  opacity: 1;
 }
 
 .chapter-icon {
@@ -138,20 +118,17 @@
   box-sizing: border-box;
 }
 
-.verse-item::before {
-  content: '⋮⋮';
+.verse-grip {
   position: absolute;
-  left: 0.75rem;
+  left: 0.5rem;
   top: 50%;
   transform: translateY(-50%);
   color: var(--brown-400);
-  font-size: 0.75rem;
-  letter-spacing: -2px;
   opacity: 0;
   transition: opacity var(--transition-base);
 }
 
-.verse-item:hover::before {
+.verse-item:hover .verse-grip {
   opacity: 1;
 }
 

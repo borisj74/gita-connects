@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, GripVertical } from 'lucide-react';
 import { chapters, verses } from '../data.js';
 import './ChapterSidebar.css';
 
@@ -81,6 +81,7 @@ export default function ChapterSidebar({ onVerseSelect, selectedVerseId }: Chapt
                       onClick={() => onVerseSelect(verse.id)}
                       style={{ animationDelay: `${vIndex * 20}ms` }}
                     >
+                      <GripVertical size={14} className="verse-grip" />
                       <div className="verse-number">{verse.id}</div>
                       <div className="verse-theme">{verse.theme}</div>
                       <div className="verse-concepts">
