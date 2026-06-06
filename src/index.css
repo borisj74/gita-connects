@@ -351,7 +351,8 @@ p, li, dd {
   background: var(--beige-200);
 }
 
-[data-theme="dark"] .chapter-sidebar {
+[data-theme="dark"] .chapter-sidebar,
+[data-theme="dark"] .chapters-list {
   background: var(--beige-50);
 }
 
