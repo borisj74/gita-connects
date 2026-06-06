@@ -2,7 +2,7 @@ import { BaseEdge, EdgeLabelRenderer, getSmoothStepPath, type EdgeProps } from '
 import { Scissors } from 'lucide-react';
 import './ConnectionEdge.css';
 
-const PARALLEL_OFFSET_PX = 36;
+const PARALLEL_OFFSET_PX = 56;
 
 export default function ConnectionEdge({
   id,
