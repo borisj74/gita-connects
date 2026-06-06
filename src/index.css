@@ -358,6 +358,7 @@ p, li, dd {
 
 [data-theme="dark"] .verse-item {
   background: var(--beige-100);
+  border-color: var(--beige-300);
 }
 
 [data-theme="dark"] .verse-item:hover {
