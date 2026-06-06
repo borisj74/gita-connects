@@ -275,3 +275,36 @@
   color: var(--brown-600);
   font-weight: 500;
 }
+
+.add-to-network-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: rgb(125, 138, 110);
+  color: white;
+  box-shadow: 0 2px 8px rgba(125, 138, 110, 0.3);
+  transition: all var(--transition-base);
+}
+
+.add-to-network-button:hover:not(:disabled) {
+  background: rgb(105, 118, 90);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(125, 138, 110, 0.4);
+}
+
+.add-to-network-button.in-network {
+  background: var(--beige-200);
+  color: var(--brown-600);
+  box-shadow: none;
+  cursor: default;
+}

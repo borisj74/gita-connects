@@ -42,6 +42,7 @@ export interface VerseNetworkRef {
   undo: () => void;
   redo: () => void;
   focusNode: (verseId: string) => void;
+  addVerse: (verseId: string) => void;
 }
 
 const nodeTypes: NodeTypes = {
@@ -261,9 +262,19 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       [pendingConnection, connectionTypes, onAddCustomType, commit],
     );
 
+  const [dragGhost, setDragGhost] = useState<{ x: number; y: number } | null>(null);
+
   const handleDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'copy';
+    const bounds = event.currentTarget.getBoundingClientRect();
+    setDragGhost({ x: event.clientX - bounds.left, y: event.clientY - bounds.top });
+  }, []);
+
+  const handleDragLeave = useCallback((event: React.DragEvent) => {
+    // Only clear when actually leaving the canvas, not crossing child elements.
+    if (event.currentTarget.contains(event.relatedTarget as globalThis.Node)) return;
+    setDragGhost(null);
   }, []);
 
   const handleRemoveNode = useCallback(
@@ -415,6 +426,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
   const handleDrop = useCallback(
     (event: React.DragEvent) => {
       event.preventDefault();
+      setDragGhost(null);
 
       const verseId = event.dataTransfer.getData('verseId');
       if (!verseId || networkVerses.has(verseId)) return;
@@ -524,6 +536,8 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     },
     [onVerseSelect, handleRemoveNode, selectedVerseId, connectionTypes, setNodes, setAllEdges, fitView, commit],
   );
+
+  const addVerse = useCallback((verseId: string) => addVerses([verseId]), [addVerses]);
 
   const handleAddRandom = useCallback(() => {
     const available = verses.filter((v) => !netRef.current.has(v.id));
@@ -676,14 +690,24 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     undo,
     redo,
     focusNode,
+    addVerse,
   }));
 
   return (
     <div
       className="verse-network"
       onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
+      {dragGhost && (
+        <div
+          className="drag-ghost"
+          style={{ left: dragGhost.x, top: dragGhost.y }}
+        >
+          Drop to add verse
+        </div>
+      )}
       <ReactFlow
         nodes={nodes}
         edges={edges}

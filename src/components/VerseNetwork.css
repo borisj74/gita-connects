@@ -344,3 +344,23 @@
   color: rgb(177, 93, 67);
   font-size: 1.2rem;
 }
+
+/* Drop preview ghost while dragging a verse from the sidebar */
+.drag-ghost {
+  position: absolute;
+  z-index: 20;
+  transform: translate(-50%, -50%);
+  width: 180px;
+  height: 90px;
+  border: 2px dashed rgb(125, 138, 110);
+  border-radius: 12px;
+  background: rgba(125, 138, 110, 0.08);
+  color: rgb(105, 118, 90);
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}

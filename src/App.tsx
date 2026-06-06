@@ -12,6 +12,8 @@ import {
   PREDEFINED_CONNECTION_TYPES,
   loadCustomConnectionTypes,
   saveCustomConnectionTypes,
+  loadActiveFilters,
+  saveActiveFilters,
   type ConnectionTypeDef,
 } from './connectionTypes.js';
 import './App.css';
@@ -26,8 +28,8 @@ function App() {
     () => [...PREDEFINED_CONNECTION_TYPES, ...customTypes],
     [customTypes],
   );
-  const [activeFilters, setActiveFilters] = useState<Set<string>>(
-    () => new Set(PREDEFINED_CONNECTION_TYPES.map((t) => t.id)),
+  const [activeFilters, setActiveFilters] = useState<Set<string>>(() =>
+    loadActiveFilters(PREDEFINED_CONNECTION_TYPES.map((t) => t.id)),
   );
   const [networkVerses, setNetworkVerses] = useState<Set<string>>(new Set());
   const [history, setHistory] = useState({ canUndo: false, canRedo: false });
@@ -38,6 +40,11 @@ function App() {
   useEffect(() => {
     saveCustomConnectionTypes(customTypes);
   }, [customTypes]);
+
+  // Persist active filters so they survive reloads.
+  useEffect(() => {
+    saveActiveFilters(activeFilters);
+  }, [activeFilters]);
 
   const handleVerseSelect = (verseId: string) => {
     setSelectedVerseId(verseId);
@@ -264,6 +271,7 @@ function App() {
             verseId={selectedVerseId}
             onClose={handleCloseDetail}
             networkVerses={networkVerses}
+            onAddToNetwork={(id) => verseNetworkRef.current?.addVerse(id)}
           />
         )}
       </div>

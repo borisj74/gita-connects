@@ -34,6 +34,23 @@ export function saveCustomConnectionTypes(types: ConnectionTypeDef[]): void {
   localStorage.setItem(CUSTOM_TYPES_STORAGE_KEY, JSON.stringify(customOnly));
 }
 
+const ACTIVE_FILTERS_STORAGE_KEY = 'gita-connects-active-filters';
+
+export function loadActiveFilters(fallback: string[]): Set<string> {
+  try {
+    const raw = localStorage.getItem(ACTIVE_FILTERS_STORAGE_KEY);
+    if (!raw) return new Set(fallback);
+    const parsed = JSON.parse(raw) as string[];
+    return new Set(parsed);
+  } catch {
+    return new Set(fallback);
+  }
+}
+
+export function saveActiveFilters(filters: Set<string>): void {
+  localStorage.setItem(ACTIVE_FILTERS_STORAGE_KEY, JSON.stringify([...filters]));
+}
+
 export function makeCustomTypeId(label: string): string {
   const slug = label
     .toLowerCase()

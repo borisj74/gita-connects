@@ -1,4 +1,4 @@
-import { BookMarked, Tag, Network, X, ScrollText } from 'lucide-react';
+import { BookMarked, Tag, Network, X, ScrollText, Plus, Check } from 'lucide-react';
 import { verses, connections } from '../data.js';
 import './VerseDetail.css';
 
@@ -6,9 +6,10 @@ interface VerseDetailProps {
   verseId: string | null;
   onClose: () => void;
   networkVerses: Set<string>;
+  onAddToNetwork: (verseId: string) => void;
 }
 
-export default function VerseDetail({ verseId, onClose, networkVerses }: VerseDetailProps) {
+export default function VerseDetail({ verseId, onClose, networkVerses, onAddToNetwork }: VerseDetailProps) {
   if (!verseId) {
     return (
       <div className="verse-detail empty">
@@ -25,6 +26,8 @@ export default function VerseDetail({ verseId, onClose, networkVerses }: VerseDe
 
   const verse = verses.find(v => v.id === verseId);
   if (!verse) return null;
+
+  const inNetwork = networkVerses.has(verse.id);
 
   // Find connections for this verse that are in the network
   const relatedConnections = connections.filter(
@@ -57,6 +60,16 @@ export default function VerseDetail({ verseId, onClose, networkVerses }: VerseDe
       </div>
 
       <div className="detail-content">
+        {/* Add to network */}
+        <button
+          className={`add-to-network-button ${inNetwork ? 'in-network' : ''}`}
+          onClick={() => onAddToNetwork(verse.id)}
+          disabled={inNetwork}
+        >
+          {inNetwork ? <Check size={16} /> : <Plus size={16} />}
+          {inNetwork ? 'In network' : 'Add to network'}
+        </button>
+
         {/* Theme */}
         <div className="detail-section">
           <div className="section-label">Theme</div>
