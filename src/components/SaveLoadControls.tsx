@@ -22,6 +22,7 @@ const STORAGE_KEY = 'gita-connects-saved-networks';
 
 export interface SaveLoadControlsRef {
   openSave: () => void;
+  openLoad: () => void;
 }
 
 const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(function SaveLoadControls({
@@ -48,7 +49,10 @@ const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(
     setShowSaveModal(true);
   };
 
-  useImperativeHandle(ref, () => ({ openSave: handleOpenSaveModal }));
+  useImperativeHandle(ref, () => ({
+    openSave: handleOpenSaveModal,
+    openLoad: () => setShowLoadModal(true),
+  }));
 
   const handleSave = () => {
     setSaveError(null);

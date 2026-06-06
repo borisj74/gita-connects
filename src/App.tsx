@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ReactFlowProvider } from 'reactflow';
 import type { Node, Edge } from 'reactflow';
-import { ChevronLeft, ChevronRight, Undo2, Redo2, Moon, Sun } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Undo2, Redo2, Moon, Sun, Menu, Save, FolderOpen, LayoutGrid, Trash2 } from 'lucide-react';
 import ChapterSidebar from './components/ChapterSidebar.js';
 import VerseNetwork, { type VerseNetworkRef } from './components/VerseNetwork.js';
 import VerseDetail from './components/VerseDetail.js';
@@ -36,6 +36,8 @@ function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>(
     () => (localStorage.getItem('gita-connects-theme') as 'light' | 'dark') || 'light',
   );
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
   const verseNetworkRef = useRef<VerseNetworkRef>(null);
   const saveLoadRef = useRef<SaveLoadControlsRef>(null);
 
@@ -54,6 +56,18 @@ function App() {
     document.documentElement.dataset.theme = theme;
     localStorage.setItem('gita-connects-theme', theme);
   }, [theme]);
+
+  // Close mobile menu on outside click.
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target as globalThis.Node)) {
+        setMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, [mobileMenuOpen]);
 
   const handleVerseSelect = (verseId: string) => {
     setSelectedVerseId(verseId);
@@ -240,30 +254,103 @@ function App() {
                 selectedVerseId={selectedVerseId}
                 onLoadNetwork={handleLoadNetwork}
               />
-              <button
-                className="action-button icon-button"
-                onClick={handleUndo}
-                disabled={!history.canUndo}
-                title="Undo (⌘Z)"
-                aria-label="Undo"
-              >
-                <Undo2 size={16} />
-              </button>
-              <button
-                className="action-button icon-button"
-                onClick={handleRedo}
-                disabled={!history.canRedo}
-                title="Redo (⌘⇧Z)"
-                aria-label="Redo"
-              >
-                <Redo2 size={16} />
-              </button>
-              <button className="action-button arrange-button" onClick={handleAutoArrange}>
-                Auto Arrange
-              </button>
-              <button className="action-button clear-button" onClick={handleClearAll}>
-                Clear All
-              </button>
+              <div className="actions-inline">
+                <button
+                  className="action-button icon-button"
+                  onClick={handleUndo}
+                  disabled={!history.canUndo}
+                  title="Undo (⌘Z)"
+                  aria-label="Undo"
+                >
+                  <Undo2 size={16} />
+                </button>
+                <button
+                  className="action-button icon-button"
+                  onClick={handleRedo}
+                  disabled={!history.canRedo}
+                  title="Redo (⌘⇧Z)"
+                  aria-label="Redo"
+                >
+                  <Redo2 size={16} />
+                </button>
+                <button className="action-button arrange-button" onClick={handleAutoArrange}>
+                  Auto Arrange
+                </button>
+                <button className="action-button clear-button" onClick={handleClearAll}>
+                  Clear All
+                </button>
+              </div>
+
+              {/* Mobile: collapse all actions into a hamburger menu */}
+              <div className="mobile-actions" ref={mobileMenuRef}>
+                <button
+                  className="hamburger-button"
+                  onClick={() => setMobileMenuOpen((v) => !v)}
+                  aria-label="Actions menu"
+                  aria-expanded={mobileMenuOpen}
+                >
+                  <Menu size={20} />
+                </button>
+                {mobileMenuOpen && (
+                  <div className="mobile-actions-menu">
+                    <div className="mobile-menu-filters">
+                      <ConnectionFilters
+                        connectionTypes={connectionTypes}
+                        activeFilters={activeFilters}
+                        onToggleFilter={handleToggleFilter}
+                        onRemoveCustomType={handleRemoveCustomType}
+                      />
+                    </div>
+                    <button
+                      className="mobile-menu-item"
+                      onClick={() => {
+                        setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
+                      }}
+                    >
+                      {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+                      {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+                    </button>
+                    <button
+                      className="mobile-menu-item"
+                      onClick={() => { saveLoadRef.current?.openSave(); setMobileMenuOpen(false); }}
+                    >
+                      <Save size={16} /> Save
+                    </button>
+                    <button
+                      className="mobile-menu-item"
+                      onClick={() => { saveLoadRef.current?.openLoad(); setMobileMenuOpen(false); }}
+                    >
+                      <FolderOpen size={16} /> Load
+                    </button>
+                    <button
+                      className="mobile-menu-item"
+                      onClick={() => { handleUndo(); }}
+                      disabled={!history.canUndo}
+                    >
+                      <Undo2 size={16} /> Undo
+                    </button>
+                    <button
+                      className="mobile-menu-item"
+                      onClick={() => { handleRedo(); }}
+                      disabled={!history.canRedo}
+                    >
+                      <Redo2 size={16} /> Redo
+                    </button>
+                    <button
+                      className="mobile-menu-item"
+                      onClick={() => { handleAutoArrange(); setMobileMenuOpen(false); }}
+                    >
+                      <LayoutGrid size={16} /> Auto Arrange
+                    </button>
+                    <button
+                      className="mobile-menu-item danger"
+                      onClick={() => { handleClearAll(); setMobileMenuOpen(false); }}
+                    >
+                      <Trash2 size={16} /> Clear All
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           <div className="network-container">

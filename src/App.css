@@ -245,9 +245,20 @@
   }
 
   .section-actions {
-    flex-wrap: wrap;
     gap: 0.5rem;
     justify-content: flex-end;
+  }
+
+  /* Collapse desktop actions into the hamburger menu */
+  .actions-inline,
+  .section-actions .save-load-controls,
+  .header-controls .connection-filters,
+  .header-controls .theme-toggle {
+    display: none;
+  }
+
+  .section-actions .mobile-actions {
+    display: block;
   }
 
   .header-controls {
@@ -306,4 +317,85 @@
 
 [data-theme="dark"] .theme-toggle {
   background: var(--beige-50);
+}
+
+/* Mobile actions menu (hamburger) — hidden on desktop */
+.mobile-actions {
+  display: none;
+  position: relative;
+}
+
+.hamburger-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid var(--beige-300);
+  background: white;
+  color: var(--brown-700);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-theme="dark"] .hamburger-button {
+  background: var(--beige-50);
+  color: var(--brown-700);
+}
+
+.mobile-actions-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 200px;
+  background: white;
+  border: 1px solid var(--beige-300);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  z-index: var(--z-popover);
+}
+
+[data-theme="dark"] .mobile-actions-menu {
+  background: var(--beige-50);
+}
+
+.mobile-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--brown-800);
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--transition-base);
+}
+
+.mobile-menu-item:hover:not(:disabled) {
+  background: var(--beige-100);
+}
+
+.mobile-menu-item:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.mobile-menu-item.danger {
+  color: var(--terracotta-600);
+}
+
+.mobile-menu-filters {
+  padding: 0.25rem 0.25rem 0.5rem;
+  border-bottom: 1px solid var(--beige-200);
+  margin-bottom: 0.25rem;
 }
