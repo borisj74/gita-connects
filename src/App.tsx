@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ReactFlowProvider } from 'reactflow';
 import type { Node, Edge } from 'reactflow';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Undo2, Redo2 } from 'lucide-react';
 import ChapterSidebar from './components/ChapterSidebar.js';
 import VerseNetwork, { type VerseNetworkRef } from './components/VerseNetwork.js';
 import VerseDetail from './components/VerseDetail.js';
@@ -30,6 +30,7 @@ function App() {
     () => new Set(PREDEFINED_CONNECTION_TYPES.map((t) => t.id)),
   );
   const [networkVerses, setNetworkVerses] = useState<Set<string>>(new Set());
+  const [history, setHistory] = useState({ canUndo: false, canRedo: false });
   const verseNetworkRef = useRef<VerseNetworkRef>(null);
 
   // Persist custom types whenever they change.
@@ -91,6 +92,12 @@ function App() {
       verseNetworkRef.current.handleClearAll();
     }
   };
+
+  const handleUndo = () => verseNetworkRef.current?.undo();
+  const handleRedo = () => verseNetworkRef.current?.redo();
+  const handleHistoryChange = useCallback((canUndo: boolean, canRedo: boolean) => {
+    setHistory({ canUndo, canRedo });
+  }, []);
 
   const handleLoadNetwork = (nodes: Node[], edges: Edge[], selectedId: string | null) => {
     if (verseNetworkRef.current?.loadNetwork) {
@@ -172,6 +179,24 @@ function App() {
                 selectedVerseId={selectedVerseId}
                 onLoadNetwork={handleLoadNetwork}
               />
+              <button
+                className="action-button icon-button"
+                onClick={handleUndo}
+                disabled={!history.canUndo}
+                title="Undo (⌘Z)"
+                aria-label="Undo"
+              >
+                <Undo2 size={16} />
+              </button>
+              <button
+                className="action-button icon-button"
+                onClick={handleRedo}
+                disabled={!history.canRedo}
+                title="Redo (⌘⇧Z)"
+                aria-label="Redo"
+              >
+                <Redo2 size={16} />
+              </button>
               <button className="action-button arrange-button" onClick={handleAutoArrange}>
                 Auto Arrange
               </button>
@@ -191,6 +216,7 @@ function App() {
                 onNetworkVersesChange={setNetworkVerses}
                 connectionTypes={connectionTypes}
                 onAddCustomType={handleAddCustomType}
+                onHistoryChange={handleHistoryChange}
               />
             </ReactFlowProvider>
           </div>

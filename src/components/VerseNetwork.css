@@ -229,6 +229,63 @@
   transform: translateY(0);
 }
 
+.icon-button {
+  background: white !important;
+  color: var(--brown-700) !important;
+  border: 1px solid var(--beige-300) !important;
+  padding: 0.5rem !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-button:hover:not(:disabled) {
+  background: var(--beige-100) !important;
+  color: var(--brown-900) !important;
+}
+
+.action-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Starter buttons in empty state */
+.network-empty-state-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 1.75rem;
+}
+
+.starter-button {
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.625rem 1.25rem;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid rgb(125, 138, 110);
+  background: white;
+  color: rgb(105, 118, 90);
+  transition: all var(--transition-base);
+}
+
+.starter-button:hover {
+  background: rgba(125, 138, 110, 0.1);
+  transform: translateY(-1px);
+}
+
+.starter-button.primary {
+  background: rgb(125, 138, 110);
+  color: white;
+  box-shadow: 0 2px 8px rgba(125, 138, 110, 0.3);
+}
+
+.starter-button.primary:hover {
+  background: rgb(105, 118, 90);
+  box-shadow: 0 4px 12px rgba(125, 138, 110, 0.4);
+}
+
 /* Empty State */
 .network-empty-state {
   position: absolute;

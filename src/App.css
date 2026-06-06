@@ -211,3 +211,55 @@
     padding: 1rem 1.5rem;
   }
 }
+
+/* Mobile: sidebar + detail become overlay drawers */
+@media (max-width: 768px) {
+  .app-body {
+    position: relative;
+  }
+
+  .sidebar-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 85%;
+    max-width: 320px;
+    z-index: 100;
+    box-shadow: 2px 0 16px rgba(0, 0, 0, 0.2);
+  }
+
+  .sidebar-wrapper.collapsed {
+    width: 0;
+    box-shadow: none;
+  }
+
+  .verse-detail {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 100% !important;
+    z-index: 110;
+  }
+
+  .section-actions {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+  }
+
+  .header-controls {
+    flex-wrap: wrap;
+  }
+
+  .network-empty-state {
+    width: 90%;
+    max-width: 90%;
+    padding: 1.5rem;
+  }
+
+  .network-empty-state-actions {
+    flex-direction: column;
+  }
+}

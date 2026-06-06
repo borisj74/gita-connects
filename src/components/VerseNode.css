@@ -74,7 +74,7 @@
   font-size: 1.25rem;
   font-weight: 600;
   color: white;
-  background: rgb(177, 93, 67);
+  background: var(--brown-800);
   padding: 0.5rem 1rem;
   border-radius: 20px;
   font-family: var(--font-ui);
@@ -167,6 +167,19 @@
   height: 16px;
   background: var(--terracotta-400);
   box-shadow: 0 0 0 4px var(--terracotta-100);
+}
+
+/* Touch devices: larger handles + always-visible close button */
+@media (hover: none) {
+  .node-handle {
+    width: 18px;
+    height: 18px;
+  }
+
+  .node-remove {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 
 /* Expand Network Button */

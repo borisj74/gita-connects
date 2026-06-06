@@ -13,6 +13,7 @@ import ReactFlow, {
   type EdgeTypes,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
+import dagre from 'dagre';
 import { verses, connections } from '../data.js';
 import VerseNode from './VerseNode.js';
 import ConnectionEdge from './ConnectionEdge.js';
@@ -29,6 +30,7 @@ interface VerseNetworkProps {
   onNetworkVersesChange: (verses: Set<string>) => void;
   connectionTypes: ConnectionTypeDef[];
   onAddCustomType: (type: ConnectionTypeDef) => void;
+  onHistoryChange?: (canUndo: boolean, canRedo: boolean) => void;
 }
 
 export interface VerseNetworkRef {
@@ -37,6 +39,8 @@ export interface VerseNetworkRef {
   getNetworkState: () => { nodes: Node[]; edges: Edge[] };
   loadNetwork: (nodes: Node[], edges: Edge[]) => void;
   removeEdgesByType?: (typeId: string) => void;
+  undo: () => void;
+  redo: () => void;
 }
 
 const nodeTypes: NodeTypes = {
@@ -92,6 +96,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       onNetworkVersesChange,
       connectionTypes,
       onAddCustomType,
+      onHistoryChange,
     },
     ref,
   ) => {
@@ -106,9 +111,89 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     const expandRef = useRef<(verseId: string) => void>(() => {});
     const { fitView } = useReactFlow();
 
+    // Mirror live state into refs so history snapshots avoid stale closures.
+    const nodesRef = useRef(nodes);
+    const allEdgesRef = useRef(allEdges);
+    const netRef = useRef(networkVerses);
+    useEffect(() => {
+      nodesRef.current = nodes;
+      allEdgesRef.current = allEdges;
+      netRef.current = networkVerses;
+    });
+
+    type Snapshot = { nodes: Node[]; edges: Edge[]; verses: string[] };
+    const historyRef = useRef<{ past: Snapshot[]; future: Snapshot[] }>({
+      past: [],
+      future: [],
+    });
+    const [canUndo, setCanUndo] = useState(false);
+    const [canRedo, setCanRedo] = useState(false);
+
+    const snapshot = useCallback(
+      (): Snapshot => ({
+        nodes: nodesRef.current,
+        edges: allEdgesRef.current,
+        verses: [...netRef.current],
+      }),
+      [],
+    );
+
+    // Record current state before a mutation so it can be undone.
+    const commit = useCallback(() => {
+      const h = historyRef.current;
+      h.past.push(snapshot());
+      if (h.past.length > 50) h.past.shift();
+      h.future = [];
+      setCanUndo(true);
+      setCanRedo(false);
+    }, [snapshot]);
+
+    const restore = useCallback(
+      (snap: Snapshot) => {
+        setNodes(snap.nodes);
+        setAllEdges(snap.edges);
+        setNetworkVerses(new Set(snap.verses));
+      },
+      [setNodes, setAllEdges],
+    );
+
+    const undo = useCallback(() => {
+      const h = historyRef.current;
+      if (h.past.length === 0) return;
+      h.future.push(snapshot());
+      restore(h.past.pop()!);
+      setCanUndo(h.past.length > 0);
+      setCanRedo(true);
+    }, [snapshot, restore]);
+
+    const redo = useCallback(() => {
+      const h = historyRef.current;
+      if (h.future.length === 0) return;
+      h.past.push(snapshot());
+      restore(h.future.pop()!);
+      setCanRedo(h.future.length > 0);
+      setCanUndo(true);
+    }, [snapshot, restore]);
+
     useEffect(() => {
       onNetworkVersesChange(networkVerses);
     }, [networkVerses, onNetworkVersesChange]);
+
+    useEffect(() => {
+      onHistoryChange?.(canUndo, canRedo);
+    }, [canUndo, canRedo, onHistoryChange]);
+
+    useEffect(() => {
+      const onKey = (e: KeyboardEvent) => {
+        if (!(e.metaKey || e.ctrlKey)) return;
+        if (e.key.toLowerCase() !== 'z') return;
+        e.preventDefault();
+        if (e.shiftKey) redo();
+        else undo();
+      };
+      window.addEventListener('keydown', onKey);
+      return () => window.removeEventListener('keydown', onKey);
+    }, [undo, redo]);
 
     const onConnect = useCallback((params: RFConnection) => {
       if (!params.source || !params.target) return;
@@ -129,6 +214,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         newType?: ConnectionTypeDef;
       }) => {
         if (!pendingConnection) return;
+        commit();
 
         if (newType) {
           onAddCustomType(newType);
@@ -153,7 +239,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         setAllEdges((eds) => [...eds, newEdge]);
         setPendingConnection(null);
       },
-      [pendingConnection, connectionTypes, onAddCustomType],
+      [pendingConnection, connectionTypes, onAddCustomType, commit],
     );
 
   const handleDragOver = useCallback((event: React.DragEvent) => {
@@ -163,6 +249,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
 
   const handleRemoveNode = useCallback(
     (verseId: string) => {
+      commit();
       setNodes((nds) => nds.filter((node) => node.id !== verseId));
       setAllEdges((eds) => eds.filter((edge) => edge.source !== verseId && edge.target !== verseId));
       setNetworkVerses((prev) => {
@@ -174,7 +261,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         onVerseSelect('');
       }
     },
-    [selectedVerseId, onVerseSelect, setNodes, setAllEdges],
+    [selectedVerseId, onVerseSelect, setNodes, setAllEdges, commit],
   );
 
   const handleNodesDelete = useCallback(
@@ -185,28 +272,53 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
   );
 
   const handleClearAll = useCallback(() => {
+    if (nodesRef.current.length === 0) return;
+    commit();
     setNodes([]);
     setAllEdges([]);
     setNetworkVerses(new Set());
     onVerseSelect('');
-  }, [setNodes, setAllEdges, onVerseSelect]);
+  }, [setNodes, setAllEdges, onVerseSelect, commit]);
 
   const handleAutoArrange = useCallback(() => {
+    commit();
     setNodes((nds) => {
-      const cols = Math.ceil(Math.sqrt(nds.length));
-      const horizontalSpacing = 550;
-      const verticalSpacing = 750;
+      if (nds.length === 0) return nds;
 
-      return nds.map((node, index) => {
-        const col = index % cols;
-        const row = Math.floor(index / cols);
+      const NODE_W = 380;
+      const NODE_H = 680;
+      // Extra breathing room so cards never crowd each other.
+      const GAP_X = 90;
+      const GAP_Y = 80;
 
+      const g = new dagre.graphlib.Graph();
+      g.setGraph({ rankdir: 'TB', nodesep: 140, ranksep: 200, marginx: 120, marginy: 120 });
+      g.setDefaultEdgeLabel(() => ({}));
+
+      nds.forEach((node) => {
+        // Pad measured size so dagre reserves space for the real card footprint.
+        g.setNode(node.id, {
+          width: (node.width || NODE_W) + GAP_X,
+          height: (node.height || NODE_H) + GAP_Y,
+        });
+      });
+
+      const ids = new Set(nds.map((n) => n.id));
+      allEdgesRef.current.forEach((e) => {
+        if (ids.has(e.source) && ids.has(e.target)) {
+          g.setEdge(e.source, e.target);
+        }
+      });
+
+      dagre.layout(g);
+
+      return nds.map((node) => {
+        const pos = g.node(node.id);
+        const w = node.width || NODE_W;
+        const h = node.height || NODE_H;
         return {
           ...node,
-          position: {
-            x: col * horizontalSpacing + 100,
-            y: row * verticalSpacing + 100,
-          },
+          position: { x: pos.x - w / 2, y: pos.y - h / 2 },
         };
       });
     });
@@ -214,7 +326,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     setTimeout(() => {
       fitView({ duration: 400, padding: 0.2 });
     }, 50);
-  }, [setNodes, fitView]);
+  }, [setNodes, fitView, commit]);
 
   const handleExpandNetwork = useCallback((verseId: string) => {
     const connectedVerseIds = connections
@@ -223,6 +335,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       .filter(id => !networkVerses.has(id));
 
     if (connectedVerseIds.length === 0) return;
+    commit();
 
     setNodes((currentNodes) => {
       const lastNode = currentNodes[currentNodes.length - 1];
@@ -276,7 +389,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     setTimeout(() => {
       fitView({ duration: 400, padding: 0.2 });
     }, 100);
-  }, [networkVerses, selectedVerseId, onVerseSelect, handleRemoveNode, setNodes, setAllEdges, fitView, connectionTypes]);
+  }, [networkVerses, selectedVerseId, onVerseSelect, handleRemoveNode, setNodes, setAllEdges, fitView, connectionTypes, commit]);
 
   useEffect(() => {
     expandRef.current = handleExpandNetwork;
@@ -291,6 +404,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
 
       const verse = verses.find(v => v.id === verseId);
       if (!verse) return;
+      commit();
 
       const reactFlowBounds = event.currentTarget.getBoundingClientRect();
       const position = {
@@ -334,15 +448,98 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         setAllEdges((eds) => [...eds, ...newEdges]);
       }
     },
-    [networkVerses, setNodes, setAllEdges, onVerseSelect, selectedVerseId, handleRemoveNode, connectionTypes],
+    [networkVerses, setNodes, setAllEdges, onVerseSelect, selectedVerseId, handleRemoveNode, connectionTypes, commit],
   );
+
+  // Add a batch of verses (used by starter buttons), wiring edges between
+  // any newly added verse and verses already (or also being) in the network.
+  const addVerses = useCallback(
+    (ids: string[]) => {
+      const toAdd = ids.filter(
+        (id) => !netRef.current.has(id) && verses.some((v) => v.id === id),
+      );
+      if (toAdd.length === 0) return;
+      commit();
+
+      const finalSet = new Set([...netRef.current, ...toAdd]);
+      const lastNode = nodesRef.current[nodesRef.current.length - 1];
+      const baseX = lastNode ? lastNode.position.x + 550 : 150;
+      const baseY = lastNode ? lastNode.position.y : 100;
+
+      const newNodes: Node[] = toAdd
+        .map((vId, i) => {
+          const verse = verses.find((v) => v.id === vId);
+          if (!verse) return null;
+          const connectedCount = connections
+            .filter((c) => c.from === vId || c.to === vId)
+            .map((c) => (c.from === vId ? c.to : c.from))
+            .filter((id) => !finalSet.has(id)).length;
+          return {
+            id: vId,
+            type: 'verseNode',
+            position: { x: baseX + (i % 3) * 550, y: baseY + Math.floor(i / 3) * 750 },
+            data: {
+              verse,
+              onSelect: () => onVerseSelect(vId),
+              onRemove: () => handleRemoveNode(vId),
+              onExpand: () => expandRef.current(vId),
+              isSelected: selectedVerseId === vId,
+              connectedCount,
+            },
+          } as Node;
+        })
+        .filter(Boolean) as Node[];
+
+      setNodes((nds) => [...nds, ...newNodes]);
+
+      const newEdges: Edge[] = [];
+      connections.forEach((conn) => {
+        const touchesNew = toAdd.includes(conn.from) || toAdd.includes(conn.to);
+        if (touchesNew && finalSet.has(conn.from) && finalSet.has(conn.to)) {
+          newEdges.push(buildEdge(conn, connectionTypes));
+        }
+      });
+      if (newEdges.length > 0) setAllEdges((eds) => [...eds, ...newEdges]);
+
+      setNetworkVerses(finalSet);
+      setTimeout(() => fitView({ duration: 400, padding: 0.2 }), 100);
+    },
+    [onVerseSelect, handleRemoveNode, selectedVerseId, connectionTypes, setNodes, setAllEdges, fitView, commit],
+  );
+
+  const handleAddRandom = useCallback(() => {
+    const available = verses.filter((v) => !netRef.current.has(v.id));
+    if (available.length === 0) return;
+    const pick = available[Math.floor(Math.random() * available.length)];
+    addVerses([pick.id]);
+  }, [addVerses]);
+
+  const handleAddStarterSet = useCallback(() => {
+    const counts = verses
+      .map((v) => ({
+        id: v.id,
+        n: connections.filter((c) => c.from === v.id || c.to === v.id).length,
+      }))
+      .sort((a, b) => b.n - a.n);
+    const hub = counts[0]?.id;
+    if (!hub) return;
+    const neighbors = Array.from(
+      new Set(
+        connections
+          .filter((c) => c.from === hub || c.to === hub)
+          .map((c) => (c.from === hub ? c.to : c.from)),
+      ),
+    ).slice(0, 5);
+    addVerses([hub, ...neighbors]);
+  }, [addVerses]);
 
   // Re-apply current registry styling, filter, and parallel-edge offsets
   // entirely in derived state so labels never overlap and color tweaks
   // propagate immediately.
   const handleDeleteEdge = useCallback((edgeId: string) => {
+    commit();
     setAllEdges((eds) => eds.filter((e) => e.id !== edgeId));
-  }, []);
+  }, [commit]);
 
   const filteredEdges = useMemo(() => {
     const enabled = allEdges.filter((edge) => {
@@ -443,6 +640,8 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     getNetworkState,
     loadNetwork,
     removeEdgesByType,
+    undo,
+    redo,
   }));
 
   return (
@@ -483,6 +682,14 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
             <li>Drag verses around to organize your network</li>
             <li>Drag from one verse handle to another to create a custom connection</li>
           </ul>
+          <div className="network-empty-state-actions">
+            <button className="starter-button primary" onClick={handleAddStarterSet}>
+              Add starter set
+            </button>
+            <button className="starter-button" onClick={handleAddRandom}>
+              Add random verse
+            </button>
+          </div>
         </div>
       )}
 
