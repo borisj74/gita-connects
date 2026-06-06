@@ -7,6 +7,21 @@ interface SearchBarProps {
   onVerseSelect: (verseId: string) => void;
 }
 
+// Bold the matched substring within a result string.
+function highlight(text: string, query: string) {
+  const q = query.trim();
+  if (!q) return text;
+  const idx = text.toLowerCase().indexOf(q.toLowerCase());
+  if (idx === -1) return text;
+  return (
+    <>
+      {text.slice(0, idx)}
+      <mark className="search-highlight">{text.slice(idx, idx + q.length)}</mark>
+      {text.slice(idx + q.length)}
+    </>
+  );
+}
+
 export default function SearchBar({ onVerseSelect }: SearchBarProps) {
   const [query, setQuery] = useState('');
   const [isFocused, setIsFocused] = useState(false);
@@ -79,14 +94,14 @@ export default function SearchBar({ onVerseSelect }: SearchBarProps) {
               style={{ animationDelay: `${index * 30}ms` }}
             >
               <div className="result-header">
-                <span className="result-id">{verse.id}</span>
+                <span className="result-id">{highlight(verse.id, query)}</span>
                 <span className="result-chapter">Ch. {verse.chapter}</span>
               </div>
-              <div className="result-theme">{verse.theme}</div>
+              <div className="result-theme">{highlight(verse.theme, query)}</div>
               <div className="result-concepts">
                 {verse.concepts.slice(0, 3).map(concept => (
                   <span key={concept} className="result-concept">
-                    {concept}
+                    {highlight(concept, query)}
                   </span>
                 ))}
               </div>

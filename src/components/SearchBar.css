@@ -163,3 +163,10 @@
   max-width: 300px;
   margin: 0 auto;
 }
+
+.search-highlight {
+  background: transparent;
+  color: var(--terracotta-600);
+  font-weight: 700;
+  padding: 0;
+}

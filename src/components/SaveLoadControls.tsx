@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, forwardRef, useImperativeHandle } from 'react';
 import { Save, FolderOpen, X, Trash2, Check, AlertTriangle } from 'lucide-react';
 import type { Node, Edge } from 'reactflow';
 import './SaveLoadControls.css';
@@ -20,11 +20,15 @@ interface SaveLoadControlsProps {
 
 const STORAGE_KEY = 'gita-connects-saved-networks';
 
-export default function SaveLoadControls({
+export interface SaveLoadControlsRef {
+  openSave: () => void;
+}
+
+const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(function SaveLoadControls({
   getNetworkState,
   selectedVerseId,
   onLoadNetwork,
-}: SaveLoadControlsProps) {
+}: SaveLoadControlsProps, ref) {
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [showLoadModal, setShowLoadModal] = useState(false);
   const [networkName, setNetworkName] = useState('');
@@ -43,6 +47,8 @@ export default function SaveLoadControls({
     setCurrentNetworkState(state);
     setShowSaveModal(true);
   };
+
+  useImperativeHandle(ref, () => ({ openSave: handleOpenSaveModal }));
 
   const handleSave = () => {
     setSaveError(null);
@@ -325,4 +331,6 @@ export default function SaveLoadControls({
       )}
     </>
   );
-}
+});
+
+export default SaveLoadControls;

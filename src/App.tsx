@@ -7,7 +7,7 @@ import VerseNetwork, { type VerseNetworkRef } from './components/VerseNetwork.js
 import VerseDetail from './components/VerseDetail.js';
 import SearchBar from './components/SearchBar.js';
 import ConnectionFilters from './components/ConnectionFilters.js';
-import SaveLoadControls from './components/SaveLoadControls.js';
+import SaveLoadControls, { type SaveLoadControlsRef } from './components/SaveLoadControls.js';
 import {
   PREDEFINED_CONNECTION_TYPES,
   loadCustomConnectionTypes,
@@ -32,6 +32,7 @@ function App() {
   const [networkVerses, setNetworkVerses] = useState<Set<string>>(new Set());
   const [history, setHistory] = useState({ canUndo: false, canRedo: false });
   const verseNetworkRef = useRef<VerseNetworkRef>(null);
+  const saveLoadRef = useRef<SaveLoadControlsRef>(null);
 
   // Persist custom types whenever they change.
   useEffect(() => {
@@ -40,11 +41,46 @@ function App() {
 
   const handleVerseSelect = (verseId: string) => {
     setSelectedVerseId(verseId);
+    verseNetworkRef.current?.focusNode?.(verseId);
   };
 
   const handleCloseDetail = () => {
     setSelectedVerseId(null);
   };
+
+  // Global keyboard shortcuts.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement | null)?.tagName;
+      const typing = tag === 'INPUT' || tag === 'TEXTAREA';
+
+      if (e.key === 'Escape') {
+        if (typing) {
+          (e.target as HTMLElement).blur();
+        } else if (selectedVerseId) {
+          setSelectedVerseId(null);
+        }
+        return;
+      }
+
+      // Cmd/Ctrl+S — save (works anywhere)
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        saveLoadRef.current?.openSave();
+        return;
+      }
+
+      if (typing) return;
+
+      // "/" — focus search
+      if (e.key === '/') {
+        e.preventDefault();
+        document.querySelector<HTMLInputElement>('.search-input')?.focus();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [selectedVerseId]);
 
   const handleToggleFilter = useCallback((type: string) => {
     setActiveFilters((prev) => {
@@ -175,6 +211,7 @@ function App() {
             </div>
             <div className="section-actions">
               <SaveLoadControls
+                ref={saveLoadRef}
                 getNetworkState={getNetworkState}
                 selectedVerseId={selectedVerseId}
                 onLoadNetwork={handleLoadNetwork}

@@ -41,6 +41,7 @@ export interface VerseNetworkRef {
   removeEdgesByType?: (typeId: string) => void;
   undo: () => void;
   redo: () => void;
+  focusNode: (verseId: string) => void;
 }
 
 const nodeTypes: NodeTypes = {
@@ -127,7 +128,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       target: string;
     } | null>(null);
     const expandRef = useRef<(verseId: string) => void>(() => {});
-    const { fitView } = useReactFlow();
+    const { fitView, setCenter } = useReactFlow();
 
     // Mirror live state into refs so history snapshots avoid stale closures.
     const nodesRef = useRef(nodes);
@@ -642,6 +643,21 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     }, 50);
   }, [setNodes, setAllEdges, onVerseSelect, fitView]);
 
+  // Pan + zoom the canvas to a node when it exists in the network.
+  const focusNode = useCallback(
+    (verseId: string) => {
+      const node = nodesRef.current.find((n) => n.id === verseId);
+      if (!node) return;
+      const w = node.width || 380;
+      const h = node.height || 680;
+      setCenter(node.position.x + w / 2, node.position.y + h / 2, {
+        zoom: 0.85,
+        duration: 600,
+      });
+    },
+    [setCenter],
+  );
+
   const removeEdgesByType = useCallback((typeId: string) => {
     setAllEdges((eds) =>
       eds.filter((edge) => {
@@ -659,6 +675,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     removeEdgesByType,
     undo,
     redo,
+    focusNode,
   }));
 
   return (
