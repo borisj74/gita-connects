@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { BaseEdge, EdgeLabelRenderer, getSmoothStepPath, type EdgeProps } from 'reactflow';
 import { Scissors } from 'lucide-react';
 import './ConnectionEdge.css';
@@ -39,20 +40,33 @@ export default function ConnectionEdge({
 
   const borderColor = (data?.color as string | undefined) ?? 'rgb(177, 93, 67)';
 
+  // Scissors shows when the connection line is hovered (not the chip).
+  const [lineHover, setLineHover] = useState(false);
+  const [zoneHover, setZoneHover] = useState(false);
+  const showDelete = lineHover || zoneHover;
+
   return (
     <>
-      <BaseEdge
-        id={id}
-        path={edgePath}
-        style={style}
-        markerEnd={markerEnd}
+      <BaseEdge id={id} path={edgePath} style={style} markerEnd={markerEnd} />
+
+      {/* Wide invisible hit area so hovering anywhere on the line works. */}
+      <path
+        d={edgePath}
+        fill="none"
+        stroke="transparent"
+        strokeWidth={26}
+        style={{ cursor: 'pointer' }}
+        onMouseEnter={() => setLineHover(true)}
+        onMouseLeave={() => setLineHover(false)}
       />
+
       <EdgeLabelRenderer>
+        {/* Chip — always visible, sits on the line, does not trigger scissors. */}
         <div
           style={{
             position: 'absolute',
             transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
-            pointerEvents: 'all',
+            pointerEvents: 'none',
           }}
           className="edge-label-wrapper"
         >
@@ -60,14 +74,23 @@ export default function ConnectionEdge({
             className="edge-label"
             style={{ borderColor, color: borderColor, transform: `translateY(${labelOffset}px)` }}
           >
-            <span
-              className="edge-label-dot"
-              style={{ background: borderColor }}
-            />
+            <span className="edge-label-dot" style={{ background: borderColor }} />
             {label}
           </div>
+        </div>
 
-          {typeof data?.onDelete === 'function' && (
+        {/* Scissors zone — appears on line hover, offset well above the chip. */}
+        {typeof data?.onDelete === 'function' && (
+          <div
+            className="edge-delete-zone"
+            style={{
+              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
+              opacity: showDelete ? 1 : 0,
+              pointerEvents: showDelete ? 'auto' : 'none',
+            }}
+            onMouseEnter={() => setZoneHover(true)}
+            onMouseLeave={() => setZoneHover(false)}
+          >
             <button
               className="edge-delete-btn"
               style={{ borderColor, color: borderColor }}
@@ -79,9 +102,8 @@ export default function ConnectionEdge({
             >
               <Scissors size={14} strokeWidth={2} />
             </button>
-          )}
-
-        </div>
+          </div>
+        )}
       </EdgeLabelRenderer>
     </>
   );
