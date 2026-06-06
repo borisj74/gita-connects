@@ -55,6 +55,24 @@ function pairKey(a: string, b: string): string {
   return [a, b].sort().join('::');
 }
 
+// Grid spacing for manually placed nodes (expand / drop / starter).
+// Cards are ~380 wide and can run tall, so leave generous gaps.
+const COL_SPACING = 650;
+const ROW_SPACING = 880;
+
+// Place a new batch to the right of all existing nodes so cards never
+// stack on top of the current graph, however many are already present.
+function nextPlacementOrigin(nodes: Node[]): { x: number; y: number } {
+  if (nodes.length === 0) return { x: 150, y: 120 };
+  let maxRight = -Infinity;
+  let minTop = Infinity;
+  nodes.forEach((n) => {
+    maxRight = Math.max(maxRight, n.position.x + (n.width || 380));
+    minTop = Math.min(minTop, n.position.y);
+  });
+  return { x: maxRight + 120, y: minTop };
+}
+
 function buildEdge(
   conn: { from: string; to: string; type: string; description: string; strength: number },
   connectionTypes: ConnectionTypeDef[],
@@ -338,9 +356,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     commit();
 
     setNodes((currentNodes) => {
-      const lastNode = currentNodes[currentNodes.length - 1];
-      const startX = lastNode ? lastNode.position.x + 550 : 200;
-      const startY = lastNode ? lastNode.position.y : 100;
+      const origin = nextPlacementOrigin(currentNodes);
 
       const newNodes: Node[] = connectedVerseIds.map((vId, index) => {
         const verse = verses.find(v => v.id === vId);
@@ -355,8 +371,8 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
           id: vId,
           type: 'verseNode',
           position: {
-            x: startX + (index % 3) * 550,
-            y: startY + Math.floor(index / 3) * 750,
+            x: origin.x + (index % 3) * COL_SPACING,
+            y: origin.y + Math.floor(index / 3) * ROW_SPACING,
           },
           data: {
             verse,
@@ -462,9 +478,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       commit();
 
       const finalSet = new Set([...netRef.current, ...toAdd]);
-      const lastNode = nodesRef.current[nodesRef.current.length - 1];
-      const baseX = lastNode ? lastNode.position.x + 550 : 150;
-      const baseY = lastNode ? lastNode.position.y : 100;
+      const origin = nextPlacementOrigin(nodesRef.current);
 
       const newNodes: Node[] = toAdd
         .map((vId, i) => {
@@ -477,7 +491,10 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
           return {
             id: vId,
             type: 'verseNode',
-            position: { x: baseX + (i % 3) * 550, y: baseY + Math.floor(i / 3) * 750 },
+            position: {
+              x: origin.x + (i % 3) * COL_SPACING,
+              y: origin.y + Math.floor(i / 3) * ROW_SPACING,
+            },
             data: {
               verse,
               onSelect: () => onVerseSelect(vId),
