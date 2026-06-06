@@ -570,18 +570,21 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       return activeFilters.has(typeId);
     });
 
-    const groups = new Map<string, Edge[]>();
+    // Collapse to one chip per node-pair: when a pair carries several
+    // connection types, keep only the strongest so the canvas never shows
+    // stacked chips between the same two verses.
+    const strongestByPair = new Map<string, Edge>();
     enabled.forEach((e) => {
       const key = pairKey(e.source, e.target);
-      const list = groups.get(key) ?? [];
-      list.push(e);
-      groups.set(key, list);
+      const current = strongestByPair.get(key);
+      const strength = (e.data?.strength as number | undefined) ?? 0;
+      const currentStrength = (current?.data?.strength as number | undefined) ?? -1;
+      if (!current || strength > currentStrength) {
+        strongestByPair.set(key, e);
+      }
     });
 
-    return enabled.map((edge) => {
-      const key = pairKey(edge.source, edge.target);
-      const group = groups.get(key) ?? [edge];
-      const index = group.indexOf(edge);
+    return [...strongestByPair.values()].map((edge) => {
       const typeId = (edge.data?.typeId as string | undefined) ?? (edge.label as string);
       const color = getTypeColor(connectionTypes, typeId);
       const label = getTypeLabel(connectionTypes, typeId);
@@ -593,8 +596,8 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         data: {
           ...edge.data,
           color,
-          parallelIndex: index,
-          parallelTotal: group.length,
+          parallelIndex: 0,
+          parallelTotal: 1,
           onDelete: handleDeleteEdge,
         },
       };
