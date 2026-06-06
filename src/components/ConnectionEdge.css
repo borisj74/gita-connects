@@ -3,20 +3,11 @@
   position: relative;
 }
 
-/* Hover zone for the scissors: a tall strip above the line that bridges
-   from the line up to the (well-spaced) scissors button. */
-.edge-delete-zone {
-  position: absolute;
-  width: 60px;
-  height: 110px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  transition: opacity var(--transition-base);
-  z-index: 1002;
-}
-
 .edge-delete-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
   width: 28px;
   height: 28px;
   border-radius: 50%;
@@ -27,24 +18,37 @@
   justify-content: center;
   cursor: pointer;
   padding: 0;
-  transition: transform var(--transition-base), background var(--transition-base);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-base), transform var(--transition-base), background var(--transition-base);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  z-index: 1002;
+}
+
+.edge-label-wrapper:hover .edge-delete-btn {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
 }
 
 .edge-delete-btn:hover {
   background: currentColor;
-  transform: scale(1.1);
+  transform: translate(-50%, -50%) scale(1.1);
 }
 
 .edge-delete-btn:hover svg {
   color: white;
 }
 
+.edge-label-wrapper:hover .edge-label {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .edge-label {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  pointer-events: auto;
   background: white;
   padding: 0.3rem 0.65rem;
   border-radius: 999px;
