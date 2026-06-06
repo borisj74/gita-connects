@@ -162,6 +162,12 @@
   gap: 0.75rem;
 }
 
+.actions-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .header-controls {
   display: flex;
   align-items: center;
