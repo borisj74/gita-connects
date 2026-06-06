@@ -552,7 +552,9 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       ),
     ).slice(0, 5);
     addVerses([hub, ...neighbors]);
-  }, [addVerses]);
+    // Auto-arrange once the new nodes have mounted.
+    setTimeout(() => handleAutoArrange(), 120);
+  }, [addVerses, handleAutoArrange]);
 
   // Re-apply current registry styling, filter, and parallel-edge offsets
   // entirely in derived state so labels never overlap and color tweaks
