@@ -51,14 +51,14 @@ export default function ConnectionEdge({
         <div
           style={{
             position: 'absolute',
-            transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY + labelOffset}px)`,
+            transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
             pointerEvents: 'all',
           }}
           className="edge-label-wrapper"
         >
           <div
             className="edge-label"
-            style={{ borderColor, color: borderColor }}
+            style={{ borderColor, color: borderColor, transform: `translateY(${labelOffset}px)` }}
           >
             <span
               className="edge-label-dot"
