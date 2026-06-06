@@ -38,7 +38,6 @@
 .type-chip.selected {
   border-color: rgb(177, 93, 67);
   background: rgba(202, 117, 88, 0.1);
-  font-weight: 600;
 }
 
 .type-chip-color {
