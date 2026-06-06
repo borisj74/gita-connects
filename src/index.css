@@ -333,3 +333,40 @@ p, li, dd {
   background: var(--beige-100);
   color: var(--brown-900);
 }
+
+/* Dark mode: buttons/sidebar that used !important or literal light bg */
+[data-theme="dark"] .icon-button {
+  background: var(--beige-50) !important;
+  color: var(--brown-700) !important;
+  border-color: var(--beige-300) !important;
+}
+
+[data-theme="dark"] .control-button {
+  background: var(--beige-50);
+  color: var(--brown-700);
+  border-color: var(--beige-300);
+}
+
+[data-theme="dark"] .control-button:hover:not(:disabled) {
+  background: var(--beige-200);
+}
+
+[data-theme="dark"] .chapter-sidebar {
+  background: var(--beige-50);
+}
+
+[data-theme="dark"] .verse-item {
+  background: var(--beige-100);
+}
+
+[data-theme="dark"] .verse-item:hover {
+  background: var(--beige-200);
+}
+
+[data-theme="dark"] .verse-theme {
+  color: var(--brown-800);
+}
+
+[data-theme="dark"] .verse-item.selected {
+  background: var(--beige-200);
+}
