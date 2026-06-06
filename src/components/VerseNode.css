@@ -1,6 +1,6 @@
 .verse-node {
   background: white;
-  border: 0.7px solid rgb(177, 93, 67);
+  border: 1px solid rgba(177, 93, 67, 0.25);
   border-radius: 16px;
   padding: 1.25rem;
   min-width: 340px;

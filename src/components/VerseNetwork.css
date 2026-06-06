@@ -293,7 +293,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   background: white;
-  border: 0.7px solid rgb(177, 93, 67);
+  border: 1px solid rgba(177, 93, 67, 0.25);
   border-radius: 16px;
   padding: 2rem;
   width: 400px;
