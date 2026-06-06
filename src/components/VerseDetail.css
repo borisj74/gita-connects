@@ -1,12 +1,16 @@
 .verse-detail {
   width: var(--detail-width);
-  height: 100%;
   background: var(--beige-50);
   border-left: 1px solid var(--beige-300);
   overflow-y: auto;
   overflow-x: hidden;
-  box-shadow: var(--shadow-sm);
-  position: relative;
+  box-shadow: var(--shadow-lg);
+  /* Overlay the canvas instead of resizing it, so the toolbar stays put. */
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--z-fixed);
 }
 
 .verse-detail::before {
