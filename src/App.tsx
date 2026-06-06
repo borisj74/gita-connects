@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ReactFlowProvider } from 'reactflow';
 import type { Node, Edge } from 'reactflow';
-import { ChevronLeft, ChevronRight, Undo2, Redo2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Undo2, Redo2, Moon, Sun } from 'lucide-react';
 import ChapterSidebar from './components/ChapterSidebar.js';
 import VerseNetwork, { type VerseNetworkRef } from './components/VerseNetwork.js';
 import VerseDetail from './components/VerseDetail.js';
@@ -33,6 +33,9 @@ function App() {
   );
   const [networkVerses, setNetworkVerses] = useState<Set<string>>(new Set());
   const [history, setHistory] = useState({ canUndo: false, canRedo: false });
+  const [theme, setTheme] = useState<'light' | 'dark'>(
+    () => (localStorage.getItem('gita-connects-theme') as 'light' | 'dark') || 'light',
+  );
   const verseNetworkRef = useRef<VerseNetworkRef>(null);
   const saveLoadRef = useRef<SaveLoadControlsRef>(null);
 
@@ -45,6 +48,12 @@ function App() {
   useEffect(() => {
     saveActiveFilters(activeFilters);
   }, [activeFilters]);
+
+  // Apply + persist theme.
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem('gita-connects-theme', theme);
+  }, [theme]);
 
   const handleVerseSelect = (verseId: string) => {
     setSelectedVerseId(verseId);
@@ -165,6 +174,14 @@ function App() {
             <p className="app-subtitle">Verse Explorer</p>
           </div>
           <div className="header-controls">
+            <button
+              className="theme-toggle"
+              onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
+              aria-label="Toggle dark mode"
+              title="Toggle dark mode"
+            >
+              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
             <SearchBar onVerseSelect={handleVerseSelect} />
             <ConnectionFilters
               connectionTypes={connectionTypes}

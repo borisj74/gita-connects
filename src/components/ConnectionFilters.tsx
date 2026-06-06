@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { ChevronDown, Trash2 } from 'lucide-react';
 import type { ConnectionTypeDef } from '../connectionTypes.js';
+import { connections } from '../data.js';
 import './ConnectionFilters.css';
 
 interface ConnectionFiltersProps {
@@ -32,6 +33,13 @@ export default function ConnectionFilters({
 
   const activeCount = activeFilters.size;
 
+  // Count connections per type from the base dataset.
+  const countsByType = useMemo(() => {
+    const m = new Map<string, number>();
+    connections.forEach((c) => m.set(c.type, (m.get(c.type) ?? 0) + 1));
+    return m;
+  }, []);
+
   return (
     <div className="connection-filters" ref={dropdownRef}>
       <button
@@ -54,6 +62,7 @@ export default function ConnectionFilters({
               />
               <span className="filter-color" style={{ background: color }} />
               <span className="filter-text">{label}</span>
+              <span className="filter-count">{countsByType.get(id) ?? 0}</span>
               {isCustom && onRemoveCustomType && (
                 <button
                   type="button"

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Plus } from 'lucide-react';
+import { X, Plus, ChevronDown } from 'lucide-react';
 import type { ConnectionTypeDef } from '../connectionTypes.js';
 import { makeCustomTypeId } from '../connectionTypes.js';
 import './ConnectionDialog.css';
@@ -36,6 +36,7 @@ export default function ConnectionDialog({
   const [description, setDescription] = useState('');
   const [strength, setStrength] = useState(5);
   const [showCustomForm, setShowCustomForm] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const [customLabel, setCustomLabel] = useState('');
   const [customColor, setCustomColor] = useState(DEFAULT_COLOR_PALETTE[0]);
   const [error, setError] = useState<string | null>(null);
@@ -164,27 +165,40 @@ export default function ConnectionDialog({
             </>
           )}
 
-          <label className="dialog-label">Description (optional)</label>
-          <input
-            type="text"
-            className="dialog-input"
-            placeholder="What does this connection represent?"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            maxLength={140}
-          />
+          <button
+            type="button"
+            className="dialog-details-toggle"
+            onClick={() => setShowDetails((v) => !v)}
+          >
+            <ChevronDown size={14} className={`chevron ${showDetails ? 'open' : ''}`} />
+            {showDetails ? 'Hide details' : 'Add details (optional)'}
+          </button>
 
-          <label className="dialog-label">
-            Strength: <strong>{strength}</strong>/10
-          </label>
-          <input
-            type="range"
-            min={1}
-            max={10}
-            value={strength}
-            onChange={(e) => setStrength(Number(e.target.value))}
-            className="dialog-range"
-          />
+          {showDetails && (
+            <>
+              <label className="dialog-label">Description</label>
+              <input
+                type="text"
+                className="dialog-input"
+                placeholder="What does this connection represent?"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                maxLength={140}
+              />
+
+              <label className="dialog-label">
+                Strength: <strong>{strength}</strong>/10
+              </label>
+              <input
+                type="range"
+                min={1}
+                max={10}
+                value={strength}
+                onChange={(e) => setStrength(Number(e.target.value))}
+                className="dialog-range"
+              />
+            </>
+          )}
 
           {error && <div className="dialog-error">{error}</div>}
         </div>

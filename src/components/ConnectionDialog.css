@@ -122,3 +122,30 @@
   border-radius: 6px;
   font-size: 0.8125rem;
 }
+
+.dialog-details-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--brown-600);
+  padding: 0.25rem 0;
+}
+
+.dialog-details-toggle:hover {
+  color: var(--brown-900);
+}
+
+.dialog-details-toggle .chevron {
+  transition: transform var(--transition-base);
+}
+
+.dialog-details-toggle .chevron.open {
+  transform: rotate(180deg);
+}

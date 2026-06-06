@@ -249,3 +249,87 @@ p, li, dd {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ============ Dark Mode ============ */
+[data-theme="dark"] {
+  --beige-50: #211d19;
+  --beige-100: #18150f;
+  --beige-200: #2a2620;
+  --beige-300: #3a342d;
+  --beige-400: #4a4339;
+
+  --brown-100: #2a2620;
+  --brown-200: #34302a;
+  --brown-600: #a99e8f;
+  --brown-700: #c2b8a9;
+  --brown-800: #d8cfc3;
+  --brown-900: #ece6dd;
+
+  --sage-100: #2c322a;
+  --sage-200: #38402f;
+}
+
+[data-theme="dark"] body {
+  background: var(--beige-100);
+  color: var(--brown-900);
+}
+
+/* Light literal surfaces -> dark card surface */
+[data-theme="dark"] .sidebar-wrapper,
+[data-theme="dark"] .app-header,
+[data-theme="dark"] .section-header,
+[data-theme="dark"] .sidebar-expand-fab,
+[data-theme="dark"] .filters-button,
+[data-theme="dark"] .filters-dropdown,
+[data-theme="dark"] .search-bar,
+[data-theme="dark"] .search-results,
+[data-theme="dark"] .controls,
+[data-theme="dark"] .modal-content,
+[data-theme="dark"] .network-empty-state,
+[data-theme="dark"] .verse-node,
+[data-theme="dark"] .react-flow__controls-button,
+[data-theme="dark"] .icon-button,
+[data-theme="dark"] .starter-button {
+  background: var(--beige-50);
+  color: var(--brown-900);
+}
+
+/* Canvas + page backgrounds */
+[data-theme="dark"] .main-content,
+[data-theme="dark"] .verse-network,
+[data-theme="dark"] .react-flow__background {
+  background: var(--beige-100);
+}
+
+/* Inner panels that used white */
+[data-theme="dark"] .sanskrit-text.large,
+[data-theme="dark"] .translation-text {
+  background: var(--beige-100);
+}
+
+/* Node text (hardcoded grays) */
+[data-theme="dark"] .node-sanskrit {
+  color: var(--brown-900);
+}
+[data-theme="dark"] .node-translation,
+[data-theme="dark"] .node-transliteration,
+[data-theme="dark"] .node-theme {
+  color: var(--brown-700);
+}
+[data-theme="dark"] .node-verse-id {
+  background: var(--beige-300);
+  color: var(--brown-900);
+}
+
+/* Edge labels */
+[data-theme="dark"] .edge-label {
+  background: var(--beige-50);
+}
+
+/* Inputs */
+[data-theme="dark"] .dialog-input,
+[data-theme="dark"] .network-name-input,
+[data-theme="dark"] .search-input {
+  background: var(--beige-100);
+  color: var(--brown-900);
+}
