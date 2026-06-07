@@ -189,12 +189,6 @@ function App() {
           </div>
           <div className="header-controls">
             <SearchBar onVerseSelect={handleVerseSelect} />
-            <ConnectionFilters
-              connectionTypes={connectionTypes}
-              activeFilters={activeFilters}
-              onToggleFilter={handleToggleFilter}
-              onRemoveCustomType={handleRemoveCustomType}
-            />
             <button
               className="theme-toggle"
               onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
@@ -273,6 +267,12 @@ function App() {
                 >
                   <Redo2 size={16} />
                 </button>
+                <ConnectionFilters
+                  connectionTypes={connectionTypes}
+                  activeFilters={activeFilters}
+                  onToggleFilter={handleToggleFilter}
+                  onRemoveCustomType={handleRemoveCustomType}
+                />
                 <button className="action-button arrange-button" onClick={handleAutoArrange}>
                   Auto Arrange
                 </button>
