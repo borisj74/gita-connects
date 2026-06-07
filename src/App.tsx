@@ -197,14 +197,6 @@ function App() {
               {sidebarOpen ? <PanelRightOpen size={18} /> : <PanelLeftOpen size={18} />}
             </button>
             <SearchBar onVerseSelect={handleVerseSelect} />
-            <button
-              className="theme-toggle"
-              onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
-              aria-label="Toggle dark mode"
-              title="Toggle dark mode"
-            >
-              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
 
             {/* Mobile: collapse all actions into a hamburger menu */}
             <div className="mobile-actions" ref={mobileMenuRef}>
@@ -370,6 +362,8 @@ function App() {
                 connectionTypes={connectionTypes}
                 onAddCustomType={handleAddCustomType}
                 onHistoryChange={handleHistoryChange}
+                theme={theme}
+                onToggleTheme={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
               />
             </ReactFlowProvider>
           </div>

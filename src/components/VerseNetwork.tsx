@@ -5,6 +5,7 @@ import ReactFlow, {
   Controls,
   Background,
   MarkerType,
+  ControlButton,
   useReactFlow,
   type Node,
   type Edge,
@@ -13,6 +14,7 @@ import ReactFlow, {
   type EdgeTypes,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
+import { Moon, Sun } from 'lucide-react';
 import dagre from 'dagre';
 import { verses, connections } from '../data.js';
 import VerseNode from './VerseNode.js';
@@ -31,6 +33,8 @@ interface VerseNetworkProps {
   connectionTypes: ConnectionTypeDef[];
   onAddCustomType: (type: ConnectionTypeDef) => void;
   onHistoryChange?: (canUndo: boolean, canRedo: boolean) => void;
+  theme?: 'light' | 'dark';
+  onToggleTheme?: () => void;
 }
 
 export interface VerseNetworkRef {
@@ -117,6 +121,8 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       connectionTypes,
       onAddCustomType,
       onHistoryChange,
+      theme,
+      onToggleTheme,
     },
     ref,
   ) => {
@@ -709,7 +715,17 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
       >
         <Background color="#FBF8F4" gap={20} />
-        <Controls className="controls" />
+        <Controls className="controls">
+          {onToggleTheme && (
+            <ControlButton
+              onClick={onToggleTheme}
+              title="Toggle dark mode"
+              aria-label="Toggle dark mode"
+            >
+              {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+            </ControlButton>
+          )}
+        </Controls>
       </ReactFlow>
 
       {nodes.length === 0 && (
