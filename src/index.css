@@ -372,3 +372,11 @@ p, li, dd {
 [data-theme="dark"] .verse-item.selected {
   background: var(--beige-200);
 }
+
+/* Concept chips: soften the bright orange for the dark palette */
+[data-theme="dark"] .concept-tag,
+[data-theme="dark"] .node-concept {
+  background: rgba(202, 117, 88, 0.18);
+  color: rgb(224, 160, 135);
+  border: 1px solid rgba(202, 117, 88, 0.4);
+}
