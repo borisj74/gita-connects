@@ -241,12 +241,28 @@
     display: none;
   }
 
-  .section-actions .mobile-actions {
+  /* Toolbar lives entirely in the hamburger on mobile */
+  .main-content > .section-header {
+    display: none;
+  }
+
+  .header-controls .mobile-actions {
     display: block;
   }
 
+  /* Mobile header row: [sidebar toggle] [search] [hamburger] */
+  .header-controls .header-sidebar-toggle {
+    display: flex;
+  }
+
   .header-controls {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+  }
+
+  .header-controls .search-container {
+    flex: 1;
+    min-width: 0;
   }
 
   .network-empty-state {
@@ -277,6 +293,11 @@
     flex-direction: column;
     margin-top: 1rem;
   }
+}
+
+/* Header sidebar toggle is mobile-only (shown via media query) */
+.header-sidebar-toggle {
+  display: none;
 }
 
 .theme-toggle {

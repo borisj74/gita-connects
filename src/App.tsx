@@ -188,6 +188,14 @@ function App() {
             <p className="app-subtitle">Verse Explorer</p>
           </div>
           <div className="header-controls">
+            <button
+              className="sidebar-toggle header-sidebar-toggle"
+              onClick={() => setSidebarOpen((v) => !v)}
+              title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+              aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+            >
+              {sidebarOpen ? <PanelRightOpen size={18} /> : <PanelLeftOpen size={18} />}
+            </button>
             <SearchBar onVerseSelect={handleVerseSelect} />
             <button
               className="theme-toggle"
@@ -197,6 +205,77 @@ function App() {
             >
               {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             </button>
+
+            {/* Mobile: collapse all actions into a hamburger menu */}
+            <div className="mobile-actions" ref={mobileMenuRef}>
+              <button
+                className="hamburger-button"
+                onClick={() => setMobileMenuOpen((v) => !v)}
+                aria-label="Actions menu"
+                aria-expanded={mobileMenuOpen}
+              >
+                <Menu size={20} />
+              </button>
+              {mobileMenuOpen && (
+                <div className="mobile-actions-menu">
+                  <div className="mobile-menu-filters">
+                    <ConnectionFilters
+                      connectionTypes={connectionTypes}
+                      activeFilters={activeFilters}
+                      onToggleFilter={handleToggleFilter}
+                      onRemoveCustomType={handleRemoveCustomType}
+                    />
+                  </div>
+                  <button
+                    className="mobile-menu-item"
+                    onClick={() => {
+                      setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
+                    }}
+                  >
+                    {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+                    {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+                  </button>
+                  <button
+                    className="mobile-menu-item"
+                    onClick={() => { saveLoadRef.current?.openSave(); setMobileMenuOpen(false); }}
+                  >
+                    <Save size={16} /> Save
+                  </button>
+                  <button
+                    className="mobile-menu-item"
+                    onClick={() => { saveLoadRef.current?.openLoad(); setMobileMenuOpen(false); }}
+                  >
+                    <FolderOpen size={16} /> Load
+                  </button>
+                  <button
+                    className="mobile-menu-item"
+                    onClick={() => { handleUndo(); }}
+                    disabled={!history.canUndo}
+                  >
+                    <Undo2 size={16} /> Undo
+                  </button>
+                  <button
+                    className="mobile-menu-item"
+                    onClick={() => { handleRedo(); }}
+                    disabled={!history.canRedo}
+                  >
+                    <Redo2 size={16} /> Redo
+                  </button>
+                  <button
+                    className="mobile-menu-item"
+                    onClick={() => { handleAutoArrange(); setMobileMenuOpen(false); }}
+                  >
+                    <LayoutGrid size={16} /> Auto Arrange
+                  </button>
+                  <button
+                    className="mobile-menu-item danger"
+                    onClick={() => { handleClearAll(); setMobileMenuOpen(false); }}
+                  >
+                    <Trash2 size={16} /> Clear All
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -277,76 +356,6 @@ function App() {
                 </button>
               </div>
 
-              {/* Mobile: collapse all actions into a hamburger menu */}
-              <div className="mobile-actions" ref={mobileMenuRef}>
-                <button
-                  className="hamburger-button"
-                  onClick={() => setMobileMenuOpen((v) => !v)}
-                  aria-label="Actions menu"
-                  aria-expanded={mobileMenuOpen}
-                >
-                  <Menu size={20} />
-                </button>
-                {mobileMenuOpen && (
-                  <div className="mobile-actions-menu">
-                    <div className="mobile-menu-filters">
-                      <ConnectionFilters
-                        connectionTypes={connectionTypes}
-                        activeFilters={activeFilters}
-                        onToggleFilter={handleToggleFilter}
-                        onRemoveCustomType={handleRemoveCustomType}
-                      />
-                    </div>
-                    <button
-                      className="mobile-menu-item"
-                      onClick={() => {
-                        setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
-                      }}
-                    >
-                      {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-                      {theme === 'dark' ? 'Light mode' : 'Dark mode'}
-                    </button>
-                    <button
-                      className="mobile-menu-item"
-                      onClick={() => { saveLoadRef.current?.openSave(); setMobileMenuOpen(false); }}
-                    >
-                      <Save size={16} /> Save
-                    </button>
-                    <button
-                      className="mobile-menu-item"
-                      onClick={() => { saveLoadRef.current?.openLoad(); setMobileMenuOpen(false); }}
-                    >
-                      <FolderOpen size={16} /> Load
-                    </button>
-                    <button
-                      className="mobile-menu-item"
-                      onClick={() => { handleUndo(); }}
-                      disabled={!history.canUndo}
-                    >
-                      <Undo2 size={16} /> Undo
-                    </button>
-                    <button
-                      className="mobile-menu-item"
-                      onClick={() => { handleRedo(); }}
-                      disabled={!history.canRedo}
-                    >
-                      <Redo2 size={16} /> Redo
-                    </button>
-                    <button
-                      className="mobile-menu-item"
-                      onClick={() => { handleAutoArrange(); setMobileMenuOpen(false); }}
-                    >
-                      <LayoutGrid size={16} /> Auto Arrange
-                    </button>
-                    <button
-                      className="mobile-menu-item danger"
-                      onClick={() => { handleClearAll(); setMobileMenuOpen(false); }}
-                    >
-                      <Trash2 size={16} /> Clear All
-                    </button>
-                  </div>
-                )}
-              </div>
             </div>
           </div>
           <div className="network-container">
