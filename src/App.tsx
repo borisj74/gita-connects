@@ -237,10 +237,6 @@ function App() {
                 <PanelLeftOpen size={18} />
               </button>
             )}
-            <div className="section-info">
-              <h2 className="section-title">Connection Network</h2>
-              <p className="section-subtitle">Ready to explore</p>
-            </div>
             <div className="section-actions">
               <SaveLoadControls
                 ref={saveLoadRef}
