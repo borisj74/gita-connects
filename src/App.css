@@ -30,24 +30,27 @@
 }
 
 .sidebar-toggle {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid var(--beige-300);
+  background: white;
+  color: var(--brown-700);
   cursor: pointer;
-  color: var(--brown-600);
-  padding: 0.25rem 0.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
   transition: all var(--transition-base);
-  width: 32px;
-  height: 32px;
+  flex-shrink: 0;
 }
 
 .sidebar-toggle:hover {
   background: var(--beige-100);
   color: var(--brown-900);
+}
+
+[data-theme="dark"] .sidebar-toggle {
+  background: var(--beige-50);
 }
 
 .sidebar-expand-inline {
