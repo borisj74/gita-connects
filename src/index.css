@@ -380,3 +380,20 @@ p, li, dd {
   color: rgb(224, 160, 135);
   border: 1px solid rgba(202, 117, 88, 0.4);
 }
+
+/* Connection dialog: chips + inputs used white backgrounds */
+[data-theme="dark"] .type-chip,
+[data-theme="dark"] .dialog-input {
+  background: var(--beige-100);
+  color: var(--brown-800);
+  border-color: var(--beige-300);
+}
+
+[data-theme="dark"] .type-chip:hover {
+  background: var(--beige-200);
+}
+
+[data-theme="dark"] .type-chip.selected {
+  background: rgba(202, 117, 88, 0.2);
+  border-color: rgb(202, 117, 88);
+}
