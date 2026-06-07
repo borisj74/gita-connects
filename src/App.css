@@ -156,6 +156,20 @@
   flex-shrink: 0;
 }
 
+/* Desktop: center the search bar across the header */
+@media (min-width: 769px) {
+  .app-header .header-content {
+    position: relative;
+  }
+
+  .header-controls .search-container {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
 .network-container {
   flex: 1;
   overflow: hidden;
