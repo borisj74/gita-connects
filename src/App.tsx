@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ReactFlowProvider } from 'reactflow';
 import type { Node, Edge } from 'reactflow';
-import { ChevronLeft, ChevronRight, Undo2, Redo2, Moon, Sun, Menu, Save, FolderOpen, LayoutGrid, Trash2 } from 'lucide-react';
+import { PanelLeftOpen, PanelRightOpen, Undo2, Redo2, Moon, Sun, Menu, Save, FolderOpen, LayoutGrid, Trash2 } from 'lucide-react';
 import ChapterSidebar from './components/ChapterSidebar.js';
 import VerseNetwork, { type VerseNetworkRef } from './components/VerseNetwork.js';
 import VerseDetail from './components/VerseDetail.js';
@@ -220,7 +220,7 @@ function App() {
               title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
               aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
             >
-              {sidebarOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
+              <PanelRightOpen size={18} />
             </button>
           </div>
           {sidebarOpen && (
@@ -232,17 +232,17 @@ function App() {
         </div>
 
         <div className="main-content">
-          {!sidebarOpen && (
-            <button
-              className="sidebar-expand-fab"
-              onClick={() => setSidebarOpen(true)}
-              title="Expand sidebar"
-              aria-label="Expand sidebar"
-            >
-              <ChevronRight size={18} />
-            </button>
-          )}
           <div className="section-header">
+            {!sidebarOpen && (
+              <button
+                className="sidebar-toggle sidebar-expand-inline"
+                onClick={() => setSidebarOpen(true)}
+                title="Expand sidebar"
+                aria-label="Expand sidebar"
+              >
+                <PanelLeftOpen size={18} />
+              </button>
+            )}
             <div className="section-info">
               <h2 className="section-title">Connection Network</h2>
               <p className="section-subtitle">Ready to explore</p>
