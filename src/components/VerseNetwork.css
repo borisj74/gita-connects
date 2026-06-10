@@ -364,7 +364,7 @@
   font-family: var(--font-ui);
   font-size: 0.8125rem;
   color: var(--brown-800);
-  z-index: 15;
+  z-index: var(--z-fixed);
   animation: connectHintIn 0.4s ease-out;
 }
 
@@ -464,5 +464,23 @@
 }
 
 [data-theme="dark"] .canvas-history-btn {
+  background: var(--beige-50);
+}
+
+/* Custom zoom controls, bottom-right above the theme toggle */
+.react-flow__panel.canvas-zoom {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  bottom: 64px;
+  right: 24px;
+}
+
+.canvas-zoom .control-button {
+  box-shadow: var(--shadow-sm);
+}
+
+[data-theme="dark"] .canvas-zoom .control-button {
   background: var(--beige-50);
 }
