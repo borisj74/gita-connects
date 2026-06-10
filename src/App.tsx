@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ReactFlowProvider } from 'reactflow';
 import type { Node, Edge } from 'reactflow';
-import { PanelLeftOpen, PanelRightOpen, Undo2, Redo2, Moon, Sun, Menu, Save, FolderOpen, LayoutGrid, Trash2 } from 'lucide-react';
+import { PanelLeftOpen, PanelRightOpen, Undo2, Redo2, Moon, Sun, Menu, Save, FolderOpen, LayoutGrid, Trash2, Search } from 'lucide-react';
 import ChapterSidebar from './components/ChapterSidebar.js';
 import VerseNetwork, { type VerseNetworkRef } from './components/VerseNetwork.js';
 import VerseDetail from './components/VerseDetail.js';
-import SearchBar from './components/SearchBar.js';
+import SearchPalette from './components/SearchPalette.js';
 import ConnectionFilters from './components/ConnectionFilters.js';
 import SaveLoadControls, { type SaveLoadControlsRef } from './components/SaveLoadControls.js';
 import {
@@ -37,6 +37,7 @@ function App() {
     () => (localStorage.getItem('gita-connects-theme') as 'light' | 'dark') || 'light',
   );
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const verseNetworkRef = useRef<VerseNetworkRef>(null);
   const saveLoadRef = useRef<SaveLoadControlsRef>(null);
@@ -85,11 +86,20 @@ function App() {
       const typing = tag === 'INPUT' || tag === 'TEXTAREA';
 
       if (e.key === 'Escape') {
-        if (typing) {
+        if (searchOpen) {
+          setSearchOpen(false);
+        } else if (typing) {
           (e.target as HTMLElement).blur();
         } else if (selectedVerseId) {
           setSelectedVerseId(null);
         }
+        return;
+      }
+
+      // Cmd/Ctrl+K — open search palette (works anywhere)
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setSearchOpen(true);
         return;
       }
 
@@ -102,15 +112,15 @@ function App() {
 
       if (typing) return;
 
-      // "/" — focus search
+      // "/" — open search palette
       if (e.key === '/') {
         e.preventDefault();
-        document.querySelector<HTMLInputElement>('.search-input')?.focus();
+        setSearchOpen(true);
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selectedVerseId]);
+  }, [selectedVerseId, searchOpen]);
 
   const handleToggleFilter = useCallback((type: string) => {
     setActiveFilters((prev) => {
@@ -217,13 +227,22 @@ function App() {
         )}
 
         <div className="main-content">
-          {/* Floating search, top-center over the canvas */}
-          <div className="canvas-search">
-            <SearchBar onVerseSelect={handleVerseSelect} />
-          </div>
-
           {/* Floating actions, top-right over the canvas */}
           <div className="canvas-actions">
+            <button
+              className="control-button icon-only"
+              onClick={() => setSearchOpen(true)}
+              title="Search verses (⌘K)"
+              aria-label="Search verses"
+            >
+              <Search size={16} />
+            </button>
+            <SaveLoadControls
+              ref={saveLoadRef}
+              getNetworkState={getNetworkState}
+              selectedVerseId={selectedVerseId}
+              onLoadNetwork={handleLoadNetwork}
+            />
             <ConnectionFilters
               connectionTypes={connectionTypes}
               activeFilters={activeFilters}
@@ -309,23 +328,15 @@ function App() {
             </div>
           </div>
 
-          {/* Floating Save / Load / theme stack, right edge */}
-          <div className="canvas-side-stack">
-            <SaveLoadControls
-              ref={saveLoadRef}
-              getNetworkState={getNetworkState}
-              selectedVerseId={selectedVerseId}
-              onLoadNetwork={handleLoadNetwork}
-            />
-            <button
-              className="control-button icon-only theme-toggle-btn"
-              onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
-              title="Toggle dark mode"
-              aria-label="Toggle dark mode"
-            >
-              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-            </button>
-          </div>
+          {/* Theme toggle, bottom-right corner */}
+          <button
+            className="control-button icon-only theme-toggle-btn"
+            onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
+            title="Toggle dark mode"
+            aria-label="Toggle dark mode"
+          >
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
 
           <div className="network-container">
             <ReactFlowProvider>
@@ -353,6 +364,13 @@ function App() {
           />
         )}
       </div>
+
+      {searchOpen && (
+        <SearchPalette
+          onVerseSelect={handleVerseSelect}
+          onClose={() => setSearchOpen(false)}
+        />
+      )}
     </div>
   );
 }
