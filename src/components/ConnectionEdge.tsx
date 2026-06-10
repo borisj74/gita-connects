@@ -38,6 +38,7 @@ export default function ConnectionEdge({
   });
 
   const borderColor = (data?.color as string | undefined) ?? 'rgb(177, 93, 67)';
+  const dimmed = Boolean(data?.dimmed);
 
   return (
     <>
@@ -52,7 +53,9 @@ export default function ConnectionEdge({
           style={{
             position: 'absolute',
             transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
-            pointerEvents: 'all',
+            pointerEvents: dimmed ? 'none' : 'all',
+            opacity: dimmed ? 0.15 : 1,
+            transition: 'opacity 0.2s ease',
           }}
           className="edge-label-wrapper"
         >

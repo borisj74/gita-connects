@@ -421,3 +421,13 @@
     box-shadow: 0 0 0 7px rgba(202, 117, 88, 0);
   }
 }
+
+/* Spotlight: when a verse is selected, unrelated nodes fade back */
+.react-flow__node.node-dimmed {
+  opacity: 0.25;
+  transition: opacity 0.2s ease;
+}
+
+.react-flow__node.node-dimmed:hover {
+  opacity: 1;
+}

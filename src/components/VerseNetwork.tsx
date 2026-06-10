@@ -622,49 +622,69 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       }
     });
 
+    const spotlight = !!selectedVerseId && networkVerses.has(selectedVerseId);
+
     return [...strongestByPair.values()].map((edge) => {
       const typeId = (edge.data?.typeId as string | undefined) ?? (edge.label as string);
       const color = getTypeColor(connectionTypes, typeId);
       const label = getTypeLabel(connectionTypes, typeId);
+      const dimmed =
+        spotlight && edge.source !== selectedVerseId && edge.target !== selectedVerseId;
       return {
         ...edge,
         label,
-        style: { ...edge.style, stroke: color },
+        style: { ...edge.style, stroke: color, opacity: dimmed ? 0.12 : 1 },
         markerEnd: { type: MarkerType.ArrowClosed, color },
         data: {
           ...edge.data,
           color,
+          dimmed,
           parallelIndex: 0,
           parallelTotal: 1,
           onDelete: handleDeleteEdge,
         },
       };
     });
-  }, [allEdges, activeFilters, connectionTypes, handleDeleteEdge]);
+  }, [allEdges, activeFilters, connectionTypes, handleDeleteEdge, selectedVerseId, networkVerses]);
 
   useEffect(() => {
     setEdges(filteredEdges);
   }, [filteredEdges, setEdges]);
 
   useEffect(() => {
-    setNodes((nds) =>
-      nds.map((node) => {
+    setNodes((nds) => {
+      // When the selected verse is on the canvas, spotlight it: direct
+      // neighbors stay lit, everything else dims.
+      const spotlight = !!selectedVerseId && nds.some((n) => n.id === selectedVerseId);
+      const neighbors = new Set<string>();
+      if (spotlight) {
+        allEdges.forEach((e) => {
+          if (e.source === selectedVerseId) neighbors.add(e.target);
+          if (e.target === selectedVerseId) neighbors.add(e.source);
+        });
+      }
+
+      return nds.map((node) => {
         const connectedCount = connections
           .filter(conn => conn.from === node.id || conn.to === node.id)
           .map(conn => conn.from === node.id ? conn.to : conn.from)
           .filter(id => !networkVerses.has(id)).length;
 
+        const dimmed =
+          spotlight && node.id !== selectedVerseId && !neighbors.has(node.id);
+
         return {
           ...node,
+          className: dimmed ? 'node-dimmed' : '',
           data: {
             ...node.data,
             isSelected: node.id === selectedVerseId,
             connectedCount,
           },
         };
-      }),
-    );
-  }, [selectedVerseId, networkVerses, setNodes]);
+      });
+    });
+  }, [selectedVerseId, networkVerses, allEdges, setNodes]);
 
   const getNetworkState = useCallback(() => {
     return { nodes, edges: allEdges };
