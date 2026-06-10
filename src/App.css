@@ -19,7 +19,6 @@
   flex-direction: column;
   border-right: 1px solid var(--beige-300);
   background: white;
-  transition: width 0.3s ease, min-width 0.3s ease;
 }
 
 .sidebar-wrapper.collapsed {
