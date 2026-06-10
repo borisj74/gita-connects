@@ -14,7 +14,7 @@ import ReactFlow, {
   type EdgeTypes,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, X, MousePointer2 } from 'lucide-react';
 import { verses, connections } from '../data.js';
 import VerseNode from './VerseNode.js';
 import ConnectionEdge from './ConnectionEdge.js';
@@ -59,6 +59,8 @@ const edgeTypes: EdgeTypes = {
 function pairKey(a: string, b: string): string {
   return [a, b].sort().join('::');
 }
+
+const CONNECT_HINT_KEY = 'gita-connects-connect-hint-dismissed';
 
 // Grid spacing for manually placed nodes (expand / drop / starter).
 // Cards are ~380 wide and can run tall, so leave generous gaps.
@@ -220,11 +222,27 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       return () => window.removeEventListener('keydown', onKey);
     }, [undo, redo]);
 
+    // One-time onboarding hint: handle-to-handle dragging is invisible until
+    // you know it exists. Shown once there are 2+ verses, gone forever after
+    // the first manual connection (or explicit dismiss).
+    const [connectHintDismissed, setConnectHintDismissed] = useState(
+      () => localStorage.getItem(CONNECT_HINT_KEY) === '1',
+    );
+    const dismissConnectHint = useCallback(() => {
+      setConnectHintDismissed(true);
+      try {
+        localStorage.setItem(CONNECT_HINT_KEY, '1');
+      } catch {
+        // Hint just reappears next session — not worth surfacing.
+      }
+    }, []);
+
     const onConnect = useCallback((params: RFConnection) => {
       if (!params.source || !params.target) return;
       if (params.source === params.target) return;
+      dismissConnectHint();
       setPendingConnection({ source: params.source, target: params.target });
-    }, []);
+    }, [dismissConnectHint]);
 
     const handleConfirmConnection = useCallback(
       ({
@@ -724,9 +742,11 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     addVerse,
   }));
 
+  const showConnectHint = !connectHintDismissed && nodes.length >= 2;
+
   return (
     <div
-      className="verse-network"
+      className={`verse-network ${showConnectHint ? 'connect-hint-active' : ''}`}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
@@ -758,6 +778,23 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
           )}
         </Controls>
       </ReactFlow>
+
+      {showConnectHint && (
+        <div className="connect-hint" role="status">
+          <MousePointer2 size={16} className="connect-hint-icon" />
+          <span>
+            Tip: drag from the dot at the bottom of one verse to the dot on top
+            of another to connect them
+          </span>
+          <button
+            className="connect-hint-close"
+            onClick={dismissConnectHint}
+            aria-label="Dismiss tip"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
 
       {nodes.length === 0 && (
         <div className="network-empty-state">
