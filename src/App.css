@@ -99,6 +99,14 @@
   gap: 2rem;
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
 .app-title-section {
   flex-shrink: 0;
 }
@@ -250,18 +258,19 @@
     gap: 0.5rem;
   }
 
-  /* Mobile header row: [sidebar toggle] [search] [hamburger] */
-  .header-controls .search-container {
+  /* Mobile: title + search share the top row, hamburger sits right */
+  .header-left {
+    width: 100%;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+
+  .header-left .search-container {
     flex: 1;
     min-width: 0;
   }
 
-  .header-controls .search-bar {
-    min-width: 0;
-  }
-
-  .header-controls .search-container {
-    flex: 1;
+  .header-left .search-bar {
     min-width: 0;
   }
 

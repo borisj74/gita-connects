@@ -183,13 +183,14 @@ function App() {
     <div className="app">
       <div className="app-header">
         <div className="header-content">
-          <div className="app-title-section">
-            <h1 className="app-title">Gita Connects</h1>
-            <p className="app-subtitle">Verse Explorer</p>
+          <div className="header-left">
+            <div className="app-title-section">
+              <h1 className="app-title">Gita Connects</h1>
+              <p className="app-subtitle">Verse Explorer</p>
+            </div>
+            <SearchBar onVerseSelect={handleVerseSelect} />
           </div>
           <div className="header-controls">
-            <SearchBar onVerseSelect={handleVerseSelect} />
-
             <div className="section-actions">
               <SaveLoadControls
                 ref={saveLoadRef}
