@@ -56,10 +56,13 @@ export default function ConnectionEdge({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(false);
     };
-    document.addEventListener('mousedown', onDown);
+    // Capture phase: the React Flow pane stops propagation of mousedown
+    // (pan/drag handling), so a bubble-phase document listener never fires
+    // for canvas clicks.
+    document.addEventListener('mousedown', onDown, true);
     document.addEventListener('keydown', onKey);
     return () => {
-      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('mousedown', onDown, true);
       document.removeEventListener('keydown', onKey);
     };
   }, [open]);
