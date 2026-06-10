@@ -433,9 +433,13 @@
 }
 
 /* Undo/redo panel, top-right of the canvas */
-.canvas-history-panel {
+/* Sits just below the top-right action row so it never overlaps Clear All */
+.react-flow__panel.canvas-history-panel {
   display: flex;
   gap: 0.375rem;
+  margin: 0;
+  top: 72px;
+  right: 24px;
 }
 
 .canvas-history-btn {
