@@ -198,24 +198,6 @@ function App() {
                 onLoadNetwork={handleLoadNetwork}
               />
               <div className="actions-inline">
-                <button
-                  className="action-button icon-button"
-                  onClick={handleUndo}
-                  disabled={!history.canUndo}
-                  title="Undo (⌘Z)"
-                  aria-label="Undo"
-                >
-                  <Undo2 size={16} />
-                </button>
-                <button
-                  className="action-button icon-button"
-                  onClick={handleRedo}
-                  disabled={!history.canRedo}
-                  title="Redo (⌘⇧Z)"
-                  aria-label="Redo"
-                >
-                  <Redo2 size={16} />
-                </button>
                 <ConnectionFilters
                   connectionTypes={connectionTypes}
                   activeFilters={activeFilters}

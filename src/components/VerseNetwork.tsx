@@ -14,7 +14,7 @@ import ReactFlow, {
   type EdgeTypes,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { Moon, Sun, X, MousePointer2 } from 'lucide-react';
+import { Moon, Sun, X, MousePointer2, Undo2, Redo2 } from 'lucide-react';
 import { verses, connections } from '../data.js';
 import VerseNode from './VerseNode.js';
 import ConnectionEdge from './ConnectionEdge.js';
@@ -787,6 +787,22 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       >
         <Background color="#FBF8F4" gap={20} />
         <Controls className="controls">
+          <ControlButton
+            onClick={undo}
+            disabled={!canUndo}
+            title="Undo (⌘Z)"
+            aria-label="Undo"
+          >
+            <Undo2 size={14} />
+          </ControlButton>
+          <ControlButton
+            onClick={redo}
+            disabled={!canRedo}
+            title="Redo (⌘⇧Z)"
+            aria-label="Redo"
+          >
+            <Redo2 size={14} />
+          </ControlButton>
           {onToggleTheme && (
             <ControlButton
               onClick={onToggleTheme}
