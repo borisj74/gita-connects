@@ -188,14 +188,6 @@ function App() {
             <p className="app-subtitle">Verse Explorer</p>
           </div>
           <div className="header-controls">
-            <button
-              className="sidebar-toggle header-sidebar-toggle"
-              onClick={() => setSidebarOpen((v) => !v)}
-              title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-              aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-            >
-              {sidebarOpen ? <PanelRightOpen size={18} /> : <PanelLeftOpen size={18} />}
-            </button>
             <SearchBar onVerseSelect={handleVerseSelect} />
 
             <div className="section-actions">
@@ -314,20 +306,20 @@ function App() {
       </div>
 
       <div className="app-body">
+        <button
+          className={`sidebar-toggle sidebar-floating-toggle ${!sidebarOpen ? 'collapsed' : ''}`}
+          onClick={() => setSidebarOpen((v) => !v)}
+          title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+          aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+        >
+          {sidebarOpen ? <PanelRightOpen size={18} /> : <PanelLeftOpen size={18} />}
+        </button>
         <div className={`sidebar-wrapper ${!sidebarOpen ? 'collapsed' : ''}`}>
           <div className="section-header">
             <div className="section-info">
               <h2 className="section-title">Chapters & Verses</h2>
               <p className="section-subtitle">Drag verses to explore connections</p>
             </div>
-            <button
-              className="sidebar-toggle"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-              aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-            >
-              <PanelRightOpen size={18} />
-            </button>
           </div>
           {sidebarOpen && (
             <ChapterSidebar

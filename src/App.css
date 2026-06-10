@@ -49,6 +49,21 @@
   color: var(--brown-900);
 }
 
+/* Single sidebar toggle, pinned top-left of the body. Stays visible
+   whether the sidebar is open or collapsed. */
+.sidebar-floating-toggle {
+  position: absolute;
+  top: 0.875rem;
+  left: 0.875rem;
+  z-index: 120;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Make room for the floating toggle in the sidebar header */
+.sidebar-wrapper .section-info {
+  padding-left: 3.25rem;
+}
+
 [data-theme="dark"] .sidebar-toggle {
   background: var(--beige-50);
 }
@@ -85,17 +100,18 @@
 }
 
 .app-title-section {
-  flex: 1;
+  flex-shrink: 0;
 }
 
 .app-title {
   font-family: var(--font-display);
-  font-size: 2.25rem;
+  font-size: 1.5rem;
   font-weight: 400;
   color: var(--brown-900);
   letter-spacing: 0;
   line-height: 1.2;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.125rem;
+  white-space: nowrap;
 }
 
 .app-subtitle {
@@ -161,10 +177,6 @@
 
 /* Responsive Design */
 @media (max-width: 1400px) {
-  .app-title {
-    font-size: 1.75rem;
-  }
-
   .app-subtitle {
     font-size: 0.875rem;
   }
@@ -184,10 +196,6 @@
 @media (max-width: 900px) {
   .app-header {
     padding: 1rem 2rem;
-  }
-
-  .app-title {
-    font-size: 1.5rem;
   }
 }
 
