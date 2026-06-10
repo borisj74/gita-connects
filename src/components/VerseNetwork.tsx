@@ -6,6 +6,7 @@ import ReactFlow, {
   Background,
   MarkerType,
   ControlButton,
+  Panel,
   useReactFlow,
   type Node,
   type Edge,
@@ -787,22 +788,6 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       >
         <Background color="#FBF8F4" gap={20} />
         <Controls className="controls">
-          <ControlButton
-            onClick={undo}
-            disabled={!canUndo}
-            title="Undo (⌘Z)"
-            aria-label="Undo"
-          >
-            <Undo2 size={14} />
-          </ControlButton>
-          <ControlButton
-            onClick={redo}
-            disabled={!canRedo}
-            title="Redo (⌘⇧Z)"
-            aria-label="Redo"
-          >
-            <Redo2 size={14} />
-          </ControlButton>
           {onToggleTheme && (
             <ControlButton
               onClick={onToggleTheme}
@@ -813,6 +798,26 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
             </ControlButton>
           )}
         </Controls>
+        <Panel position="top-right" className="canvas-history-panel">
+          <button
+            className="canvas-history-btn"
+            onClick={undo}
+            disabled={!canUndo}
+            title="Undo (⌘Z)"
+            aria-label="Undo"
+          >
+            <Undo2 size={16} />
+          </button>
+          <button
+            className="canvas-history-btn"
+            onClick={redo}
+            disabled={!canRedo}
+            title="Redo (⌘⇧Z)"
+            aria-label="Redo"
+          >
+            <Redo2 size={16} />
+          </button>
+        </Panel>
       </ReactFlow>
 
       {showConnectHint && (
