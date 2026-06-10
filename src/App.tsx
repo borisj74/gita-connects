@@ -198,6 +198,47 @@ function App() {
             </button>
             <SearchBar onVerseSelect={handleVerseSelect} />
 
+            <div className="section-actions">
+              <SaveLoadControls
+                ref={saveLoadRef}
+                getNetworkState={getNetworkState}
+                selectedVerseId={selectedVerseId}
+                onLoadNetwork={handleLoadNetwork}
+              />
+              <div className="actions-inline">
+                <button
+                  className="action-button icon-button"
+                  onClick={handleUndo}
+                  disabled={!history.canUndo}
+                  title="Undo (⌘Z)"
+                  aria-label="Undo"
+                >
+                  <Undo2 size={16} />
+                </button>
+                <button
+                  className="action-button icon-button"
+                  onClick={handleRedo}
+                  disabled={!history.canRedo}
+                  title="Redo (⌘⇧Z)"
+                  aria-label="Redo"
+                >
+                  <Redo2 size={16} />
+                </button>
+                <ConnectionFilters
+                  connectionTypes={connectionTypes}
+                  activeFilters={activeFilters}
+                  onToggleFilter={handleToggleFilter}
+                  onRemoveCustomType={handleRemoveCustomType}
+                />
+                <button className="action-button arrange-button" onClick={handleAutoArrange}>
+                  Auto Arrange
+                </button>
+                <button className="action-button clear-button" onClick={handleClearAll}>
+                  Clear All
+                </button>
+              </div>
+            </div>
+
             {/* Mobile: collapse all actions into a hamburger menu */}
             <div className="mobile-actions" ref={mobileMenuRef}>
               <button
@@ -297,59 +338,6 @@ function App() {
         </div>
 
         <div className="main-content">
-          <div className="section-header">
-            {!sidebarOpen && (
-              <button
-                className="sidebar-toggle sidebar-expand-inline"
-                onClick={() => setSidebarOpen(true)}
-                title="Expand sidebar"
-                aria-label="Expand sidebar"
-              >
-                <PanelLeftOpen size={18} />
-              </button>
-            )}
-            <div className="section-actions">
-              <SaveLoadControls
-                ref={saveLoadRef}
-                getNetworkState={getNetworkState}
-                selectedVerseId={selectedVerseId}
-                onLoadNetwork={handleLoadNetwork}
-              />
-              <div className="actions-inline">
-                <button
-                  className="action-button icon-button"
-                  onClick={handleUndo}
-                  disabled={!history.canUndo}
-                  title="Undo (⌘Z)"
-                  aria-label="Undo"
-                >
-                  <Undo2 size={16} />
-                </button>
-                <button
-                  className="action-button icon-button"
-                  onClick={handleRedo}
-                  disabled={!history.canRedo}
-                  title="Redo (⌘⇧Z)"
-                  aria-label="Redo"
-                >
-                  <Redo2 size={16} />
-                </button>
-                <ConnectionFilters
-                  connectionTypes={connectionTypes}
-                  activeFilters={activeFilters}
-                  onToggleFilter={handleToggleFilter}
-                  onRemoveCustomType={handleRemoveCustomType}
-                />
-                <button className="action-button arrange-button" onClick={handleAutoArrange}>
-                  Auto Arrange
-                </button>
-                <button className="action-button clear-button" onClick={handleClearAll}>
-                  Clear All
-                </button>
-              </div>
-
-            </div>
-          </div>
           <div className="network-container">
             <ReactFlowProvider>
               <VerseNetwork
