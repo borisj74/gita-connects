@@ -150,20 +150,20 @@ const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(
     <>
       <div className="save-load-controls">
         <button
-          className="control-button save-button"
+          className="control-button icon-only save-button"
           onClick={handleOpenSaveModal}
           title="Save network"
+          aria-label="Save network"
         >
           <Save size={16} />
-          Save
         </button>
         <button
-          className="control-button load-button"
+          className="control-button icon-only load-button"
           onClick={() => setShowLoadModal(true)}
           title="Load network"
+          aria-label="Load network"
         >
           <FolderOpen size={16} />
-          Load
         </button>
       </div>
 
