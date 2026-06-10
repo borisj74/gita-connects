@@ -63,9 +63,9 @@ function pairKey(a: string, b: string): string {
 const CONNECT_HINT_KEY = 'gita-connects-connect-hint-dismissed';
 
 // Grid spacing for manually placed nodes (expand / drop / starter).
-// Cards are ~380 wide and can run tall, so leave generous gaps.
-const COL_SPACING = 650;
-const ROW_SPACING = 880;
+// Compact cards are ~320 wide / ~340 tall.
+const COL_SPACING = 460;
+const ROW_SPACING = 480;
 
 // Place a new batch to the right of all existing nodes so cards never
 // stack on top of the current graph, however many are already present.
@@ -74,7 +74,7 @@ function nextPlacementOrigin(nodes: Node[]): { x: number; y: number } {
   let maxRight = -Infinity;
   let minTop = Infinity;
   nodes.forEach((n) => {
-    maxRight = Math.max(maxRight, n.position.x + (n.width || 380));
+    maxRight = Math.max(maxRight, n.position.x + (n.width || 320));
     minTop = Math.min(minTop, n.position.y);
   });
   return { x: maxRight + 120, y: minTop };
@@ -343,14 +343,14 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     setNodes((nds) => {
       if (nds.length === 0) return nds;
 
-      const NODE_W = 380;
-      const NODE_H = 680;
+      const NODE_W = 320;
+      const NODE_H = 340;
       // Extra breathing room so cards never crowd each other.
       const GAP_X = 90;
       const GAP_Y = 80;
 
       const g = new dagre.graphlib.Graph();
-      g.setGraph({ rankdir: 'TB', nodesep: 140, ranksep: 200, marginx: 120, marginy: 120 });
+      g.setGraph({ rankdir: 'TB', nodesep: 100, ranksep: 150, marginx: 120, marginy: 120 });
       g.setDefaultEdgeLabel(() => ({}));
 
       nds.forEach((node) => {
@@ -711,8 +711,8 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     (verseId: string) => {
       const node = nodesRef.current.find((n) => n.id === verseId);
       if (!node) return;
-      const w = node.width || 380;
-      const h = node.height || 680;
+      const w = node.width || 320;
+      const h = node.height || 340;
       setCenter(node.position.x + w / 2, node.position.y + h / 2, {
         zoom: 0.85,
         duration: 600,

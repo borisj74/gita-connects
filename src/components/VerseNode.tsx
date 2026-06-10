@@ -44,10 +44,6 @@ function VerseNode({ data }: VerseNodeProps) {
         <div className="node-theme">{verse.theme}</div>
       </div>
 
-      <div className="node-sanskrit">{verse.sanskrit}</div>
-
-      <div className="node-transliteration">{verse.transliteration}</div>
-
       <div className="node-translation">{verse.translation}</div>
 
       <div className="node-concepts">
