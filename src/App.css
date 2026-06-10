@@ -49,19 +49,13 @@
   color: var(--brown-900);
 }
 
-/* Single sidebar toggle, pinned top-left of the body. Stays visible
-   whether the sidebar is open or collapsed. */
+/* Expand toggle shown only when the sidebar is collapsed */
 .sidebar-floating-toggle {
   position: absolute;
   top: 0.875rem;
   left: 0.875rem;
   z-index: 120;
   box-shadow: var(--shadow-sm);
-}
-
-/* Make room for the floating toggle in the sidebar header */
-.sidebar-wrapper .section-info {
-  padding-left: 3.25rem;
 }
 
 [data-theme="dark"] .sidebar-toggle {
@@ -183,6 +177,52 @@
   position: relative;
 }
 
+/* Floating overlays over the canvas (no top header) */
+.canvas-search {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 400px;
+  max-width: calc(100% - 360px);
+  z-index: var(--z-sticky);
+}
+
+.canvas-actions {
+  position: absolute;
+  top: 16px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  z-index: var(--z-sticky);
+}
+
+.canvas-side-stack {
+  position: absolute;
+  top: 50%;
+  right: 24px;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: var(--z-sticky);
+}
+
+.canvas-side-stack .save-load-controls {
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.theme-toggle-btn {
+  color: var(--brown-700);
+}
+
+[data-theme="dark"] .theme-toggle-btn,
+[data-theme="dark"] .canvas-side-stack .control-button {
+  background: var(--beige-50);
+}
+
 /* Responsive Design */
 @media (max-width: 1400px) {
   .app-subtitle {
@@ -244,33 +284,29 @@
     z-index: 110;
   }
 
-  /* Toolbar lives entirely in the hamburger on mobile */
-  .header-controls .section-actions {
+  /* Desktop canvas actions + side stack collapse into the hamburger */
+  .canvas-actions .connection-filters,
+  .canvas-actions .arrange-button,
+  .canvas-actions .clear-button,
+  .canvas-side-stack {
     display: none;
   }
 
-  .header-controls .mobile-actions {
+  .canvas-actions .mobile-actions {
     display: block;
   }
 
-  .header-controls {
-    flex-wrap: nowrap;
-    gap: 0.5rem;
+  /* Search shrinks to leave room for the hamburger */
+  .canvas-search {
+    left: 16px;
+    right: 72px;
+    transform: none;
+    width: auto;
+    max-width: none;
   }
 
-  /* Mobile: title + search share the top row, hamburger sits right */
-  .header-left {
-    width: 100%;
-    gap: 0.75rem;
-    min-width: 0;
-  }
-
-  .header-left .search-container {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .header-left .search-bar {
+  .canvas-search .search-container,
+  .canvas-search .search-bar {
     min-width: 0;
   }
 

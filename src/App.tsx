@@ -181,38 +181,61 @@ function App() {
 
   return (
     <div className="app">
-      <div className="app-header">
-        <div className="header-content">
-          <div className="header-left">
-            <div className="app-title-section">
-              <h1 className="app-title">Gita Connects</h1>
-              <p className="app-subtitle">Verse Explorer</p>
+      <div className="app-body">
+        <div className={`sidebar-wrapper ${!sidebarOpen ? 'collapsed' : ''}`}>
+          <div className="section-header">
+            <div className="section-info">
+              <h2 className="section-title">Chapters & Verses</h2>
+              <p className="section-subtitle">Drag verses to explore connections</p>
             </div>
+            <button
+              className="sidebar-toggle"
+              onClick={() => setSidebarOpen(false)}
+              title="Collapse sidebar"
+              aria-label="Collapse sidebar"
+            >
+              <PanelRightOpen size={18} />
+            </button>
+          </div>
+          {sidebarOpen && (
+            <ChapterSidebar
+              onVerseSelect={handleVerseSelect}
+              selectedVerseId={selectedVerseId}
+            />
+          )}
+        </div>
+
+        {!sidebarOpen && (
+          <button
+            className="sidebar-toggle sidebar-floating-toggle"
+            onClick={() => setSidebarOpen(true)}
+            title="Expand sidebar"
+            aria-label="Expand sidebar"
+          >
+            <PanelLeftOpen size={18} />
+          </button>
+        )}
+
+        <div className="main-content">
+          {/* Floating search, top-center over the canvas */}
+          <div className="canvas-search">
             <SearchBar onVerseSelect={handleVerseSelect} />
           </div>
-          <div className="header-controls">
-            <div className="section-actions">
-              <SaveLoadControls
-                ref={saveLoadRef}
-                getNetworkState={getNetworkState}
-                selectedVerseId={selectedVerseId}
-                onLoadNetwork={handleLoadNetwork}
-              />
-              <div className="actions-inline">
-                <ConnectionFilters
-                  connectionTypes={connectionTypes}
-                  activeFilters={activeFilters}
-                  onToggleFilter={handleToggleFilter}
-                  onRemoveCustomType={handleRemoveCustomType}
-                />
-                <button className="action-button arrange-button" onClick={handleAutoArrange}>
-                  Auto Arrange
-                </button>
-                <button className="action-button clear-button" onClick={handleClearAll}>
-                  Clear All
-                </button>
-              </div>
-            </div>
+
+          {/* Floating actions, top-right over the canvas */}
+          <div className="canvas-actions">
+            <ConnectionFilters
+              connectionTypes={connectionTypes}
+              activeFilters={activeFilters}
+              onToggleFilter={handleToggleFilter}
+              onRemoveCustomType={handleRemoveCustomType}
+            />
+            <button className="action-button arrange-button" onClick={handleAutoArrange}>
+              Auto Arrange
+            </button>
+            <button className="action-button clear-button" onClick={handleClearAll}>
+              Clear All
+            </button>
 
             {/* Mobile: collapse all actions into a hamburger menu */}
             <div className="mobile-actions" ref={mobileMenuRef}>
@@ -285,34 +308,25 @@ function App() {
               )}
             </div>
           </div>
-        </div>
-      </div>
 
-      <div className="app-body">
-        <button
-          className={`sidebar-toggle sidebar-floating-toggle ${!sidebarOpen ? 'collapsed' : ''}`}
-          onClick={() => setSidebarOpen((v) => !v)}
-          title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-          aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-        >
-          {sidebarOpen ? <PanelRightOpen size={18} /> : <PanelLeftOpen size={18} />}
-        </button>
-        <div className={`sidebar-wrapper ${!sidebarOpen ? 'collapsed' : ''}`}>
-          <div className="section-header">
-            <div className="section-info">
-              <h2 className="section-title">Chapters & Verses</h2>
-              <p className="section-subtitle">Drag verses to explore connections</p>
-            </div>
-          </div>
-          {sidebarOpen && (
-            <ChapterSidebar
-              onVerseSelect={handleVerseSelect}
+          {/* Floating Save / Load / theme stack, right edge */}
+          <div className="canvas-side-stack">
+            <SaveLoadControls
+              ref={saveLoadRef}
+              getNetworkState={getNetworkState}
               selectedVerseId={selectedVerseId}
+              onLoadNetwork={handleLoadNetwork}
             />
-          )}
-        </div>
+            <button
+              className="control-button icon-only theme-toggle-btn"
+              onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
+              title="Toggle dark mode"
+              aria-label="Toggle dark mode"
+            >
+              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+          </div>
 
-        <div className="main-content">
           <div className="network-container">
             <ReactFlowProvider>
               <VerseNetwork
@@ -325,8 +339,6 @@ function App() {
                 connectionTypes={connectionTypes}
                 onAddCustomType={handleAddCustomType}
                 onHistoryChange={handleHistoryChange}
-                theme={theme}
-                onToggleTheme={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
               />
             </ReactFlowProvider>
           </div>

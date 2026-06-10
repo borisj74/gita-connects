@@ -5,7 +5,6 @@ import ReactFlow, {
   Controls,
   Background,
   MarkerType,
-  ControlButton,
   Panel,
   useReactFlow,
   type Node,
@@ -15,7 +14,7 @@ import ReactFlow, {
   type EdgeTypes,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { Moon, Sun, X, MousePointer2, Undo2, Redo2 } from 'lucide-react';
+import { X, MousePointer2, Undo2, Redo2 } from 'lucide-react';
 import { verses, connections } from '../data.js';
 import VerseNode from './VerseNode.js';
 import ConnectionEdge from './ConnectionEdge.js';
@@ -33,8 +32,6 @@ interface VerseNetworkProps {
   connectionTypes: ConnectionTypeDef[];
   onAddCustomType: (type: ConnectionTypeDef) => void;
   onHistoryChange?: (canUndo: boolean, canRedo: boolean) => void;
-  theme?: 'light' | 'dark';
-  onToggleTheme?: () => void;
 }
 
 export interface VerseNetworkRef {
@@ -123,8 +120,6 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       connectionTypes,
       onAddCustomType,
       onHistoryChange,
-      theme,
-      onToggleTheme,
     },
     ref,
   ) => {
@@ -787,37 +782,29 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
       >
         <Background color="#FBF8F4" gap={20} />
-        <Controls className="controls">
-          {onToggleTheme && (
-            <ControlButton
-              onClick={onToggleTheme}
-              title="Toggle dark mode"
-              aria-label="Toggle dark mode"
+        <Controls className="controls" />
+        {nodes.length > 0 && (
+          <Panel position="top-right" className="canvas-history-panel">
+            <button
+              className="canvas-history-btn"
+              onClick={undo}
+              disabled={!canUndo}
+              title="Undo (⌘Z)"
+              aria-label="Undo"
             >
-              {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
-            </ControlButton>
-          )}
-        </Controls>
-        <Panel position="top-right" className="canvas-history-panel">
-          <button
-            className="canvas-history-btn"
-            onClick={undo}
-            disabled={!canUndo}
-            title="Undo (⌘Z)"
-            aria-label="Undo"
-          >
-            <Undo2 size={16} />
-          </button>
-          <button
-            className="canvas-history-btn"
-            onClick={redo}
-            disabled={!canRedo}
-            title="Redo (⌘⇧Z)"
-            aria-label="Redo"
-          >
-            <Redo2 size={16} />
-          </button>
-        </Panel>
+              <Undo2 size={16} />
+            </button>
+            <button
+              className="canvas-history-btn"
+              onClick={redo}
+              disabled={!canRedo}
+              title="Redo (⌘⇧Z)"
+              aria-label="Redo"
+            >
+              <Redo2 size={16} />
+            </button>
+          </Panel>
+        )}
       </ReactFlow>
 
       {showConnectHint && (
