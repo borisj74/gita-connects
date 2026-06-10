@@ -13,7 +13,7 @@ import ReactFlow, {
   type EdgeTypes,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { X, MousePointer2, Undo2, Redo2, Plus, Minus, Maximize } from 'lucide-react';
+import { X, MousePointer2, Undo2, Redo2 } from 'lucide-react';
 import { verses, connections } from '../data.js';
 import VerseNode from './VerseNode.js';
 import ConnectionEdge from './ConnectionEdge.js';
@@ -131,7 +131,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       target: string;
     } | null>(null);
     const expandRef = useRef<(verseId: string) => void>(() => {});
-    const { fitView, setCenter, zoomIn, zoomOut } = useReactFlow();
+    const { fitView, setCenter } = useReactFlow();
 
     // Mirror live state into refs so history snapshots avoid stale closures.
     const nodesRef = useRef(nodes);
@@ -781,36 +781,10 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
       >
         <Background color="#FBF8F4" gap={20} />
-        <Panel position="bottom-right" className="canvas-zoom">
-          <button
-            className="control-button icon-only"
-            onClick={() => zoomIn({ duration: 200 })}
-            title="Zoom in"
-            aria-label="Zoom in"
-          >
-            <Plus size={16} />
-          </button>
-          <button
-            className="control-button icon-only"
-            onClick={() => zoomOut({ duration: 200 })}
-            title="Zoom out"
-            aria-label="Zoom out"
-          >
-            <Minus size={16} />
-          </button>
-          <button
-            className="control-button icon-only"
-            onClick={() => fitView({ duration: 300, padding: 0.2 })}
-            title="Fit view"
-            aria-label="Fit view"
-          >
-            <Maximize size={16} />
-          </button>
-        </Panel>
         {nodes.length > 0 && (
-          <Panel position="top-right" className="canvas-history-panel">
+          <Panel position="bottom-right" className="canvas-zoom">
             <button
-              className="canvas-history-btn"
+              className="control-button icon-only"
               onClick={undo}
               disabled={!canUndo}
               title="Undo (⌘Z)"
@@ -819,7 +793,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
               <Undo2 size={16} />
             </button>
             <button
-              className="canvas-history-btn"
+              className="control-button icon-only"
               onClick={redo}
               disabled={!canRedo}
               title="Redo (⌘⇧Z)"
