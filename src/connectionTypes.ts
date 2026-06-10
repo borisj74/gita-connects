@@ -18,12 +18,21 @@ export const PREDEFINED_CONNECTION_TYPES: ConnectionTypeDef[] = [
 
 const CUSTOM_TYPES_STORAGE_KEY = 'gita-connects-custom-connection-types';
 
+const HEX_COLOR = /^#[0-9a-f]{3,8}$/i;
+
 export function loadCustomConnectionTypes(): ConnectionTypeDef[] {
   try {
     const raw = localStorage.getItem(CUSTOM_TYPES_STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw) as ConnectionTypeDef[];
-    return parsed.map((t) => ({ ...t, isCustom: true }));
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((t) => t && typeof t.id === 'string' && typeof t.label === 'string')
+      .map((t) => ({
+        ...t,
+        color: HEX_COLOR.test(t.color) ? t.color : '#999999',
+        isCustom: true,
+      }));
   } catch {
     return [];
   }

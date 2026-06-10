@@ -38,8 +38,13 @@ const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
   const [currentNetworkState, setCurrentNetworkState] = useState<{ nodes: Node[]; edges: Edge[] }>({ nodes: [], edges: [] });
   const [savedNetworks, setSavedNetworks] = useState<SavedNetwork[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      const parsed = saved ? JSON.parse(saved) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
   });
 
   const handleOpenSaveModal = () => {
@@ -78,8 +83,13 @@ const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(
     };
 
     const updated = [...savedNetworks, newNetwork];
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    } catch {
+      setSaveError('Could not save: browser storage is full. Delete old networks and try again.');
+      return;
+    }
     setSavedNetworks(updated);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
 
     setSaveSuccess(`Network "${newNetwork.name}" saved!`);
     setNetworkName('');
@@ -106,7 +116,11 @@ const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(
 
     const updated = savedNetworks.filter(n => n.id !== deleteConfirm.id);
     setSavedNetworks(updated);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    } catch {
+      // Removing data only shrinks the payload; ignore storage errors here.
+    }
     setDeleteConfirm(null);
   };
 

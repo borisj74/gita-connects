@@ -15,7 +15,6 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { Moon, Sun } from 'lucide-react';
-import dagre from 'dagre';
 import { verses, connections } from '../data.js';
 import VerseNode from './VerseNode.js';
 import ConnectionEdge from './ConnectionEdge.js';
@@ -240,6 +239,18 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         newType?: ConnectionTypeDef;
       }) => {
         if (!pendingConnection) return;
+
+        // Same pair + same type already connected — adding again would just
+        // pile an invisible duplicate under the collapsed chip.
+        const exists = allEdgesRef.current.some((e) => {
+          const t = (e.data?.typeId as string | undefined) ?? (e.label as string);
+          return t === typeId &&
+            pairKey(e.source, e.target) === pairKey(pendingConnection.source, pendingConnection.target);
+        });
+        if (exists) {
+          setPendingConnection(null);
+          return;
+        }
         commit();
 
         if (newType) {
@@ -306,7 +317,10 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     onVerseSelect('');
   }, [setNodes, setAllEdges, onVerseSelect, commit]);
 
-  const handleAutoArrange = useCallback(() => {
+  const handleAutoArrange = useCallback(async () => {
+    // dagre is only needed here — load it on demand to keep it out of the
+    // main bundle.
+    const dagre = (await import('dagre')).default;
     commit();
     setNodes((nds) => {
       if (nds.length === 0) return nds;
@@ -645,17 +659,34 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     onVerseSelect('');
 
     setTimeout(() => {
-      setNodes(loadedNodes);
-      setAllEdges(loadedEdges);
+      // Saved nodes went through JSON.stringify, which dropped the data
+      // callbacks — rebuild them (and re-resolve the verse) on hydrate.
+      // Skip ids that no longer exist in the dataset.
+      const hydrated = loadedNodes.flatMap((node) => {
+        const verse = verses.find((v) => v.id === node.id);
+        if (!verse) return [];
+        return [{
+          ...node,
+          data: {
+            ...node.data,
+            verse,
+            onSelect: () => onVerseSelect(node.id),
+            onRemove: () => handleRemoveNode(node.id),
+            onExpand: () => expandRef.current(node.id),
+          },
+        }];
+      });
+      const verseIds = new Set(hydrated.map((node) => node.id));
 
-      const verseIds = new Set(loadedNodes.map(node => node.id));
+      setNodes(hydrated);
+      setAllEdges(loadedEdges.filter((e) => verseIds.has(e.source) && verseIds.has(e.target)));
       setNetworkVerses(verseIds);
 
       setTimeout(() => {
         fitView({ duration: 400, padding: 0.2 });
       }, 100);
     }, 50);
-  }, [setNodes, setAllEdges, onVerseSelect, fitView]);
+  }, [setNodes, setAllEdges, onVerseSelect, handleRemoveNode, fitView]);
 
   // Pan + zoom the canvas to a node when it exists in the network.
   const focusNode = useCallback(
