@@ -205,6 +205,7 @@ function App() {
             <ChapterSidebar
               onVerseSelect={handleVerseSelect}
               selectedVerseId={selectedVerseId}
+              networkVerses={networkVerses}
             />
           )}
         </div>
@@ -338,6 +339,8 @@ function App() {
       {searchOpen && (
         <SearchPalette
           onVerseSelect={handleVerseSelect}
+          onAddVerse={(id) => verseNetworkRef.current?.addVerse(id)}
+          networkVerses={networkVerses}
           onClose={() => setSearchOpen(false)}
         />
       )}

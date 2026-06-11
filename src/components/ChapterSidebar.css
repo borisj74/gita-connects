@@ -132,6 +132,26 @@
   opacity: 1;
 }
 
+/* Verses already on the canvas */
+.chapter-count-active {
+  color: var(--sage-600, #69765a);
+  font-weight: 600;
+}
+
+.verse-item.in-network {
+  border-color: var(--sage-500, #7d8a6e);
+  background: rgba(125, 138, 110, 0.08);
+}
+
+.verse-in-network-icon {
+  opacity: 1;
+  color: var(--sage-600, #69765a);
+}
+
+.verse-item.in-network:hover .verse-in-network-icon {
+  opacity: 1;
+}
+
 .verse-item:hover {
   background: var(--beige-200);
   border-color: var(--brown-300);

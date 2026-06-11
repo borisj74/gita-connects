@@ -1,10 +1,12 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { Search, SearchX } from 'lucide-react';
+import { Search, SearchX, Plus, Check } from 'lucide-react';
 import { verses } from '../data.js';
 import './SearchPalette.css';
 
 interface SearchPaletteProps {
   onVerseSelect: (verseId: string) => void;
+  onAddVerse: (verseId: string) => void;
+  networkVerses: Set<string>;
   onClose: () => void;
 }
 
@@ -23,7 +25,7 @@ function highlight(text: string, query: string) {
   );
 }
 
-export default function SearchPalette({ onVerseSelect, onClose }: SearchPaletteProps) {
+export default function SearchPalette({ onVerseSelect, onAddVerse, networkVerses, onClose }: SearchPaletteProps) {
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -92,25 +94,38 @@ export default function SearchPalette({ onVerseSelect, onClose }: SearchPaletteP
 
         {query && results.length > 0 && (
           <div className="palette-results">
-            {results.map((verse, index) => (
-              <button
-                key={verse.id}
-                className={`palette-result ${index === activeIndex ? 'active' : ''}`}
-                onMouseEnter={() => setActiveIndex(index)}
-                onClick={() => select(verse.id)}
-              >
-                <div className="palette-result-header">
-                  <span className="palette-result-id">{highlight(verse.id, query)}</span>
-                  <span className="palette-result-chapter">Ch. {verse.chapter}</span>
+            {results.map((verse, index) => {
+              const inNetwork = networkVerses.has(verse.id);
+              return (
+                <div
+                  key={verse.id}
+                  className={`palette-result ${index === activeIndex ? 'active' : ''}`}
+                  onMouseEnter={() => setActiveIndex(index)}
+                >
+                  <button className="palette-result-main" onClick={() => select(verse.id)}>
+                    <div className="palette-result-header">
+                      <span className="palette-result-id">{highlight(verse.id, query)}</span>
+                      <span className="palette-result-chapter">Ch. {verse.chapter}</span>
+                    </div>
+                    <div className="palette-result-theme">{highlight(verse.theme, query)}</div>
+                    <div className="palette-result-concepts">
+                      {verse.concepts.slice(0, 3).map((c) => (
+                        <span key={c} className="palette-result-concept">{highlight(c, query)}</span>
+                      ))}
+                    </div>
+                  </button>
+                  <button
+                    className={`palette-result-add ${inNetwork ? 'in-network' : ''}`}
+                    onClick={(e) => { e.stopPropagation(); if (!inNetwork) onAddVerse(verse.id); }}
+                    disabled={inNetwork}
+                    title={inNetwork ? 'Already in network' : 'Add to network'}
+                    aria-label={inNetwork ? 'Already in network' : 'Add to network'}
+                  >
+                    {inNetwork ? <Check size={16} /> : <Plus size={16} />}
+                  </button>
                 </div>
-                <div className="palette-result-theme">{highlight(verse.theme, query)}</div>
-                <div className="palette-result-concepts">
-                  {verse.concepts.slice(0, 3).map((c) => (
-                    <span key={c} className="palette-result-concept">{highlight(c, query)}</span>
-                  ))}
-                </div>
-              </button>
-            ))}
+              );
+            })}
           </div>
         )}
 

@@ -1,14 +1,15 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, GripVertical } from 'lucide-react';
+import { ChevronDown, ChevronRight, GripVertical, Check } from 'lucide-react';
 import { chapters, verses } from '../data.js';
 import './ChapterSidebar.css';
 
 interface ChapterSidebarProps {
   onVerseSelect: (verseId: string) => void;
   selectedVerseId: string | null;
+  networkVerses: Set<string>;
 }
 
-export default function ChapterSidebar({ onVerseSelect, selectedVerseId }: ChapterSidebarProps) {
+export default function ChapterSidebar({ onVerseSelect, selectedVerseId, networkVerses }: ChapterSidebarProps) {
   const [expandedChapters, setExpandedChapters] = useState<Set<number>>(new Set([2, 3, 6]));
 
   const toggleChapter = (chapterNum: number) => {
@@ -47,6 +48,7 @@ export default function ChapterSidebar({ onVerseSelect, selectedVerseId }: Chapt
         {chapters.map((chapter, index) => {
           const isExpanded = expandedChapters.has(chapter.number);
           const chapterVerses = getChapterVerses(chapter.number);
+          const inNetworkCount = chapterVerses.filter(v => networkVerses.has(v.id)).length;
 
           return (
             <div
@@ -66,22 +68,31 @@ export default function ChapterSidebar({ onVerseSelect, selectedVerseId }: Chapt
                   <div className="chapter-title">{chapter.title}</div>
                   <div className="chapter-title-sanskrit">{chapter.titleSanskrit}</div>
                 </div>
-                <div className="chapter-count">{chapterVerses.length}</div>
+                <div className="chapter-count">
+                  {inNetworkCount > 0 && (
+                    <span className="chapter-count-active">{inNetworkCount}/</span>
+                  )}
+                  {chapterVerses.length}
+                </div>
               </button>
 
               {isExpanded && (
                 <div className="verses-list">
-                  {chapterVerses.map((verse, vIndex) => (
+                  {chapterVerses.map((verse, vIndex) => {
+                    const inNetwork = networkVerses.has(verse.id);
+                    return (
                     <div
                       key={verse.id}
-                      className={`verse-item ${selectedVerseId === verse.id ? 'selected' : ''}`}
+                      className={`verse-item ${selectedVerseId === verse.id ? 'selected' : ''} ${inNetwork ? 'in-network' : ''}`}
                       draggable
                       onDragStart={(e) => handleDragStart(e, verse.id)}
                       onDragEnd={handleDragEnd}
                       onClick={() => onVerseSelect(verse.id)}
                       style={{ animationDelay: `${vIndex * 20}ms` }}
                     >
-                      <GripVertical size={14} className="verse-grip" />
+                      {inNetwork
+                        ? <Check size={14} className="verse-grip verse-in-network-icon" />
+                        : <GripVertical size={14} className="verse-grip" />}
                       <div className="verse-number">{verse.id}</div>
                       <div className="verse-theme">{verse.theme}</div>
                       <div className="verse-concepts">
@@ -90,7 +101,8 @@ export default function ChapterSidebar({ onVerseSelect, selectedVerseId }: Chapt
                         ))}
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
