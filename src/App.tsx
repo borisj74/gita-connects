@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ReactFlowProvider } from 'reactflow';
 import type { Node, Edge } from 'reactflow';
-import { PanelLeftOpen, PanelRightOpen, Undo2, Redo2, Moon, Sun, Menu, Save, FolderOpen, LayoutGrid, Trash2, Search } from 'lucide-react';
+import { PanelLeftOpen, PanelRightOpen, Moon, Sun, Menu, Save, FolderOpen, LayoutGrid, Trash2, Search } from 'lucide-react';
 import ChapterSidebar from './components/ChapterSidebar.js';
 import VerseNetwork, { type VerseNetworkRef } from './components/VerseNetwork.js';
 import VerseDetail from './components/VerseDetail.js';
@@ -32,7 +32,6 @@ function App() {
     loadActiveFilters(PREDEFINED_CONNECTION_TYPES.map((t) => t.id)),
   );
   const [networkVerses, setNetworkVerses] = useState<Set<string>>(new Set());
-  const [history, setHistory] = useState({ canUndo: false, canRedo: false });
   const [theme, setTheme] = useState<'light' | 'dark'>(
     () => (localStorage.getItem('gita-connects-theme') as 'light' | 'dark') || 'light',
   );
@@ -169,11 +168,6 @@ function App() {
     }
   };
 
-  const handleUndo = () => verseNetworkRef.current?.undo();
-  const handleRedo = () => verseNetworkRef.current?.redo();
-  const handleHistoryChange = useCallback((canUndo: boolean, canRedo: boolean) => {
-    setHistory({ canUndo, canRedo });
-  }, []);
 
   const handleLoadNetwork = (nodes: Node[], edges: Edge[], selectedId: string | null) => {
     if (verseNetworkRef.current?.loadNetwork) {
@@ -290,20 +284,6 @@ function App() {
                   </button>
                   <button
                     className="mobile-menu-item"
-                    onClick={() => { handleUndo(); }}
-                    disabled={!history.canUndo}
-                  >
-                    <Undo2 size={16} /> Undo
-                  </button>
-                  <button
-                    className="mobile-menu-item"
-                    onClick={() => { handleRedo(); }}
-                    disabled={!history.canRedo}
-                  >
-                    <Redo2 size={16} /> Redo
-                  </button>
-                  <button
-                    className="mobile-menu-item"
                     onClick={() => { handleAutoArrange(); setMobileMenuOpen(false); }}
                   >
                     <LayoutGrid size={16} /> Auto Arrange
@@ -340,7 +320,6 @@ function App() {
                 onNetworkVersesChange={setNetworkVerses}
                 connectionTypes={connectionTypes}
                 onAddCustomType={handleAddCustomType}
-                onHistoryChange={handleHistoryChange}
               />
             </ReactFlowProvider>
           </div>
