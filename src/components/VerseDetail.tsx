@@ -34,16 +34,24 @@ export default function VerseDetail({ verseId, onClose, networkVerses, onAddToNe
     c => c.from === verseId || c.to === verseId
   );
 
-  const connectedVerses = relatedConnections
-    .map(conn => {
-      const connectedId = conn.from === verseId ? conn.to : conn.from;
-      const connectedVerse = verses.find(v => v.id === connectedId);
-      return {
-        verse: connectedVerse,
-        connection: conn,
-      };
-    })
-    .filter(item => item.verse && networkVerses.has(item.verse.id)); // Only show if in network
+  // One entry per connected verse, keeping the strongest connection — mirrors
+  // the canvas, which collapses multiple connections per pair to one edge.
+  const strongestByVerse = new Map<string, typeof connections[number]>();
+  relatedConnections.forEach(conn => {
+    const connectedId = conn.from === verseId ? conn.to : conn.from;
+    if (!networkVerses.has(connectedId)) return;
+    const current = strongestByVerse.get(connectedId);
+    if (!current || conn.strength > current.strength) {
+      strongestByVerse.set(connectedId, conn);
+    }
+  });
+
+  const connectedVerses = [...strongestByVerse.entries()]
+    .map(([connectedId, connection]) => ({
+      verse: verses.find(v => v.id === connectedId),
+      connection,
+    }))
+    .filter(item => item.verse);
 
   return (
     <div className="verse-detail">
