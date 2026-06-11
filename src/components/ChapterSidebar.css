@@ -17,7 +17,6 @@
 
 .chapter-item {
   margin-bottom: 0.5rem;
-  animation: slideInLeft 0.3s ease-out backwards;
 }
 
 .chapter-header {
@@ -99,7 +98,6 @@
 
 .verses-list {
   padding: 0.5rem 0;
-  animation: fadeIn 0.3s ease-out;
 }
 
 .verse-item {
@@ -111,7 +109,6 @@
   margin-bottom: 0.5rem;
   cursor: move;
   transition: all var(--transition-base);
-  animation: fadeIn 0.2s ease-out backwards;
   position: relative;
   overflow: hidden;
   width: 100%;
