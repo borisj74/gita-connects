@@ -1,5 +1,6 @@
-import { BookMarked, Tag, Network, X, ScrollText, Plus, Check } from 'lucide-react';
+import { BookMarked, Tag, Network, X, ScrollText, Plus, Check, Sparkles } from 'lucide-react';
 import { verses, connections } from '../data.js';
+import { suggestSimilar, suggestionConnection } from '../suggestions.js';
 import './VerseDetail.css';
 
 interface VerseDetailProps {
@@ -7,9 +8,10 @@ interface VerseDetailProps {
   onClose: () => void;
   networkVerses: Set<string>;
   onAddToNetwork: (verseId: string) => void;
+  onAddSuggestion: (fromId: string, toId: string, conn: { type: string; description: string; strength: number }) => void;
 }
 
-export default function VerseDetail({ verseId, onClose, networkVerses, onAddToNetwork }: VerseDetailProps) {
+export default function VerseDetail({ verseId, onClose, networkVerses, onAddToNetwork, onAddSuggestion }: VerseDetailProps) {
   if (!verseId) {
     return (
       <div className="verse-detail empty">
@@ -52,6 +54,9 @@ export default function VerseDetail({ verseId, onClose, networkVerses, onAddToNe
       connection,
     }))
     .filter(item => item.verse);
+
+  // Discovery: verses similar by concept that aren't already authored-linked.
+  const suggestions = suggestSimilar(verse.id, 5);
 
   return (
     <div className="verse-detail">
@@ -151,6 +156,47 @@ export default function VerseDetail({ verseId, onClose, networkVerses, onAddToNe
                   <div className="connection-strength">
                     Strength: {connection.strength}/10
                   </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Suggested connections (discovery) */}
+        {suggestions.length > 0 && (
+          <div className="detail-section">
+            <div className="section-label">
+              <Sparkles size={14} />
+              Suggested Connections
+            </div>
+            <p className="suggested-hint">Similar verses by shared concepts — add one to link it here.</p>
+            <div className="suggested-verses">
+              {suggestions.map(({ verse: sv, shared, sameTheme }) => (
+                <div key={sv.id} className="suggested-verse-item">
+                  <div className="suggested-main">
+                    <div className="connected-header">
+                      <span className="connected-id">{sv.id}</span>
+                      <span className="suggested-overlap">
+                        {shared.length > 0 ? `${shared.length} shared` : 'similar theme'}
+                      </span>
+                    </div>
+                    <div className="connected-theme">{sv.theme}</div>
+                    {shared.length > 0 && (
+                      <div className="suggested-shared">
+                        {shared.map((c) => (
+                          <span key={c} className="suggested-shared-tag">{c}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    className="suggested-add"
+                    onClick={() => onAddSuggestion(verse.id, sv.id, suggestionConnection(shared.length ? shared : (sameTheme ? ['theme'] : [])))}
+                    title="Add & connect"
+                    aria-label={`Add and connect ${sv.id}`}
+                  >
+                    <Plus size={16} />
+                  </button>
                 </div>
               ))}
             </div>

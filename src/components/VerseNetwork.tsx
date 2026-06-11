@@ -43,6 +43,11 @@ export interface VerseNetworkRef {
   redo: () => void;
   focusNode: (verseId: string) => void;
   addVerse: (verseId: string) => void;
+  addConnection: (
+    fromId: string,
+    toId: string,
+    conn: { type: string; description: string; strength: number },
+  ) => void;
 }
 
 const nodeTypes: NodeTypes = {
@@ -561,6 +566,64 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
 
   const addVerse = useCallback((verseId: string) => addVerses([verseId]), [addVerses]);
 
+  // Add a (possibly suggested) connection: ensure both verses are on the
+  // canvas, then create the edge. Skips exact duplicate pair+type.
+  const addConnection = useCallback(
+    (
+      fromId: string,
+      toId: string,
+      conn: { type: string; description: string; strength: number },
+    ) => {
+      if (fromId === toId) return;
+      commit();
+
+      const finalSet = new Set(netRef.current);
+      const origin = nextPlacementOrigin(nodesRef.current);
+      const newNodes: Node[] = [];
+      [fromId, toId].forEach((vId) => {
+        if (finalSet.has(vId)) return;
+        const verse = verses.find((v) => v.id === vId);
+        if (!verse) return;
+        newNodes.push({
+          id: vId,
+          type: 'verseNode',
+          position: {
+            x: origin.x + newNodes.length * COL_SPACING,
+            y: origin.y,
+          },
+          data: {
+            verse,
+            onSelect: () => onVerseSelect(vId),
+            onRemove: () => handleRemoveNode(vId),
+            onExpand: () => expandRef.current(vId),
+            isSelected: selectedVerseId === vId,
+            connectedCount: 0,
+          },
+        } as Node);
+        finalSet.add(vId);
+      });
+
+      if (newNodes.length > 0) setNodes((nds) => [...nds, ...newNodes]);
+
+      const newEdge = buildEdge(
+        { from: fromId, to: toId, type: conn.type, description: conn.description, strength: conn.strength },
+        connectionTypes,
+        `suggested-${Date.now().toString(36)}`,
+      );
+      setAllEdges((eds) => {
+        const exists = eds.some((e) => {
+          const t = (e.data?.typeId as string | undefined) ?? (e.label as string);
+          return t === conn.type && pairKey(e.source, e.target) === pairKey(fromId, toId);
+        });
+        return exists ? eds : [...eds, newEdge];
+      });
+
+      setNetworkVerses(finalSet);
+      setTimeout(() => fitView({ duration: 400, padding: 0.2 }), 120);
+    },
+    [commit, onVerseSelect, handleRemoveNode, selectedVerseId, connectionTypes, setNodes, setAllEdges, fitView],
+  );
+
   const handleAddRandom = useCallback(() => {
     const available = verses.filter((v) => !netRef.current.has(v.id));
     if (available.length === 0) return;
@@ -755,6 +818,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     redo,
     focusNode,
     addVerse,
+    addConnection,
   }));
 
   const showConnectHint = !connectHintDismissed && nodes.length >= 2;

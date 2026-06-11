@@ -332,6 +332,7 @@ function App() {
             onClose={handleCloseDetail}
             networkVerses={networkVerses}
             onAddToNetwork={(id) => verseNetworkRef.current?.addVerse(id)}
+            onAddSuggestion={(fromId, toId, conn) => verseNetworkRef.current?.addConnection(fromId, toId, conn)}
           />
         )}
       </div>
