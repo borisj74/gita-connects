@@ -278,15 +278,6 @@ function App() {
                   </div>
                   <button
                     className="mobile-menu-item"
-                    onClick={() => {
-                      setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
-                    }}
-                  >
-                    {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-                    {theme === 'dark' ? 'Light mode' : 'Dark mode'}
-                  </button>
-                  <button
-                    className="mobile-menu-item"
                     onClick={() => { saveLoadRef.current?.openSave(); setMobileMenuOpen(false); }}
                   >
                     <Save size={16} /> Save
