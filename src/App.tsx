@@ -32,6 +32,7 @@ function App() {
     loadActiveFilters(PREDEFINED_CONNECTION_TYPES.map((t) => t.id)),
   );
   const [networkVerses, setNetworkVerses] = useState<Set<string>>(new Set());
+  const [networkEdges, setNetworkEdges] = useState<Edge[]>([]);
   const [theme, setTheme] = useState<'light' | 'dark'>(
     () => (localStorage.getItem('gita-connects-theme') as 'light' | 'dark') || 'light',
   );
@@ -183,6 +184,18 @@ function App() {
     return { nodes: [], edges: [] };
   };
 
+  // Verses directly connected to the selected one on the canvas — lets the
+  // suggestion list mark accepted links as added.
+  const connectedNeighbors = useMemo(() => {
+    const set = new Set<string>();
+    if (!selectedVerseId) return set;
+    networkEdges.forEach((e) => {
+      if (e.source === selectedVerseId) set.add(e.target);
+      if (e.target === selectedVerseId) set.add(e.source);
+    });
+    return set;
+  }, [selectedVerseId, networkEdges]);
+
   return (
     <div className="app">
       <div className="app-body">
@@ -319,6 +332,7 @@ function App() {
                 activeFilters={activeFilters}
                 onToggleFilter={handleToggleFilter}
                 onNetworkVersesChange={setNetworkVerses}
+                onNetworkEdgesChange={setNetworkEdges}
                 connectionTypes={connectionTypes}
                 onAddCustomType={handleAddCustomType}
               />
@@ -333,6 +347,7 @@ function App() {
             networkVerses={networkVerses}
             onAddToNetwork={(id) => verseNetworkRef.current?.addVerse(id)}
             onAddSuggestion={(fromId, toId, conn) => verseNetworkRef.current?.addConnection(fromId, toId, conn)}
+            connectedNeighbors={connectedNeighbors}
           />
         )}
       </div>

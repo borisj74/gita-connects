@@ -9,9 +9,10 @@ interface VerseDetailProps {
   networkVerses: Set<string>;
   onAddToNetwork: (verseId: string) => void;
   onAddSuggestion: (fromId: string, toId: string, conn: { type: string; description: string; strength: number }) => void;
+  connectedNeighbors: Set<string>;
 }
 
-export default function VerseDetail({ verseId, onClose, networkVerses, onAddToNetwork, onAddSuggestion }: VerseDetailProps) {
+export default function VerseDetail({ verseId, onClose, networkVerses, onAddToNetwork, onAddSuggestion, connectedNeighbors }: VerseDetailProps) {
   if (!verseId) {
     return (
       <div className="verse-detail empty">
@@ -171,7 +172,9 @@ export default function VerseDetail({ verseId, onClose, networkVerses, onAddToNe
             </div>
             <p className="suggested-hint">Similar verses by shared concepts — add one to link it here.</p>
             <div className="suggested-verses">
-              {suggestions.map(({ verse: sv, shared, sameTheme }) => (
+              {suggestions.map(({ verse: sv, shared, sameTheme }) => {
+                const added = connectedNeighbors.has(sv.id);
+                return (
                 <div key={sv.id} className="suggested-verse-item">
                   <div className="suggested-main">
                     <div className="connected-header">
@@ -190,15 +193,17 @@ export default function VerseDetail({ verseId, onClose, networkVerses, onAddToNe
                     )}
                   </div>
                   <button
-                    className="suggested-add"
+                    className={`suggested-add ${added ? 'added' : ''}`}
                     onClick={() => onAddSuggestion(verse.id, sv.id, suggestionConnection(shared.length ? shared : (sameTheme ? ['theme'] : [])))}
-                    title="Add & connect"
-                    aria-label={`Add and connect ${sv.id}`}
+                    disabled={added}
+                    title={added ? 'Added' : 'Add & connect'}
+                    aria-label={added ? `${sv.id} added` : `Add and connect ${sv.id}`}
                   >
-                    <Plus size={16} />
+                    {added ? <Check size={16} /> : <Plus size={16} />}
                   </button>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}

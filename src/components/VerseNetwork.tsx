@@ -28,6 +28,7 @@ interface VerseNetworkProps {
   activeFilters: Set<string>;
   onToggleFilter?: (type: string) => void;
   onNetworkVersesChange: (verses: Set<string>) => void;
+  onNetworkEdgesChange?: (edges: Edge[]) => void;
   connectionTypes: ConnectionTypeDef[];
   onAddCustomType: (type: ConnectionTypeDef) => void;
   onHistoryChange?: (canUndo: boolean, canRedo: boolean) => void;
@@ -121,6 +122,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       selectedVerseId,
       activeFilters,
       onNetworkVersesChange,
+      onNetworkEdgesChange,
       connectionTypes,
       onAddCustomType,
       onHistoryChange,
@@ -205,6 +207,10 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     useEffect(() => {
       onNetworkVersesChange(networkVerses);
     }, [networkVerses, onNetworkVersesChange]);
+
+    useEffect(() => {
+      onNetworkEdgesChange?.(allEdges);
+    }, [allEdges, onNetworkEdgesChange]);
 
     useEffect(() => {
       onHistoryChange?.(canUndo, canRedo);

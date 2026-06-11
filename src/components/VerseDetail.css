@@ -364,9 +364,15 @@
   transition: all var(--transition-base);
 }
 
-.suggested-add:hover {
+.suggested-add:hover:not(.added) {
   background: var(--sage-500, #7d8a6e);
   color: white;
+}
+
+.suggested-add.added {
+  border-color: var(--beige-300);
+  color: var(--sage-600, #69765a);
+  cursor: default;
 }
 
 .add-to-network-button {
