@@ -861,7 +861,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       >
         <Background color="#FBF8F4" gap={20} />
         {nodes.length > 0 && (
-          <Panel position="bottom-right" className="canvas-zoom">
+          <Panel position={isMobile ? 'bottom-left' : 'bottom-right'} className="canvas-zoom">
             <button
               className="control-button icon-only"
               onClick={undo}

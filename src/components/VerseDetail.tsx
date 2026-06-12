@@ -69,7 +69,8 @@ export default function VerseDetail({
   const suggestions = suggestSimilar(verse.id, 5);
 
   return (
-    <div className={`verse-detail ${isMobile ? 'mobile-drawer' : ''}`}>
+    <div className={`verse-detail ${isMobile ? 'mobile-bottom-sheet' : ''}`}>
+      {isMobile && <div className="bottom-sheet-handle" aria-hidden="true" />}
       <div className="detail-header">
         <button className="close-button" onClick={onClose} aria-label="Close panel">
           <X size={20} />

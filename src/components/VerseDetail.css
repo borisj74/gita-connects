@@ -405,43 +405,70 @@
   cursor: default;
 }
 
-/* Mobile full-screen drawer */
+/* Mobile bottom sheet — slides up, canvas stays visible above */
 @media (max-width: 768px) {
-  .verse-detail.mobile-drawer {
+  .verse-detail.mobile-bottom-sheet {
     position: fixed;
-    top: 0;
+    top: auto;
     right: 0;
     bottom: 0;
     left: 0;
     width: 100% !important;
+    max-height: min(82dvh, 640px);
     z-index: 110;
+    border-left: none;
+    border-top: 1px solid var(--beige-300);
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.18);
     padding-bottom: env(safe-area-inset-bottom);
+    animation: bottomSheetIn 0.32s ease-out;
   }
 
-  .verse-detail.mobile-drawer .detail-header {
-    padding-top: max(1.5rem, calc(1rem + env(safe-area-inset-top)));
+  .bottom-sheet-handle {
+    width: 36px;
+    height: 4px;
+    background: var(--beige-400);
+    border-radius: 999px;
+    margin: 0.625rem auto 0;
+    flex-shrink: 0;
   }
 
-  .verse-detail.mobile-drawer .verse-id-large {
+  .verse-detail.mobile-bottom-sheet .detail-header {
+    padding-top: 0.75rem;
+    animation: none;
+  }
+
+  .verse-detail.mobile-bottom-sheet .verse-id-large {
     font-size: 2rem;
   }
 
-  .verse-detail.mobile-drawer .verse-theme-large {
+  .verse-detail.mobile-bottom-sheet .verse-theme-large {
     font-size: 1.375rem;
   }
 
-  .verse-detail.mobile-drawer .detail-header-row {
+  .verse-detail.mobile-bottom-sheet .detail-header-row {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .verse-detail.mobile-drawer .add-to-network-button {
+  .verse-detail.mobile-bottom-sheet .add-to-network-button {
     width: 100%;
     min-height: 44px;
   }
 
-  .verse-detail.mobile-drawer .suggested-add {
+  .verse-detail.mobile-bottom-sheet .suggested-add {
     width: 44px;
     height: 44px;
+  }
+}
+
+@keyframes bottomSheetIn {
+  from {
+    transform: translateY(100%);
+    opacity: 0.6;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
 }

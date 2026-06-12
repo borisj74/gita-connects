@@ -471,8 +471,8 @@
   background: var(--beige-50);
 }
 
-/* Custom zoom controls, bottom-right above the theme toggle */
-.react-flow__panel.canvas-zoom {
+/* Undo/redo — desktop: bottom-right, stacked above theme toggle */
+.verse-network:not(.is-mobile) .react-flow__panel.canvas-zoom {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -502,11 +502,15 @@
     padding: 0.75rem 1rem;
   }
 
+  /* Undo/redo on bottom-left — theme toggle stays bottom-right */
   .verse-network.is-mobile .react-flow__panel.canvas-zoom {
-    bottom: max(64px, calc(52px + env(safe-area-inset-bottom)));
+    display: flex;
+    margin: 0;
+    bottom: max(12px, env(safe-area-inset-bottom));
     left: max(12px, env(safe-area-inset-left));
     right: auto;
     flex-direction: row;
+    gap: 0.5rem;
   }
 
   .verse-network.is-mobile .canvas-zoom .control-button {
