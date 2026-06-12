@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ReactFlowProvider } from 'reactflow';
 import type { Node, Edge } from 'reactflow';
-import { PanelLeftOpen, PanelRightOpen, Moon, Sun, Menu, Save, FolderOpen, LayoutGrid, Trash2, Search } from 'lucide-react';
+import { PanelLeftOpen, PanelRightOpen, Moon, Sun, Menu, Save, FolderOpen, LayoutGrid, Trash2, Search, BookOpen } from 'lucide-react';
+import { useMediaQuery, MOBILE_BREAKPOINT } from './hooks/useMediaQuery.js';
 import ChapterSidebar from './components/ChapterSidebar.js';
 import VerseNetwork, { type VerseNetworkRef } from './components/VerseNetwork.js';
 import VerseDetail from './components/VerseDetail.js';
@@ -19,8 +20,11 @@ import {
 import './App.css';
 
 function App() {
+  const isMobile = useMediaQuery(MOBILE_BREAKPOINT);
   const [selectedVerseId, setSelectedVerseId] = useState<string | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(
+    () => typeof window !== 'undefined' && window.innerWidth > 768,
+  );
   const [customTypes, setCustomTypes] = useState<ConnectionTypeDef[]>(() =>
     loadCustomConnectionTypes(),
   );
@@ -70,10 +74,17 @@ function App() {
     return () => document.removeEventListener('mousedown', onDown);
   }, [mobileMenuOpen]);
 
-  const handleVerseSelect = (verseId: string) => {
+  const handleVerseSelect = useCallback((verseId: string) => {
     setSelectedVerseId(verseId);
     verseNetworkRef.current?.focusNode?.(verseId);
-  };
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  }, [isMobile]);
+
+  const handleAddVerseToNetwork = useCallback((verseId: string) => {
+    verseNetworkRef.current?.addVerse(verseId);
+  }, []);
 
   const handleCloseDetail = () => {
     setSelectedVerseId(null);
@@ -196,14 +207,31 @@ function App() {
     return set;
   }, [selectedVerseId, networkEdges]);
 
+  const showSidebarBackdrop = isMobile && sidebarOpen;
+  const showDetailBackdrop = isMobile && !!selectedVerseId;
+
   return (
-    <div className="app">
+    <div className={`app ${isMobile ? 'is-mobile' : ''}`}>
+      {(showSidebarBackdrop || showDetailBackdrop) && (
+        <button
+          type="button"
+          className="drawer-backdrop"
+          aria-label="Close panel"
+          onClick={() => {
+            if (showDetailBackdrop) setSelectedVerseId(null);
+            else setSidebarOpen(false);
+          }}
+        />
+      )}
+
       <div className="app-body">
-        <div className={`sidebar-wrapper ${!sidebarOpen ? 'collapsed' : ''}`}>
+        <div className={`sidebar-wrapper ${!sidebarOpen ? 'collapsed' : ''} ${isMobile ? 'mobile-drawer' : ''}`}>
           <div className="section-header">
             <div className="section-info">
               <h2 className="section-title">Chapters & Verses</h2>
-              <p className="section-subtitle">Drag verses to explore connections</p>
+              <p className="section-subtitle">
+                {isMobile ? 'Tap verses to read, or + to add to canvas' : 'Drag verses to explore connections'}
+              </p>
             </div>
             <button
               className="sidebar-toggle"
@@ -219,18 +247,21 @@ function App() {
               onVerseSelect={handleVerseSelect}
               selectedVerseId={selectedVerseId}
               networkVerses={networkVerses}
+              isMobile={isMobile}
+              onAddToNetwork={handleAddVerseToNetwork}
             />
           )}
         </div>
 
         {!sidebarOpen && (
           <button
-            className="sidebar-toggle sidebar-floating-toggle"
+            className={`sidebar-toggle sidebar-floating-toggle ${isMobile ? 'chapters-fab' : ''}`}
             onClick={() => setSidebarOpen(true)}
-            title="Expand sidebar"
-            aria-label="Expand sidebar"
+            title={isMobile ? 'Browse chapters' : 'Expand sidebar'}
+            aria-label={isMobile ? 'Browse chapters' : 'Expand sidebar'}
           >
-            <PanelLeftOpen size={18} />
+            {isMobile ? <BookOpen size={18} /> : <PanelLeftOpen size={18} />}
+            {isMobile && <span className="chapters-fab-label">Chapters</span>}
           </button>
         )}
 
@@ -335,6 +366,7 @@ function App() {
                 onNetworkEdgesChange={setNetworkEdges}
                 connectionTypes={connectionTypes}
                 onAddCustomType={handleAddCustomType}
+                isMobile={isMobile}
               />
             </ReactFlowProvider>
           </div>
@@ -345,9 +377,10 @@ function App() {
             verseId={selectedVerseId}
             onClose={handleCloseDetail}
             networkVerses={networkVerses}
-            onAddToNetwork={(id) => verseNetworkRef.current?.addVerse(id)}
+            onAddToNetwork={handleAddVerseToNetwork}
             onAddSuggestion={(fromId, toId, conn) => verseNetworkRef.current?.addConnection(fromId, toId, conn)}
             connectedNeighbors={connectedNeighbors}
+            isMobile={isMobile}
           />
         )}
       </div>

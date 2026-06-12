@@ -83,6 +83,25 @@
   max-width: 600px;
 }
 
+@media (max-width: 768px) {
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal-content {
+    width: 100%;
+    max-width: none;
+    max-height: 92vh;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .modal-footer .modal-button {
+    min-height: 44px;
+    flex: 1;
+  }
+}
+
 .modal-header {
   padding: 1.5rem;
   border-bottom: 1px solid var(--beige-200);

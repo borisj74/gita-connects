@@ -10,9 +10,18 @@ interface VerseDetailProps {
   onAddToNetwork: (verseId: string) => void;
   onAddSuggestion: (fromId: string, toId: string, conn: { type: string; description: string; strength: number }) => void;
   connectedNeighbors: Set<string>;
+  isMobile?: boolean;
 }
 
-export default function VerseDetail({ verseId, onClose, networkVerses, onAddToNetwork, onAddSuggestion, connectedNeighbors }: VerseDetailProps) {
+export default function VerseDetail({
+  verseId,
+  onClose,
+  networkVerses,
+  onAddToNetwork,
+  onAddSuggestion,
+  connectedNeighbors,
+  isMobile = false,
+}: VerseDetailProps) {
   if (!verseId) {
     return (
       <div className="verse-detail empty">
@@ -60,7 +69,7 @@ export default function VerseDetail({ verseId, onClose, networkVerses, onAddToNe
   const suggestions = suggestSimilar(verse.id, 5);
 
   return (
-    <div className="verse-detail">
+    <div className={`verse-detail ${isMobile ? 'mobile-drawer' : ''}`}>
       <div className="detail-header">
         <button className="close-button" onClick={onClose} aria-label="Close panel">
           <X size={20} />

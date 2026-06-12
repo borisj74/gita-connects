@@ -149,3 +149,28 @@
 .dialog-details-toggle .chevron.open {
   transform: rotate(180deg);
 }
+
+@media (max-width: 768px) {
+  .connection-dialog {
+    width: 100%;
+    max-width: none;
+    max-height: 92vh;
+    border-radius: 16px 16px 0 0;
+    margin-top: auto;
+  }
+
+  .modal-overlay:has(.connection-dialog) {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .type-chip {
+    min-height: 44px;
+    padding: 0.5rem 0.875rem;
+  }
+
+  .modal-footer .modal-button {
+    min-height: 44px;
+    flex: 1;
+  }
+}

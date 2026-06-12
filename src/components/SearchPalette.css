@@ -219,3 +219,35 @@
   from { opacity: 0; transform: translateY(-8px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+@media (max-width: 768px) {
+  .palette-overlay {
+    padding-top: max(12px, env(safe-area-inset-top));
+    align-items: stretch;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .palette {
+    width: 100%;
+    max-width: none;
+    max-height: calc(100dvh - 2rem - env(safe-area-inset-top));
+    display: flex;
+    flex-direction: column;
+  }
+
+  .palette-results {
+    max-height: none;
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .palette-kbd {
+    display: none;
+  }
+
+  .palette-result-add {
+    width: 44px;
+    height: 44px;
+  }
+}

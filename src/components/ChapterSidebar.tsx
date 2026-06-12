@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, GripVertical, Check } from 'lucide-react';
+import { ChevronDown, ChevronRight, GripVertical, Check, Plus } from 'lucide-react';
 import { chapters, verses } from '../data.js';
 import './ChapterSidebar.css';
 
@@ -7,9 +7,17 @@ interface ChapterSidebarProps {
   onVerseSelect: (verseId: string) => void;
   selectedVerseId: string | null;
   networkVerses: Set<string>;
+  isMobile?: boolean;
+  onAddToNetwork?: (verseId: string) => void;
 }
 
-export default function ChapterSidebar({ onVerseSelect, selectedVerseId, networkVerses }: ChapterSidebarProps) {
+export default function ChapterSidebar({
+  onVerseSelect,
+  selectedVerseId,
+  networkVerses,
+  isMobile = false,
+  onAddToNetwork,
+}: ChapterSidebarProps) {
   const [expandedChapters, setExpandedChapters] = useState<Set<number>>(new Set([2, 3, 6]));
 
   const toggleChapter = (chapterNum: number) => {
@@ -83,23 +91,39 @@ export default function ChapterSidebar({ onVerseSelect, selectedVerseId, network
                     return (
                     <div
                       key={verse.id}
-                      className={`verse-item ${selectedVerseId === verse.id ? 'selected' : ''} ${inNetwork ? 'in-network' : ''}`}
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, verse.id)}
-                      onDragEnd={handleDragEnd}
+                      className={`verse-item ${selectedVerseId === verse.id ? 'selected' : ''} ${inNetwork ? 'in-network' : ''} ${isMobile ? 'touch-verse' : ''}`}
+                      draggable={!isMobile}
+                      onDragStart={isMobile ? undefined : (e) => handleDragStart(e, verse.id)}
+                      onDragEnd={isMobile ? undefined : handleDragEnd}
                       onClick={() => onVerseSelect(verse.id)}
                       style={{ animationDelay: `${vIndex * 20}ms` }}
                     >
                       {inNetwork
                         ? <Check size={14} className="verse-grip verse-in-network-icon" />
-                        : <GripVertical size={14} className="verse-grip" />}
-                      <div className="verse-number">{verse.id}</div>
-                      <div className="verse-theme">{verse.theme}</div>
-                      <div className="verse-concepts">
-                        {verse.concepts.slice(0, 2).map(concept => (
-                          <span key={concept} className="concept-tag">{concept}</span>
-                        ))}
+                        : <GripVertical size={14} className={`verse-grip ${isMobile ? 'verse-grip-hidden' : ''}`} />}
+                      <div className="verse-item-body">
+                        <div className="verse-number">{verse.id}</div>
+                        <div className="verse-theme">{verse.theme}</div>
+                        <div className="verse-concepts">
+                          {verse.concepts.slice(0, 2).map(concept => (
+                            <span key={concept} className="concept-tag">{concept}</span>
+                          ))}
+                        </div>
                       </div>
+                      {isMobile && !inNetwork && onAddToNetwork && (
+                        <button
+                          type="button"
+                          className="verse-add-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onAddToNetwork(verse.id);
+                          }}
+                          aria-label={`Add ${verse.id} to network`}
+                          title="Add to network"
+                        >
+                          <Plus size={16} />
+                        </button>
+                      )}
                     </div>
                     );
                   })}

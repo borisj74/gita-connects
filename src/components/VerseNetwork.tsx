@@ -32,6 +32,7 @@ interface VerseNetworkProps {
   connectionTypes: ConnectionTypeDef[];
   onAddCustomType: (type: ConnectionTypeDef) => void;
   onHistoryChange?: (canUndo: boolean, canRedo: boolean) => void;
+  isMobile?: boolean;
 }
 
 export interface VerseNetworkRef {
@@ -126,6 +127,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       connectionTypes,
       onAddCustomType,
       onHistoryChange,
+      isMobile = false,
     },
     ref,
   ) => {
@@ -831,9 +833,9 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
 
   return (
     <div
-      className={`verse-network ${showConnectHint ? 'connect-hint-active' : ''}`}
-      onDragOver={handleDragOver}
-      onDrop={handleDrop}
+      className={`verse-network ${showConnectHint ? 'connect-hint-active' : ''} ${isMobile ? 'is-mobile' : ''}`}
+      onDragOver={isMobile ? undefined : handleDragOver}
+      onDrop={isMobile ? undefined : handleDrop}
     >
       <ReactFlow
         nodes={nodes}
@@ -844,11 +846,18 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         onNodesDelete={handleNodesDelete}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
-        deleteKeyCode={['Delete', 'Backspace']}
+        deleteKeyCode={isMobile ? null : ['Delete', 'Backspace']}
         fitView
         minZoom={0.2}
         maxZoom={1.5}
-        defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
+        defaultViewport={{ x: 0, y: 0, zoom: isMobile ? 0.65 : 0.8 }}
+        panOnDrag
+        panOnScroll={false}
+        zoomOnPinch
+        zoomOnScroll={false}
+        preventScrolling
+        nodesConnectable
+        elementsSelectable
       >
         <Background color="#FBF8F4" gap={20} />
         {nodes.length > 0 && (
@@ -879,8 +888,9 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         <div className="connect-hint" role="status">
           <MousePointer2 size={16} className="connect-hint-icon" />
           <span>
-            Tip: drag from the dot at the bottom of one verse to the dot on top
-            of another to connect them
+            {isMobile
+              ? 'Tip: touch and drag from the bottom dot on one verse to the top dot on another to connect them'
+              : 'Tip: drag from the dot at the bottom of one verse to the dot on top of another to connect them'}
           </span>
           <button
             className="connect-hint-close"
@@ -896,14 +906,16 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         <div className="network-empty-state">
           <h2 className="network-empty-state-title">Start Your Journey</h2>
           <p className="network-empty-state-description">
-            Drag a verse card from the left sidebar to begin exploring the beautiful connections between the teachings of the Bhagavad Gita.
+            {isMobile
+              ? 'Tap Chapters to browse verses, or use the buttons below to seed your network with connected teachings from the Bhagavad Gita.'
+              : 'Drag a verse card from the left sidebar to begin exploring the beautiful connections between the teachings of the Bhagavad Gita.'}
           </p>
           <ul className="network-empty-state-list">
             <li>Each verse reveals thematic, conceptual, practical, and doctrinal connections</li>
             <li>Connection lines display relationship types with colored badges</li>
-            <li>Click verses to discover related teachings</li>
-            <li>Drag verses around to organize your network</li>
-            <li>Drag from one verse handle to another to create a custom connection</li>
+            <li>{isMobile ? 'Tap verses to read details and add suggestions' : 'Click verses to discover related teachings'}</li>
+            <li>{isMobile ? 'Pinch to zoom and drag the canvas to pan' : 'Drag verses around to organize your network'}</li>
+            <li>{isMobile ? 'Drag from verse dots to create custom connections' : 'Drag from one verse handle to another to create a custom connection'}</li>
           </ul>
           <div className="network-empty-state-actions">
             <button className="starter-button primary" onClick={handleAddStarterSet}>

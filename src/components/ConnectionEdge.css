@@ -147,3 +147,17 @@
     transform: translateX(-50%) translateY(0);
   }
 }
+
+/* Touch: larger chip + delete target */
+@media (hover: none), (max-width: 768px) {
+  .edge-label {
+    min-height: 36px;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8125rem;
+  }
+
+  .edge-popover-remove {
+    min-height: 44px;
+    padding: 0.625rem 0.875rem;
+  }
+}

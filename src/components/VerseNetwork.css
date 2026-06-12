@@ -488,3 +488,29 @@
 [data-theme="dark"] .canvas-zoom .control-button {
   background: var(--beige-50);
 }
+
+/* Mobile canvas adjustments */
+@media (max-width: 768px) {
+  .verse-network.is-mobile .connect-hint {
+    top: max(3.5rem, calc(2.5rem + env(safe-area-inset-top)));
+    max-width: calc(100% - 1.5rem);
+    border-radius: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    text-align: center;
+    font-size: 0.75rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .verse-network.is-mobile .react-flow__panel.canvas-zoom {
+    bottom: max(64px, calc(52px + env(safe-area-inset-bottom)));
+    left: max(12px, env(safe-area-inset-left));
+    right: auto;
+    flex-direction: row;
+  }
+
+  .verse-network.is-mobile .canvas-zoom .control-button {
+    width: 44px;
+    height: 44px;
+  }
+}
