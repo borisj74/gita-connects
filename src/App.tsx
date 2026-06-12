@@ -374,6 +374,7 @@ function App() {
 
         {selectedVerseId && (
           <VerseDetail
+            key={selectedVerseId}
             verseId={selectedVerseId}
             onClose={handleCloseDetail}
             networkVerses={networkVerses}

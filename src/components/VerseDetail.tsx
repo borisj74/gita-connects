@@ -1,6 +1,7 @@
 import { BookMarked, Tag, Network, X, ScrollText, Plus, Check, Sparkles } from 'lucide-react';
 import { verses, connections } from '../data.js';
 import { suggestSimilar, suggestionConnection } from '../suggestions.js';
+import { useBottomSheet } from '../hooks/useBottomSheet.js';
 import './VerseDetail.css';
 
 interface VerseDetailProps {
@@ -22,6 +23,11 @@ export default function VerseDetail({
   connectedNeighbors,
   isMobile = false,
 }: VerseDetailProps) {
+  const { sheetClassName, sheetStyle, grabberProps } = useBottomSheet({
+    enabled: isMobile && !!verseId,
+    onClose,
+  });
+
   if (!verseId) {
     return (
       <div className="verse-detail empty">
@@ -68,31 +74,37 @@ export default function VerseDetail({
   // Discovery: verses similar by concept that aren't already authored-linked.
   const suggestions = suggestSimilar(verse.id, 5);
 
-  return (
-    <div className={`verse-detail ${isMobile ? 'mobile-bottom-sheet' : ''}`}>
-      {isMobile && <div className="bottom-sheet-handle" aria-hidden="true" />}
-      <div className="detail-header">
-        <button className="close-button" onClick={onClose} aria-label="Close panel">
-          <X size={20} />
-        </button>
-        <div className="detail-header-row">
-          <div className="detail-header-meta">
-            <div className="verse-id-large">{verse.id}</div>
-            <div className="chapter-info">
-              Chapter {verse.chapter} • Verse {verse.verse}
-            </div>
+  const detailHeader = (
+    <div className="detail-header">
+      <button
+        className="close-button"
+        onClick={onClose}
+        onPointerDown={(e) => e.stopPropagation()}
+        aria-label="Close panel"
+      >
+        <X size={20} />
+      </button>
+      <div className="detail-header-row">
+        <div className="detail-header-meta">
+          <div className="verse-id-large">{verse.id}</div>
+          <div className="chapter-info">
+            Chapter {verse.chapter} • Verse {verse.verse}
           </div>
-          <button
-            className={`add-to-network-button ${inNetwork ? 'in-network' : ''}`}
-            onClick={() => onAddToNetwork(verse.id)}
-            disabled={inNetwork}
-          >
-            {inNetwork ? <Check size={16} /> : <Plus size={16} />}
-            {inNetwork ? 'In network' : 'Add to network'}
-          </button>
         </div>
+        <button
+          className={`add-to-network-button ${inNetwork ? 'in-network' : ''}`}
+          onClick={() => onAddToNetwork(verse.id)}
+          onPointerDown={(e) => e.stopPropagation()}
+          disabled={inNetwork}
+        >
+          {inNetwork ? <Check size={16} /> : <Plus size={16} />}
+          {inNetwork ? 'In network' : 'Add to network'}
+        </button>
       </div>
+    </div>
+  );
 
+  const detailBody = (
       <div className="detail-content">
         {/* Theme */}
         <div className="detail-section">
@@ -218,6 +230,31 @@ export default function VerseDetail({
           </div>
         )}
       </div>
+  );
+
+  if (isMobile) {
+    return (
+      <div
+        className={`verse-detail mobile-bottom-sheet ${sheetClassName}`}
+        style={sheetStyle}
+      >
+        <div
+          className="bottom-sheet-top"
+          {...grabberProps}
+          aria-label="Drag to resize verse details"
+        >
+          <div className="bottom-sheet-handle" aria-hidden="true" />
+          {detailHeader}
+        </div>
+        <div className="bottom-sheet-body">{detailBody}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="verse-detail">
+      {detailHeader}
+      {detailBody}
     </div>
   );
 }

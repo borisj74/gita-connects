@@ -420,8 +420,26 @@
     border-top: 1px solid var(--beige-300);
     border-radius: 16px 16px 0 0;
     box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.18);
-    padding-bottom: env(safe-area-inset-bottom);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: height 0.28s ease-out;
     animation: bottomSheetIn 0.32s ease-out;
+  }
+
+  .verse-detail.mobile-bottom-sheet.is-dragging {
+    transition: none;
+  }
+
+  .bottom-sheet-top {
+    flex-shrink: 0;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+  }
+
+  .bottom-sheet-top:active {
+    cursor: grabbing;
   }
 
   .bottom-sheet-handle {
@@ -429,13 +447,30 @@
     height: 4px;
     background: var(--beige-400);
     border-radius: 999px;
-    margin: 0.625rem auto 0;
+    margin: 0 auto;
     flex-shrink: 0;
   }
 
+  .bottom-sheet-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
   .verse-detail.mobile-bottom-sheet .detail-header {
-    padding-top: 0.75rem;
+    padding-top: 0;
     animation: none;
+    position: relative;
+  }
+
+  .verse-detail.mobile-bottom-sheet .close-button,
+  .verse-detail.mobile-bottom-sheet .add-to-network-button {
+    touch-action: manipulation;
+    cursor: pointer;
   }
 
   .verse-detail.mobile-bottom-sheet .verse-id-large {
