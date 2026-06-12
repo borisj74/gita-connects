@@ -12,7 +12,7 @@ interface UseBottomSheetOptions {
 const CLOSE_DRAG_PX = 72;
 const EXPAND_DRAG_PX = 48;
 /** Minimum canvas strip kept visible above the sheet when fully expanded */
-const TOP_GAP_PX = 80;
+const TOP_GAP_PX = 50;
 
 function maxSheetHeightVh(expandedVh: number): number {
   if (typeof window === 'undefined') return expandedVh;
@@ -24,7 +24,7 @@ export function useBottomSheet({
   enabled,
   onClose,
   peekVh = 42,
-  expandedVh = 65,
+  expandedVh = 100,
 }: UseBottomSheetOptions) {
   const [snap, setSnap] = useState<BottomSheetSnap>('peek');
   const [dragOffsetPx, setDragOffsetPx] = useState(0);

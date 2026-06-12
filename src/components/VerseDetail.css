@@ -435,7 +435,7 @@
     bottom: 0;
     left: 0;
     width: 100% !important;
-    max-height: min(65dvh, calc(100dvh - 80px));
+    max-height: calc(100dvh - 50px);
     z-index: 110;
     border-left: none;
     border-top: 1px solid var(--beige-300);
