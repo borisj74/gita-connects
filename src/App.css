@@ -35,9 +35,12 @@
   bottom: 0;
   z-index: 100;
   box-shadow: 2px 0 16px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
 }
 
 .sidebar-wrapper.sidebar-drawer.collapsed {
+  width: 0;
+  min-width: 0;
   box-shadow: none;
   pointer-events: none;
 }
@@ -271,7 +274,7 @@
   inset: 0;
   border: none;
   background: rgba(0, 0, 0, 0.45);
-  z-index: 95;
+  z-index: 99;
   cursor: pointer;
   animation: fadeIn 0.2s ease-out;
   padding: 0;
@@ -283,7 +286,7 @@
     position: relative;
   }
 
-  .sidebar-wrapper.sidebar-drawer {
+  .sidebar-wrapper.sidebar-drawer:not(.collapsed) {
     width: min(85%, var(--sidebar-width));
     padding-bottom: env(safe-area-inset-bottom);
   }

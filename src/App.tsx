@@ -212,18 +212,6 @@ function App() {
 
   return (
     <div className={`app ${isMobile ? 'is-mobile' : ''}`}>
-      {(showSidebarBackdrop || showDetailBackdrop) && (
-        <button
-          type="button"
-          className="drawer-backdrop"
-          aria-label="Close panel"
-          onClick={() => {
-            if (showDetailBackdrop) setSelectedVerseId(null);
-            else setSidebarOpen(false);
-          }}
-        />
-      )}
-
       <div className="app-body">
         <div className={`sidebar-wrapper ${isMobile ? 'sidebar-drawer' : ''} ${!sidebarOpen ? 'collapsed' : ''}`}>
           <div className="section-header">
@@ -385,6 +373,18 @@ function App() {
           />
         )}
       </div>
+
+      {(showSidebarBackdrop || showDetailBackdrop) && (
+        <button
+          type="button"
+          className="drawer-backdrop"
+          aria-label="Close panel"
+          onClick={() => {
+            if (showDetailBackdrop) setSelectedVerseId(null);
+            else setSidebarOpen(false);
+          }}
+        />
+      )}
 
       {searchOpen && (
         <SearchPalette
