@@ -450,54 +450,95 @@
     height: 4px;
     background: var(--beige-400);
     border-radius: 999px;
-    margin: 0 auto 12px;
+    margin: 0 auto 16px;
     flex-shrink: 0;
   }
 
   .mobile-sheet-header {
-    padding: 0 16px 16px;
+    padding: 0 20px 20px;
   }
 
   .mobile-sheet-title-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    column-gap: 12px;
     align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 4px;
+  }
+
+  .mobile-sheet-title-meta {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    min-width: 0;
   }
 
   .mobile-sheet-header .verse-id-large {
-    font-size: 2rem;
-    line-height: 1;
-    margin-bottom: 0;
+    font-size: 2.25rem;
+    font-weight: 600;
+    line-height: 1.1;
+    margin-bottom: 6px;
+    color: var(--terracotta-600);
   }
 
   .mobile-sheet-header .chapter-info {
     font-size: 0.6875rem;
-    margin-bottom: 12px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: var(--brown-600);
+    margin-bottom: 0;
   }
 
   .mobile-close-button {
     position: static;
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
     flex-shrink: 0;
     width: 40px;
     height: 40px;
     border-radius: 8px;
-    color: var(--brown-700);
+    color: var(--brown-600);
+    background: transparent;
+    padding: 0;
   }
 
-  .mobile-add-button {
+  .mobile-close-button:hover {
+    background: var(--beige-200);
+    color: var(--brown-800);
+  }
+
+  .mobile-status-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
     width: 100%;
     min-height: 44px;
-    justify-content: center;
+    margin-top: 16px;
+    padding: 0.625rem 1rem;
     border-radius: 10px;
+    font-family: var(--font-ui);
     font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-base);
   }
 
-  .mobile-add-button.in-network {
+  .mobile-status-button.in-network {
     background: var(--beige-200);
-    border-color: var(--beige-300);
+    border: 1px solid var(--beige-300);
     color: var(--brown-700);
+    cursor: default;
+  }
+
+  .mobile-status-button.add-network {
+    background: transparent;
+    border: 1px solid var(--sage-500);
+    color: var(--sage-600);
+  }
+
+  .mobile-status-button.add-network:hover:not(:disabled) {
+    background: var(--sage-100);
   }
 
   .bottom-sheet-body {
@@ -532,9 +573,8 @@
   }
 
   .verse-detail.mobile-bottom-sheet .mobile-close-button,
-  .verse-detail.mobile-bottom-sheet .mobile-add-button {
+  .verse-detail.mobile-bottom-sheet .mobile-status-button {
     touch-action: manipulation;
-    cursor: pointer;
   }
 
   .verse-detail.mobile-bottom-sheet .verse-theme-large {
