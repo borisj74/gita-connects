@@ -12,7 +12,7 @@ interface UseBottomSheetOptions {
 const CLOSE_DRAG_PX = 72;
 const EXPAND_DRAG_PX = 48;
 /** Minimum canvas strip kept visible above the sheet when fully expanded */
-const TOP_GAP_PX = 50;
+const TOP_GAP_PX = 76;
 
 function maxSheetHeightVh(expandedVh: number): number {
   if (typeof window === 'undefined') return expandedVh;
