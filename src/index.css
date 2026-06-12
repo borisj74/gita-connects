@@ -301,6 +301,10 @@ p, li, dd {
   background: var(--beige-100);
 }
 
+[data-theme="dark"] .react-flow__background svg {
+  display: none;
+}
+
 /* Inner panels that used white */
 [data-theme="dark"] .sanskrit-text.large,
 [data-theme="dark"] .translation-text {
