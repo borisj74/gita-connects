@@ -296,13 +296,14 @@ p, li, dd {
 
 /* Canvas + page backgrounds */
 [data-theme="dark"] .main-content,
-[data-theme="dark"] .verse-network,
-[data-theme="dark"] .react-flow__background {
+[data-theme="dark"] .verse-network {
   background: var(--beige-100);
 }
 
-[data-theme="dark"] .react-flow__background svg {
-  display: none;
+[data-theme="dark"] .react-flow__background {
+  background: var(--beige-100);
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* Inner panels that used white */

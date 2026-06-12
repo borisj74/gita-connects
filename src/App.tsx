@@ -355,6 +355,7 @@ function App() {
                 connectionTypes={connectionTypes}
                 onAddCustomType={handleAddCustomType}
                 isMobile={isMobile}
+                theme={theme}
               />
             </ReactFlowProvider>
           </div>

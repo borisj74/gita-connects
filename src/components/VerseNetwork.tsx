@@ -33,6 +33,7 @@ interface VerseNetworkProps {
   onAddCustomType: (type: ConnectionTypeDef) => void;
   onHistoryChange?: (canUndo: boolean, canRedo: boolean) => void;
   isMobile?: boolean;
+  theme?: 'light' | 'dark';
 }
 
 export interface VerseNetworkRef {
@@ -128,6 +129,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       onAddCustomType,
       onHistoryChange,
       isMobile = false,
+      theme = 'light',
     },
     ref,
   ) => {
@@ -859,7 +861,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         nodesConnectable
         elementsSelectable
       >
-        <Background color="#FBF8F4" gap={20} />
+        {theme === 'light' && <Background color="#FBF8F4" gap={20} />}
         {nodes.length > 0 && (
           <Panel position={isMobile ? 'bottom-left' : 'bottom-right'} className="canvas-zoom">
             <button
