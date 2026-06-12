@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ReactFlowProvider } from 'reactflow';
 import type { Node, Edge } from 'reactflow';
-import { PanelLeftOpen, PanelRightOpen, Moon, Sun, Menu, Save, FolderOpen, LayoutGrid, Trash2, Search, BookOpen } from 'lucide-react';
+import { PanelRightOpen, Moon, Sun, Menu, Save, FolderOpen, LayoutGrid, Trash2, Search, BookOpen } from 'lucide-react';
 import { useMediaQuery, MOBILE_BREAKPOINT } from './hooks/useMediaQuery.js';
 import ChapterSidebar from './components/ChapterSidebar.js';
 import VerseNetwork, { type VerseNetworkRef } from './components/VerseNetwork.js';
@@ -255,13 +255,13 @@ function App() {
 
         {!sidebarOpen && (
           <button
-            className={`sidebar-toggle sidebar-floating-toggle ${isMobile ? 'chapters-fab' : ''}`}
+            className="sidebar-toggle sidebar-floating-toggle chapters-fab"
             onClick={() => setSidebarOpen(true)}
-            title={isMobile ? 'Browse chapters' : 'Expand sidebar'}
-            aria-label={isMobile ? 'Browse chapters' : 'Expand sidebar'}
+            title="Browse chapters"
+            aria-label="Browse chapters"
           >
-            {isMobile ? <BookOpen size={18} /> : <PanelLeftOpen size={18} />}
-            {isMobile && <span className="chapters-fab-label">Chapters</span>}
+            <BookOpen size={18} />
+            <span className="chapters-fab-label">Chapters</span>
           </button>
         )}
 

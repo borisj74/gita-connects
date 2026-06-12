@@ -57,6 +57,24 @@
   box-shadow: var(--shadow-sm);
 }
 
+/* Chapters FAB — opens the chapter sidebar when collapsed */
+.sidebar-floating-toggle.chapters-fab {
+  width: auto;
+  height: 44px;
+  padding: 0 0.875rem;
+  gap: 0.5rem;
+  box-shadow: var(--shadow-md);
+  /* Below search palette (--z-modal: 50) so Chapters stays behind search */
+  z-index: var(--z-sticky);
+}
+
+.chapters-fab-label {
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--brown-800);
+}
+
 [data-theme="dark"] .sidebar-toggle {
   background: var(--beige-50);
 }
@@ -285,24 +303,9 @@
     display: block;
   }
 
-  /* Chapters FAB — prominent entry to the verse drawer */
   .sidebar-floating-toggle.chapters-fab {
     top: max(12px, env(safe-area-inset-top));
     left: max(12px, env(safe-area-inset-left));
-    width: auto;
-    height: 44px;
-    padding: 0 0.875rem;
-    gap: 0.5rem;
-    box-shadow: var(--shadow-md);
-    /* Below search palette (--z-modal: 50) so Chapters stays behind search on mobile */
-    z-index: var(--z-sticky);
-  }
-
-  .chapters-fab-label {
-    font-family: var(--font-ui);
-    font-size: 0.8125rem;
-    font-weight: 600;
-    color: var(--brown-800);
   }
 
   .theme-toggle-btn {
