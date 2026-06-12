@@ -461,7 +461,7 @@
 
   .mobile-sheet-title-row {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     gap: 12px;
     padding-right: 36px;
   }
