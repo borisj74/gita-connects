@@ -14,17 +14,28 @@
 }
 
 .sidebar-wrapper {
-  width: var(--sidebar-width);
   display: flex;
   flex-direction: column;
   border-right: 1px solid var(--beige-300);
   background: white;
 }
 
-.sidebar-wrapper.collapsed {
+.sidebar-wrapper.sidebar-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--sidebar-width);
+  z-index: 100;
+  box-shadow: 2px 0 16px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-wrapper.sidebar-drawer.collapsed {
   width: 0;
   min-width: 0;
   border-right: none;
+  box-shadow: none;
+  pointer-events: none;
   overflow: hidden;
 }
 
@@ -59,6 +70,8 @@
 
 /* Chapters FAB — opens the chapter sidebar when collapsed */
 .sidebar-floating-toggle.chapters-fab {
+  top: 12px;
+  left: 12px;
   width: auto;
   height: 44px;
   padding: 0 0.875rem;
@@ -267,22 +280,9 @@
     position: relative;
   }
 
-  .sidebar-wrapper.mobile-drawer {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: min(85%, 320px);
-    z-index: 100;
-    box-shadow: 2px 0 16px rgba(0, 0, 0, 0.2);
+  .sidebar-wrapper.sidebar-drawer {
+    width: min(85%, var(--sidebar-width));
     padding-bottom: env(safe-area-inset-bottom);
-  }
-
-  .sidebar-wrapper.mobile-drawer.collapsed {
-    width: 0;
-    min-width: 0;
-    box-shadow: none;
-    pointer-events: none;
   }
 
   /* Desktop canvas actions collapse into the hamburger; keep search icon */

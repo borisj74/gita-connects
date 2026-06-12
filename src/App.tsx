@@ -22,9 +22,7 @@ import './App.css';
 function App() {
   const isMobile = useMediaQuery(MOBILE_BREAKPOINT);
   const [selectedVerseId, setSelectedVerseId] = useState<string | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(
-    () => typeof window !== 'undefined' && window.innerWidth > 768,
-  );
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [customTypes, setCustomTypes] = useState<ConnectionTypeDef[]>(() =>
     loadCustomConnectionTypes(),
   );
@@ -77,10 +75,8 @@ function App() {
   const handleVerseSelect = useCallback((verseId: string) => {
     setSelectedVerseId(verseId);
     verseNetworkRef.current?.focusNode?.(verseId);
-    if (isMobile) {
-      setSidebarOpen(false);
-    }
-  }, [isMobile]);
+    setSidebarOpen(false);
+  }, []);
 
   const handleAddVerseToNetwork = useCallback((verseId: string) => {
     verseNetworkRef.current?.addVerse(verseId);
@@ -207,7 +203,7 @@ function App() {
     return set;
   }, [selectedVerseId, networkEdges]);
 
-  const showSidebarBackdrop = isMobile && sidebarOpen;
+  const showSidebarBackdrop = sidebarOpen;
   const showDetailBackdrop = isMobile && !!selectedVerseId;
 
   return (
@@ -225,7 +221,7 @@ function App() {
       )}
 
       <div className="app-body">
-        <div className={`sidebar-wrapper ${!sidebarOpen ? 'collapsed' : ''} ${isMobile ? 'mobile-drawer' : ''}`}>
+        <div className={`sidebar-wrapper sidebar-drawer ${!sidebarOpen ? 'collapsed' : ''}`}>
           <div className="section-header">
             <div className="section-info">
               <h2 className="section-title">Chapters & Verses</h2>
