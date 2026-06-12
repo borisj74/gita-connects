@@ -65,6 +65,27 @@
   padding: 0.125rem 0.375rem;
 }
 
+.palette-close {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--brown-600);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  padding: 0;
+}
+
+.palette-close:hover {
+  background: var(--beige-200);
+  color: var(--brown-800);
+}
+
 .palette-results {
   max-height: 360px;
   overflow-y: auto;
@@ -250,5 +271,11 @@
   .palette-result-add {
     width: 44px;
     height: 44px;
+  }
+
+  .palette-close {
+    width: 44px;
+    height: 44px;
+    touch-action: manipulation;
   }
 }

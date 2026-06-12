@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { Search, SearchX, Plus, Check } from 'lucide-react';
+import { Search, SearchX, Plus, Check, X } from 'lucide-react';
 import { verses } from '../data.js';
+import { useMediaQuery, MOBILE_BREAKPOINT } from '../hooks/useMediaQuery.js';
 import './SearchPalette.css';
 
 interface SearchPaletteProps {
@@ -26,6 +27,7 @@ function highlight(text: string, query: string) {
 }
 
 export default function SearchPalette({ onVerseSelect, onAddVerse, networkVerses, onClose }: SearchPaletteProps) {
+  const isMobile = useMediaQuery(MOBILE_BREAKPOINT);
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -89,7 +91,19 @@ export default function SearchPalette({ onVerseSelect, onAddVerse, networkVerses
             value={query}
             onChange={(e) => { setQuery(e.target.value); setActiveIndex(0); }}
           />
-          <kbd className="palette-kbd">Esc</kbd>
+          {isMobile ? (
+            <button
+              type="button"
+              className="palette-close"
+              onClick={onClose}
+              aria-label="Close search"
+              title="Close"
+            >
+              <X size={18} />
+            </button>
+          ) : (
+            <kbd className="palette-kbd">Esc</kbd>
+          )}
         </div>
 
         {query && results.length > 0 && (
