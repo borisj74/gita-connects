@@ -9,7 +9,7 @@
   transition: all var(--transition-base);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   box-sizing: border-box;
 }
 
@@ -145,26 +145,46 @@
 .node-handle {
   width: 12px;
   height: 12px;
+  min-width: 12px;
+  min-height: 12px;
   background: var(--terracotta-500);
   border: 2px solid white;
   opacity: 1;
   transition: width var(--transition-base), height var(--transition-base), background var(--transition-base), box-shadow var(--transition-base);
 }
 
+/* Center handles on card top/bottom edges (half in, half out) */
+.node-handle.react-flow__handle-top {
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.node-handle.react-flow__handle-bottom {
+  bottom: 0;
+  left: 50%;
+  transform: translate(-50%, 50%);
+}
+
 .node-handle:hover {
   width: 16px;
   height: 16px;
+  min-width: 16px;
+  min-height: 16px;
   background: var(--terracotta-400);
   box-shadow: 0 0 0 4px var(--terracotta-100);
 }
 
-/* Touch devices: larger handles + always-visible close button */
-@media (hover: none) {
-  .node-handle {
-    width: 22px;
-    height: 22px;
-  }
+.node-handle.react-flow__handle-top:hover {
+  transform: translate(-50%, -50%);
+}
 
+.node-handle.react-flow__handle-bottom:hover {
+  transform: translate(-50%, 50%);
+}
+
+/* Touch devices: keep handle size same as desktop; enlarge tap targets elsewhere */
+@media (hover: none) {
   .node-remove {
     opacity: 1;
     pointer-events: auto;
@@ -181,11 +201,6 @@
   .verse-node {
     min-width: 240px;
     max-width: 280px;
-  }
-
-  .node-handle {
-    width: 24px;
-    height: 24px;
   }
 }
 
