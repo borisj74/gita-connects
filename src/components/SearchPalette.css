@@ -274,8 +274,10 @@
   }
 
   .palette-close {
-    width: 44px;
-    height: 44px;
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    min-height: 28px;
     touch-action: manipulation;
   }
 }

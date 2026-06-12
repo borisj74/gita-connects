@@ -87,7 +87,7 @@ export default function SearchPalette({ onVerseSelect, onAddVerse, networkVerses
             ref={inputRef}
             type="text"
             className="palette-input"
-            placeholder="Search verses by number, concept, or theme..."
+            placeholder={isMobile ? 'Search verses...' : 'Search verses by number, concept, or theme...'}
             value={query}
             onChange={(e) => { setQuery(e.target.value); setActiveIndex(0); }}
           />
@@ -99,7 +99,7 @@ export default function SearchPalette({ onVerseSelect, onAddVerse, networkVerses
               aria-label="Close search"
               title="Close"
             >
-              <X size={18} />
+              <X size={16} />
             </button>
           ) : (
             <kbd className="palette-kbd">Esc</kbd>
