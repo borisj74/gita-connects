@@ -232,6 +232,34 @@ export default function VerseDetail({
       </div>
   );
 
+  const mobileSheetHeader = (
+    <div className="mobile-sheet-header">
+      <div className="mobile-sheet-title-row">
+        <div className="verse-id-large">{verse.id}</div>
+        <button
+          className="close-button mobile-close-button"
+          onClick={onClose}
+          onPointerDown={(e) => e.stopPropagation()}
+          aria-label="Close panel"
+        >
+          <X size={20} />
+        </button>
+      </div>
+      <div className="chapter-info">
+        Chapter {verse.chapter} • Verse {verse.verse}
+      </div>
+      <button
+        className={`add-to-network-button mobile-add-button ${inNetwork ? 'in-network' : ''}`}
+        onClick={() => onAddToNetwork(verse.id)}
+        onPointerDown={(e) => e.stopPropagation()}
+        disabled={inNetwork}
+      >
+        {inNetwork ? <Check size={16} /> : <Plus size={16} />}
+        {inNetwork ? 'In network' : 'Add to network'}
+      </button>
+    </div>
+  );
+
   if (isMobile) {
     return (
       <div
@@ -244,7 +272,7 @@ export default function VerseDetail({
           aria-label="Drag to resize verse details"
         >
           <div className="bottom-sheet-handle" aria-hidden="true" />
-          {detailHeader}
+          {mobileSheetHeader}
         </div>
         <div className="bottom-sheet-body">{detailBody}</div>
       </div>

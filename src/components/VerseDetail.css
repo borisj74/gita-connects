@@ -437,6 +437,8 @@
     cursor: grab;
     touch-action: none;
     user-select: none;
+    border-bottom: 1px solid var(--beige-300);
+    background: var(--beige-50);
   }
 
   .bottom-sheet-top:active {
@@ -448,8 +450,54 @@
     height: 4px;
     background: var(--beige-400);
     border-radius: 999px;
-    margin: 0 auto;
+    margin: 0 auto 12px;
     flex-shrink: 0;
+  }
+
+  .mobile-sheet-header {
+    padding: 0 16px 16px;
+  }
+
+  .mobile-sheet-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+
+  .mobile-sheet-header .verse-id-large {
+    font-size: 2rem;
+    line-height: 1;
+    margin-bottom: 0;
+  }
+
+  .mobile-sheet-header .chapter-info {
+    font-size: 0.6875rem;
+    margin-bottom: 12px;
+  }
+
+  .mobile-close-button {
+    position: static;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    color: var(--brown-700);
+  }
+
+  .mobile-add-button {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 0.875rem;
+  }
+
+  .mobile-add-button.in-network {
+    background: var(--beige-200);
+    border-color: var(--beige-300);
+    color: var(--brown-700);
   }
 
   .bottom-sheet-body {
@@ -483,39 +531,23 @@
     background: var(--brown-500);
   }
 
-  .verse-detail.mobile-bottom-sheet .detail-header {
-    padding-top: 0;
-    animation: none;
-    position: relative;
-  }
-
-  .verse-detail.mobile-bottom-sheet .close-button,
-  .verse-detail.mobile-bottom-sheet .add-to-network-button {
+  .verse-detail.mobile-bottom-sheet .mobile-close-button,
+  .verse-detail.mobile-bottom-sheet .mobile-add-button {
     touch-action: manipulation;
     cursor: pointer;
-  }
-
-  .verse-detail.mobile-bottom-sheet .verse-id-large {
-    font-size: 2rem;
   }
 
   .verse-detail.mobile-bottom-sheet .verse-theme-large {
     font-size: 1.375rem;
   }
 
-  .verse-detail.mobile-bottom-sheet .detail-header-row {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .verse-detail.mobile-bottom-sheet .add-to-network-button {
-    width: 100%;
-    min-height: 44px;
-  }
-
   .verse-detail.mobile-bottom-sheet .suggested-add {
     width: 44px;
     height: 44px;
+  }
+
+  .verse-detail.mobile-bottom-sheet .detail-content {
+    padding-top: 1rem;
   }
 }
 
