@@ -433,6 +433,7 @@
 
   .bottom-sheet-top {
     flex-shrink: 0;
+    padding-top: 20px;
     cursor: grab;
     touch-action: none;
     user-select: none;
