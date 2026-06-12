@@ -10,9 +10,30 @@
   overflow-y: auto;
   overflow-x: hidden;
   padding: 0.75rem 1rem;
+  padding-right: calc(1rem + 2px);
   position: relative;
   z-index: 1;
   background: white;
+  scrollbar-width: thin;
+  scrollbar-color: var(--brown-400) var(--beige-200);
+}
+
+.chapters-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.chapters-list::-webkit-scrollbar-track {
+  background: var(--beige-200);
+  border-radius: 2px;
+}
+
+.chapters-list::-webkit-scrollbar-thumb {
+  background: var(--brown-400);
+  border-radius: 2px;
+}
+
+.chapters-list::-webkit-scrollbar-thumb:hover {
+  background: var(--brown-500);
 }
 
 .chapter-item {

@@ -4,13 +4,34 @@
   border-left: 1px solid var(--beige-300);
   overflow-y: auto;
   overflow-x: hidden;
+  padding-right: 2px;
   box-shadow: var(--shadow-lg);
+  scrollbar-width: thin;
+  scrollbar-color: var(--brown-400) var(--beige-200);
   /* Overlay the canvas instead of resizing it, so the toolbar stays put. */
   position: absolute;
   top: 0;
   right: 0;
   bottom: 0;
   z-index: var(--z-fixed);
+}
+
+.verse-detail::-webkit-scrollbar {
+  width: 4px;
+}
+
+.verse-detail::-webkit-scrollbar-track {
+  background: var(--beige-200);
+  border-radius: 2px;
+}
+
+.verse-detail::-webkit-scrollbar-thumb {
+  background: var(--brown-400);
+  border-radius: 2px;
+}
+
+.verse-detail::-webkit-scrollbar-thumb:hover {
+  background: var(--brown-500);
 }
 
 .verse-detail::before {
