@@ -234,6 +234,14 @@ export default function VerseDetail({
 
   const mobileSheetHeader = (
     <div className="mobile-sheet-header">
+      <button
+        className="close-button mobile-close-button"
+        onClick={onClose}
+        onPointerDown={(e) => e.stopPropagation()}
+        aria-label="Close panel"
+      >
+        <X size={20} strokeWidth={1.75} />
+      </button>
       <div className="mobile-sheet-title-row">
         <div className="mobile-sheet-title-meta">
           <div className="verse-id-large">{verse.id}</div>
@@ -242,23 +250,15 @@ export default function VerseDetail({
           </div>
         </div>
         <button
-          className="close-button mobile-close-button"
-          onClick={onClose}
+          className={`mobile-status-button ${inNetwork ? 'in-network' : 'add-network'}`}
+          onClick={() => onAddToNetwork(verse.id)}
           onPointerDown={(e) => e.stopPropagation()}
-          aria-label="Close panel"
+          disabled={inNetwork}
         >
-          <X size={20} strokeWidth={1.75} />
+          {inNetwork ? <Check size={16} strokeWidth={2.5} /> : <Plus size={16} strokeWidth={2.5} />}
+          {inNetwork ? 'In network' : 'Add to network'}
         </button>
       </div>
-      <button
-        className={`mobile-status-button ${inNetwork ? 'in-network' : 'add-network'}`}
-        onClick={() => onAddToNetwork(verse.id)}
-        onPointerDown={(e) => e.stopPropagation()}
-        disabled={inNetwork}
-      >
-        {inNetwork ? <Check size={16} strokeWidth={2.5} /> : <Plus size={16} strokeWidth={2.5} />}
-        {inNetwork ? 'In network' : 'Add to network'}
-      </button>
     </div>
   );
 
