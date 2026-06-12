@@ -11,12 +11,20 @@ interface UseBottomSheetOptions {
 
 const CLOSE_DRAG_PX = 72;
 const EXPAND_DRAG_PX = 48;
+/** Minimum canvas strip kept visible above the sheet when fully expanded */
+const TOP_GAP_PX = 80;
+
+function maxSheetHeightVh(expandedVh: number): number {
+  if (typeof window === 'undefined') return expandedVh;
+  const topGapVh = (TOP_GAP_PX / window.innerHeight) * 100;
+  return Math.min(expandedVh, 100 - topGapVh);
+}
 
 export function useBottomSheet({
   enabled,
   onClose,
   peekVh = 42,
-  expandedVh = 82,
+  expandedVh = 65,
 }: UseBottomSheetOptions) {
   const [snap, setSnap] = useState<BottomSheetSnap>('peek');
   const [dragOffsetPx, setDragOffsetPx] = useState(0);
@@ -24,13 +32,13 @@ export function useBottomSheet({
   const startYRef = useRef(0);
   const startSnapRef = useRef<BottomSheetSnap>('peek');
 
-  const snapHeightVh = snap === 'expanded' ? expandedVh : peekVh;
+  const maxVh = maxSheetHeightVh(expandedVh);
+  const snapHeightVh = snap === 'expanded' ? maxVh : peekVh;
+
+  const clampHeight = (vh: number) => Math.min(maxVh, Math.max(0, vh));
 
   const currentHeightVh = dragging
-    ? Math.min(
-        expandedVh,
-        Math.max(0, snapHeightVh - (dragOffsetPx / window.innerHeight) * 100),
-      )
+    ? clampHeight(snapHeightVh - (dragOffsetPx / window.innerHeight) * 100)
     : snapHeightVh;
 
   const onGrabberPointerDown = useCallback(
