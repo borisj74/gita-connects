@@ -222,28 +222,29 @@
 
 @media (max-width: 768px) {
   .palette-overlay {
-    padding-top: max(12px, env(safe-area-inset-top));
-    align-items: stretch;
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
+    padding-top: max(18vh, calc(12px + env(safe-area-inset-top)));
+    align-items: flex-start;
+    justify-content: center;
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 
+  /* Compact floating card — same as desktop, not full viewport height */
   .palette {
     width: 100%;
-    max-width: none;
-    max-height: calc(100dvh - 2rem - env(safe-area-inset-top));
-    display: flex;
-    flex-direction: column;
+    max-width: calc(100% - 2rem);
+    height: auto;
+    max-height: none;
+    flex: none;
   }
 
   .palette-results {
-    max-height: none;
-    flex: 1;
-    overflow-y: auto;
+    max-height: min(360px, 50dvh);
+    flex: none;
   }
 
-  .palette-kbd {
-    display: none;
+  .palette-hint {
+    padding: 1.25rem 1.5rem;
   }
 
   .palette-result-add {
