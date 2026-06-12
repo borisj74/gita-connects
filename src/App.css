@@ -294,7 +294,8 @@
     padding: 0 0.875rem;
     gap: 0.5rem;
     box-shadow: var(--shadow-md);
-    z-index: 90;
+    /* Below search palette (--z-modal: 50) so Chapters stays behind search on mobile */
+    z-index: var(--z-sticky);
   }
 
   .chapters-fab-label {

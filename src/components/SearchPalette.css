@@ -6,7 +6,7 @@
   align-items: flex-start;
   justify-content: center;
   padding-top: 18vh;
-  z-index: var(--z-modal, 1000);
+  z-index: var(--z-modal);
   animation: paletteFade 0.15s ease-out;
 }
 
