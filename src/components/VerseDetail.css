@@ -459,7 +459,28 @@
     overflow-x: hidden;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
+    padding-right: 2px;
     padding-bottom: env(safe-area-inset-bottom);
+    scrollbar-width: thin;
+    scrollbar-color: var(--brown-400) var(--beige-200);
+  }
+
+  .bottom-sheet-body::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .bottom-sheet-body::-webkit-scrollbar-track {
+    background: var(--beige-200);
+    border-radius: 2px;
+  }
+
+  .bottom-sheet-body::-webkit-scrollbar-thumb {
+    background: var(--brown-400);
+    border-radius: 2px;
+  }
+
+  .bottom-sheet-body::-webkit-scrollbar-thumb:hover {
+    background: var(--brown-500);
   }
 
   .verse-detail.mobile-bottom-sheet .detail-header {
