@@ -197,7 +197,7 @@ export const verseCuration: Record<string, VerseCuration> = {
   },
 };
 
-export const connections: Connection[] = [] = [
+export const connections: Connection[] = [
   {
     from: '2.47',
     to: '3.19',
