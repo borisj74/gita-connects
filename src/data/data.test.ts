@@ -177,6 +177,12 @@ describe('connections', () => {
 
   // Uncurated verses are expected to have no connections yet; curated ones
   // exist precisely because someone linked them, so those must not be orphans.
+  it('leaves no verse unlinked', () => {
+    const connected = new Set(connections.flatMap((c) => [c.from, c.to]));
+    const orphans = verses.filter((v) => !connected.has(v.id)).map((v) => v.id);
+    expect(orphans).toEqual([]);
+  });
+
   it('leaves no reviewed verse orphaned', () => {
     const connected = new Set(connections.flatMap((c) => [c.from, c.to]));
     const orphans = verses.filter((v) => v.reviewed && !connected.has(v.id)).map((v) => v.id);

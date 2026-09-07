@@ -74,8 +74,10 @@ describe('edgesJoining', () => {
     expect(edgesJoining(['2.47'], new Set())).toEqual([]);
   });
 
-  it('draws suggested edges for a generated verse next to its suggestion', () => {
-    const generated = verses.find((v) => v.curated && !hasAuthored(v.id))!;
+  // Every verse now carries at least one authored link, so a generated (unreviewed)
+  // verse draws authored edges rather than falling back to suggestions.
+  it('draws authored edges for a generated verse next to its neighbour', () => {
+    const generated = verses.find((v) => v.curated && !v.reviewed && hasAuthored(v.id))!;
     const [first] = neighborLinks(generated.id);
     const edges = edgesJoining([generated.id], new Set([first.id]));
     expect(edges.length).toBeGreaterThanOrEqual(1);
