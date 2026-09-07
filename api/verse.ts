@@ -39,9 +39,13 @@ function paragraphs(root: HTMLElement, selector: string): string[] {
     .filter((text, i, all) => text.length > 0 && all.indexOf(text) === i);
 }
 
-export default async function handler(request: Request): Promise<Response> {
-  // On Vercel request.url is the bare path ("/api/verse?chapter=1&verse=6"),
-  // which URL() rejects without a base. The base is only used to parse.
+// A named method export. Vercel's Node runtime only uses the Web-standard
+// Request/Response signature for GET/POST/... exports; a default export is
+// invoked Node-style as (req, res), in which case a returned Response is
+// ignored and the function hangs waiting for res.end().
+export async function GET(request: Request): Promise<Response> {
+  // Base is only used for parsing; request.url is absolute under the Web
+  // signature but this stays safe if a runtime ever passes a bare path.
   const url = new URL(request.url, 'http://localhost');
   const chapter = Number(url.searchParams.get('chapter'));
   const verse = Number(url.searchParams.get('verse'));

@@ -21,9 +21,16 @@ function apiRoutes(): Plugin {
 
         try {
           const mod = await server.ssrLoadModule(`/api/${name}.ts`);
-          const handler = mod.default as (request: Request) => Promise<Response>;
+          const method = (req.method ?? 'GET').toUpperCase();
+          const handler = (mod[method] ?? mod.default) as
+            | ((request: Request) => Promise<Response>)
+            | undefined;
+          if (!handler) {
+            res.statusCode = 405;
+            return res.end();
+          }
           const url = `http://${req.headers.host}${req.url}`;
-          const response = await handler(new Request(url, { method: req.method }));
+          const response = await handler(new Request(url, { method }));
 
           res.statusCode = response.status;
           response.headers.forEach((value, key) => res.setHeader(key, value));
