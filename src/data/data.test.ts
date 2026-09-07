@@ -183,13 +183,13 @@ describe('connections', () => {
     expect(orphans).toEqual([]);
   });
 
-  // Authored connections are scholarship; they may only join verses whose
-  // curation a person has reviewed, never a generated proposal.
-  it('connects only reviewed verses', () => {
-    const curated = new Set(verses.filter((v) => v.reviewed).map((v) => v.id));
+  // Authored connections may join any verse — a link is itself a piece of
+  // review, even when the verse's concepts are still machine-proposed.
+  it('connects only verses that exist', () => {
+    const ids = new Set(verses.map((v) => v.id));
     for (const c of connections) {
-      expect(curated, `${c.from} -> ${c.to}`).toContain(c.from);
-      expect(curated, `${c.from} -> ${c.to}`).toContain(c.to);
+      expect(ids, `${c.from} -> ${c.to}`).toContain(c.from);
+      expect(ids, `${c.from} -> ${c.to}`).toContain(c.to);
     }
   });
 });

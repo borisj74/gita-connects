@@ -58,6 +58,8 @@ export interface Connection {
   type: string; // connection type id (predefined or custom)
   description: string;
   strength: number; // 1-10
+  /** Review label for the relation (e.g. 'sense_control'); not shown in the UI. */
+  theme?: string;
 }
 
 export interface Chapter {

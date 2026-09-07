@@ -44,7 +44,8 @@ During `vite dev` a small plugin in `vite.config.ts` runs the function locally; 
 it deploys as a Function.
 
 Of the 701 verses, **37 are hand-curated** — theme, concepts, a summary in our own words,
-and 120 authored connections between them. The other **664 carry machine-proposed
+and 643 authored connections — 120 among the curated verses plus a whole-text pass
+that links verses across all 18 chapters. The other **664 carry machine-proposed
 concepts** from [`scripts/generate-concepts.mjs`](scripts/generate-concepts.mjs), marked
 `unreviewed` in the UI until a person checks them. Every verse has at least two concepts
 and belongs to one of eleven **theme clusters** ([`src/clusters.ts`](src/clusters.ts) —

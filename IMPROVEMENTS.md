@@ -66,8 +66,9 @@ Audit performed 2026-06-06. Items grouped by category; numbers are stable IDs fo
     the `data.test.ts` uniqueness check from the (from, to, type) triple to the
     unordered pair.
 
-52. **664 uncurated verses** — all 701 verses now load, but only 37 have a theme, concepts,
-    and connections. Needs a curation workflow: generating candidate concept tags from the
+52. **664 uncurated verses** — all 701 verses now load, but only 37 have a reviewed theme and
+    concepts (a whole-text pass on 2026-09-07 added 523 authored connections across all
+    chapters, so links no longer depend on curation). Needs a curation workflow: generating candidate concept tags from the
     word-by-word glosses for review is the likely path. The controlled vocabulary it depends
     on (item 53) is now in place, so this is unblocked.
     *(first pass done — 2026-09-07: `scripts/generate-concepts.mjs` proposes concepts and a
