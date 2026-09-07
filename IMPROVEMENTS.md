@@ -54,8 +54,9 @@ Audit performed 2026-06-06. Items grouped by category; numbers are stable IDs fo
     model's five — sequential, thematic, progression, contrast, goal — three of them
     directional. The 120 authored connections were migrated mechanically by old type
     (conceptual/metaphorical→thematic, practical/philosophical→progression,
-    narrative→sequential, devotional→goal); the direction of each `from → to` was NOT
-    reviewed, so a progression pointing the wrong way is possible until checked. Reciprocal
+    narrative→sequential, devotional→goal). Direction of all 40 directional links reviewed
+    2026-09-07: 11 flipped, 3 retyped as parallel, 1 as dependency, 1 sequential retyped
+    thematic (4.7/2.47 are not adjacent), 1 description rewritten. Reciprocal
     pairs are now legitimate where the two directions carry different relations.)*
     — the same verse pair appears twice in
     `connections`, usually under two different types (e.g. `2.56`/`14.22` as both

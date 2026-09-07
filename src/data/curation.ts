@@ -197,12 +197,11 @@ export const verseCuration: Record<string, VerseCuration> = {
   },
 };
 
-// Relation types follow the verse-relationship model: sequential, thematic,
-// progression, contrast, goal. The first three of these were migrated
-// mechanically from an earlier seven-type taxonomy (see LEGACY_TYPE_MAP in
-// connectionTypes.ts) and the direction of `from -> to` was not reviewed at
-// the time — a progression whose from/to are backwards is a known
-// possibility until each pair has been checked.
+// Relation types follow the verse-relationship model (see PREDEFINED_CONNECTION_TYPES
+// in connectionTypes.ts). Directional types read from -> to: for progression the
+// concept introduced in `from` is developed in `to`; for goal, `from` points toward
+// `to` as its aim; for dependency, `from` rests on a premise `to` explains.
+// Direction of every directional link was reviewed on 2026-09-07.
 export const connections: Connection[] = [
   {
     from: '2.47',
@@ -278,7 +277,7 @@ export const connections: Connection[] = [
     from: '4.38',
     to: '13.8',
     type: 'progression',
-    description: 'Spiritual qualities lead to the attainment of purifying knowledge',
+    description: 'Knowledge praised as the supreme purifier is spelled out as concrete qualities',
     strength: 7,
   },
   {
@@ -303,10 +302,10 @@ export const connections: Connection[] = [
     strength: 9,
   },
   {
-    from: '6.35',
-    to: '2.14',
+    from: '2.14',
+    to: '6.35',
     type: 'progression',
-    description: 'Practice and detachment help tolerate sensory disturbances',
+    description: 'The instruction to tolerate dualities is given its method: practice and detachment',
     strength: 7,
   },
   {
@@ -373,10 +372,10 @@ export const connections: Connection[] = [
     strength: 8,
   },
   {
-    from: '5.18',
-    to: '6.5',
+    from: '6.5',
+    to: '5.18',
     type: 'progression',
-    description: 'Equal vision comes from elevating oneself through self-mastery',
+    description: 'Elevating oneself by the mind matures into equal vision toward all beings',
     strength: 7,
   },
   {
@@ -397,7 +396,7 @@ export const connections: Connection[] = [
     from: '8.5',
     to: '18.66',
     type: 'progression',
-    description: 'Remembering the divine at death through complete surrender',
+    description: 'Remembering Kṛṣṇa at death matures into surrender throughout life',
     strength: 8,
   },
   {
@@ -429,10 +428,10 @@ export const connections: Connection[] = [
     strength: 9,
   },
   {
-    from: '17.3',
-    to: '3.27',
+    from: '3.27',
+    to: '17.3',
     type: 'progression',
-    description: 'One\'s faith and nature determine how one identifies and acts',
+    description: "Action driven by the modes of nature is developed into faith shaped by one's nature",
     strength: 7,
   },
   {
@@ -457,10 +456,10 @@ export const connections: Connection[] = [
     strength: 9,
   },
   {
-    from: '3.35',
-    to: '2.47',
+    from: '2.47',
+    to: '3.35',
     type: 'progression',
-    description: 'Following one\'s duty is essential for selfless action',
+    description: "The right to act without claiming the fruit is refined into acting in one's own duty",
     strength: 8,
   },
   {
@@ -591,17 +590,17 @@ export const connections: Connection[] = [
     strength: 9,
   },
   {
-    from: '15.7',
-    to: '3.27',
+    from: '3.27',
+    to: '15.7',
     type: 'progression',
-    description: 'Understanding the eternal soul helps overcome false identification',
+    description: "The false claim to be the doer is answered by the soul's real identity as Kṛṣṇa's fragment",
     strength: 8,
   },
   {
     from: '16.1',
     to: '12.13',
-    type: 'progression',
-    description: 'Divine qualities manifest in the character of a true devotee',
+    type: 'parallel',
+    description: "The divine qualities and the devotee's qualities are the same character described twice",
     strength: 7,
   },
   {
@@ -619,10 +618,10 @@ export const connections: Connection[] = [
     strength: 8,
   },
   {
-    from: '18.46',
-    to: '9.27',
+    from: '9.27',
+    to: '18.46',
     type: 'progression',
-    description: 'Natural occupation becomes worship when offered to the divine',
+    description: "Offering every act to Kṛṣṇa is applied to one's own occupation",
     strength: 9,
   },
   {
@@ -710,10 +709,10 @@ export const connections: Connection[] = [
     strength: 8,
   },
   {
-    from: '6.17',
-    to: '2.14',
+    from: '2.14',
+    to: '6.17',
     type: 'progression',
-    description: 'Balance in life helps tolerate sensory dualities',
+    description: 'Tolerating dualities is supported by a regulated life of measured eating, sleep and work',
     strength: 7,
   },
   {
@@ -754,8 +753,8 @@ export const connections: Connection[] = [
   {
     from: '14.22',
     to: '12.13',
-    type: 'progression',
-    description: 'Transcending modes manifests as devotional equanimity',
+    type: 'parallel',
+    description: 'Equanimity of one beyond the modes restates the equanimity of the devotee',
     strength: 7,
   },
   {
@@ -843,10 +842,10 @@ export const connections: Connection[] = [
     strength: 8,
   },
   {
-    from: '5.10',
-    to: '3.35',
+    from: '3.35',
+    to: '5.10',
     type: 'progression',
-    description: 'Detached action means performing one\'s own duty',
+    description: "Doing one's own duty is deepened into doing it as an offering, untouched by sin",
     strength: 7,
   },
   {
@@ -899,10 +898,10 @@ export const connections: Connection[] = [
     strength: 8,
   },
   {
-    from: '15.7',
-    to: '7.14',
-    type: 'progression',
-    description: 'Understanding the eternal soul helps transcend maya',
+    from: '7.14',
+    to: '15.7',
+    type: 'dependency',
+    description: 'The struggle with māyā presupposes what the soul is: an eternal fragment struggling with mind and senses',
     strength: 8,
   },
   {
@@ -992,8 +991,8 @@ export const connections: Connection[] = [
   {
     from: '16.1',
     to: '2.56',
-    type: 'progression',
-    description: 'Divine qualities lead to steady wisdom',
+    type: 'parallel',
+    description: 'The divine qualities restate the traits of one of steady wisdom',
     strength: 7,
   },
   {
@@ -1004,10 +1003,10 @@ export const connections: Connection[] = [
     strength: 9,
   },
   {
-    from: '18.66',
-    to: '12.13',
+    from: '12.13',
+    to: '18.66',
     type: 'goal',
-    description: 'Total surrender expressed through compassionate, friendly devotion',
+    description: "The devotee's compassionate, friendly character points toward total surrender as its aim",
     strength: 9,
   },
   {
@@ -1025,17 +1024,17 @@ export const connections: Connection[] = [
     strength: 7,
   },
   {
-    from: '6.5',
-    to: '2.14',
+    from: '2.14',
+    to: '6.5',
     type: 'progression',
-    description: 'Self-mastery requires recognizing the impermanence of sense impressions',
+    description: 'Recognising sense impressions as passing is developed into deliberate self-elevation by the mind',
     strength: 8,
   },
   {
     from: '4.7',
     to: '2.47',
-    type: 'sequential',
-    description: 'The dharma Krishna restores is the very duty Arjuna is told to perform',
+    type: 'thematic',
+    description: 'The dharma Kṛṣṇa restores is the very duty Arjuna is told to perform',
     strength: 7,
   },
   {
