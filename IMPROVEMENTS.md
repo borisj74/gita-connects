@@ -60,12 +60,20 @@ Audit performed 2026-06-06. Items grouped by category; numbers are stable IDs fo
 
 52. **664 uncurated verses** — all 701 verses now load, but only 37 have a theme, concepts,
     and connections. Needs a curation workflow: generating candidate concept tags from the
-    word-by-word glosses for review is the likely path, and a controlled concept vocabulary
-    (see item 53) should land first.
+    word-by-word glosses for review is the likely path. The controlled vocabulary it depends
+    on (item 53) is now in place, so this is unblocked.
+
+54. **Vocabulary needs review against the remaining 664** — the 36 terms were derived from
+    the 37 curated verses only. Chapters 10, 11 and 17 are barely represented, so ideas like
+    divine opulence, cosmic vision and the three kinds of faith may need terms of their own
+    once curation reaches them. Revisit the list before bulk-tagging, not after.
 
 53. **No controlled concept vocabulary** — 92 distinct concept tags across 37 verses, 64 of
     them used exactly once, so `suggestSimilar()` has little to match on. Define a fixed
     vocabulary as a union type and assert it in tests before curating the remaining 664.
+    *(done — 2026-09-07: 36 terms in `src/concepts.ts`, typed as `Concept` so off-vocabulary
+    tags fail the build. 92 tags collapsed to 36; singletons fell from 69% to 22%; verses
+    with at least one suggestion went from 31/37 to 37/37.)*
 
 ## Persistence + Saved Networks
 

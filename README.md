@@ -90,6 +90,7 @@ src/
   App.tsx               top-level layout, theme, panel state
   data/                 verse text (imported) + curation (authored)
   types.ts              VerseText, VerseCuration, Verse, Connection, Chapter
+  concepts.ts           the controlled concept vocabulary (Concept union type)
   connectionTypes.ts    predefined + custom types, localStorage helpers
   suggestions.ts        connection suggestions
   components/           VerseNetwork, VerseDetail, ChapterSidebar,
@@ -136,6 +137,9 @@ Clearing site data resets the app to defaults. Nothing is sent to a server.
   `moduleResolution` setting. Do not rewrite them as extensionless.
 - Add themes, concepts, or connections in `src/data/curation.ts`. Never hand-edit
   `src/data/verses/*.json` — rerun `node scripts/import-verses.mjs` instead.
+- Concepts come from the fixed vocabulary in [`src/concepts.ts`](src/concepts.ts) and are
+  typed, so an off-vocabulary tag fails the build. Adding a new idea means adding a term
+  there on purpose — that is what keeps suggestions working.
 - Do not add Prabhupada's translations or purports to this repo; link to Vedabase.
 - Known gaps and planned work are tracked in [IMPROVEMENTS.md](IMPROVEMENTS.md).
 - Common runtime problems are in [TROUBLESHOOTING.md](TROUBLESHOOTING.md).

@@ -1,3 +1,5 @@
+import type { Concept } from './concepts.js';
+
 /** Public-domain verse text, imported from src/data/verses/ch-NN.json. */
 export interface VerseText {
   id: string; // e.g., "2.47"
@@ -11,7 +13,8 @@ export interface VerseText {
 /** Hand-authored scholarship layered on top of a verse. */
 export interface VerseCuration {
   theme: string;
-  concepts: string[];
+  /** Drawn from the controlled vocabulary in src/concepts.ts. */
+  concepts: Concept[];
   summary?: string;
 }
 
@@ -26,7 +29,7 @@ export interface VerseCuration {
  */
 export interface Verse extends VerseText {
   theme?: string;
-  concepts: string[];
+  concepts: Concept[];
   summary?: string;
   curated: boolean;
 }
