@@ -46,9 +46,17 @@ Audit performed 2026-06-06. Items grouped by category; numbers are stable IDs fo
 28. **Multiple `setTimeout(fitView, 100)`** — race-prone. Use `requestAnimationFrame` chain or `flushSync`.
 29. **`forwardRef + useImperativeHandle`** for `handleClearAll` / `handleAutoArrange` / `loadNetwork` — could lift to context or pass callbacks downward. Imperative ref is an escape hatch.
 30. **Data IDs as strings (`"2.47"`)** — fragile; consider typed branded `VerseId`.
-31. **No tests** — add Vitest + React Testing Library. Test: drop verse, connect nodes, delete edge, save/load.
+31. **No tests** — add Vitest + React Testing Library. Test: drop verse, connect nodes, delete edge, save/load. *(done — 2026-09-07: 84 tests over data integrity, connectionTypes, suggestions, useMediaQuery, VerseNode, SaveLoadControls. VerseNetwork drag/connect still uncovered.)*
 32. **ESLint warnings on hooks deps** — verify VerseNetwork callbacks include all deps.
 33. **`.claude/launch.json`** — currently untracked. Add to `.gitignore` to keep that way.
+
+51. **19 reciprocal connection pairs** — the same verse pair appears twice in
+    `connections`, usually under two different types (e.g. `2.56`/`14.22` as both
+    `thematic` and `conceptual`). Three share a type outright (`6.17`/`6.35`,
+    `7.7`/`10.20`, `2.56`/`5.18`) and `4.7`→`18.66` repeats in the same direction
+    under two types. Decide whether this is intentional; if not, dedupe and tighten
+    the `data.test.ts` uniqueness check from the (from, to, type) triple to the
+    unordered pair.
 
 ## Persistence + Saved Networks
 

@@ -60,6 +60,8 @@ another port if 5173 is taken).
 | `npm run dev` | Vite dev server on `0.0.0.0:5173` |
 | `npm run build` | `tsc -b` type-check, then `vite build` — type errors fail the build |
 | `npm run lint` | ESLint 9 flat config |
+| `npm test` | Vitest in watch mode |
+| `npm run test:run` | Vitest once (what CI runs) |
 | `npm run preview` | Serve the production build on port 4173 |
 
 ## Project structure
@@ -74,7 +76,26 @@ src/
   components/           VerseNetwork, VerseDetail, ChapterSidebar,
                         SearchPalette, ConnectionDialog, SaveLoadControls, ...
   hooks/                useMediaQuery, useBottomSheet
+  test/setup.ts         jsdom setup: matchMedia + ResizeObserver stubs
+  **/*.test.ts(x)       tests live beside the code they cover
 ```
+
+## Testing
+
+Vitest with jsdom and React Testing Library. Tests sit next to their subject
+(`src/suggestions.test.ts` beside `src/suggestions.ts`).
+
+```bash
+npm test          # watch mode
+npm run test:run  # single run, as CI does
+```
+
+Coverage is on the pure logic and the data: connection-type persistence,
+suggestion scoring, the `useMediaQuery` hook, `VerseNode` rendering and its
+click handlers, the save/load/delete flow including corrupt-storage and
+quota-exceeded paths, and a set of `src/data.ts` integrity checks (ids match
+their chapter and verse, connections reference real verses, strengths stay in
+range, no orphaned verses).
 
 ## Local data
 
