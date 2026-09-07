@@ -265,7 +265,7 @@ export const generatedCuration: Record<string, VerseCuration> = {
   },
   '2.7': {
     theme: 'Knowledge and realization',
-    concepts: ['duty', 'guru', 'illusion', 'surrender'],
+    concepts: ['guru', 'duty', 'illusion', 'surrender'],
     reviewed: false,
   },
   '2.8': {
@@ -304,8 +304,8 @@ export const generatedCuration: Record<string, VerseCuration> = {
     reviewed: false,
   },
   '2.16': {
-    theme: 'Soul and self',
-    concepts: ['soul', 'impermanence'],
+    theme: 'Knowledge and realization',
+    concepts: ['guru', 'soul'],
     reviewed: false,
   },
   '2.17': {
@@ -465,7 +465,7 @@ export const generatedCuration: Record<string, VerseCuration> = {
   },
   '2.50': {
     theme: 'Knowledge and realization',
-    concepts: ['wisdom', 'action'],
+    concepts: ['wisdom', 'karma-yoga'],
     reviewed: false,
   },
   '2.51': {
@@ -590,7 +590,7 @@ export const generatedCuration: Record<string, VerseCuration> = {
   },
   '3.7': {
     theme: 'Duty and action',
-    concepts: ['detachment', 'action', 'attachment', 'karma-yoga'],
+    concepts: ['karma-yoga', 'detachment', 'action', 'attachment'],
     reviewed: false,
   },
   '3.8': {
@@ -600,7 +600,7 @@ export const generatedCuration: Record<string, VerseCuration> = {
   },
   '3.9': {
     theme: 'Duty and action',
-    concepts: ['sacrifice', 'action', 'attachment', 'detachment'],
+    concepts: ['sacrifice', 'action', 'karma-yoga', 'attachment'],
     reviewed: false,
   },
   '3.10': {
@@ -675,7 +675,7 @@ export const generatedCuration: Record<string, VerseCuration> = {
   },
   '3.25': {
     theme: 'Duty and action',
-    concepts: ['attachment', 'detachment', 'wisdom', 'action'],
+    concepts: ['attachment', 'detachment', 'wisdom', 'karma-yoga'],
     reviewed: false,
   },
   '3.26': {
@@ -760,7 +760,7 @@ export const generatedCuration: Record<string, VerseCuration> = {
   },
   '4.1': {
     theme: 'Soul and self',
-    concepts: ['soul', 'supreme-person'],
+    concepts: ['soul', 'guru', 'supreme-person'],
     reviewed: false,
   },
   '4.2': {
@@ -775,7 +775,7 @@ export const generatedCuration: Record<string, VerseCuration> = {
   },
   '4.4': {
     theme: 'Knowledge and realization',
-    concepts: ['knowledge', 'sacrifice'],
+    concepts: ['guru', 'knowledge'],
     reviewed: false,
   },
   '4.5': {
@@ -915,7 +915,7 @@ export const generatedCuration: Record<string, VerseCuration> = {
   },
   '4.34': {
     theme: 'Knowledge and realization',
-    concepts: ['knowledge', 'wisdom', 'self-realization'],
+    concepts: ['knowledge', 'guru', 'wisdom', 'self-realization'],
     reviewed: false,
   },
   '4.35': {
@@ -960,7 +960,7 @@ export const generatedCuration: Record<string, VerseCuration> = {
   },
   '5.2': {
     theme: 'Duty and action',
-    concepts: ['action', 'renunciation', 'supreme-person', 'devotion'],
+    concepts: ['karma-yoga', 'action', 'renunciation', 'supreme-person'],
     reviewed: false,
   },
   '5.3': {
@@ -970,12 +970,12 @@ export const generatedCuration: Record<string, VerseCuration> = {
   },
   '5.4': {
     theme: 'Knowledge and realization',
-    concepts: ['wisdom', 'action', 'knowledge'],
+    concepts: ['wisdom', 'action', 'karma-yoga', 'knowledge'],
     reviewed: false,
   },
   '5.5': {
     theme: 'Duty and action',
-    concepts: ['action', 'knowledge'],
+    concepts: ['action', 'karma-yoga'],
     reviewed: false,
   },
   '5.6': {
@@ -1090,7 +1090,7 @@ export const generatedCuration: Record<string, VerseCuration> = {
   },
   '6.1': {
     theme: 'Duty and action',
-    concepts: ['action', 'duty', 'meditation', 'renunciation'],
+    concepts: ['action', 'karma-yoga', 'duty', 'meditation'],
     reviewed: false,
   },
   '6.2': {
@@ -1710,7 +1710,7 @@ export const generatedCuration: Record<string, VerseCuration> = {
   },
   '9.28': {
     theme: 'Duty and action',
-    concepts: ['renunciation', 'liberation', 'action'],
+    concepts: ['renunciation', 'liberation', 'karma-yoga', 'action'],
     reviewed: false,
   },
   '9.29': {
@@ -1770,7 +1770,7 @@ export const generatedCuration: Record<string, VerseCuration> = {
   },
   '10.6': {
     theme: 'Knowledge and realization',
-    concepts: ['wisdom', 'opulence'],
+    concepts: ['wisdom', 'guru'],
     reviewed: false,
   },
   '10.7': {
@@ -1805,7 +1805,7 @@ export const generatedCuration: Record<string, VerseCuration> = {
   },
   '10.13': {
     theme: 'Knowledge and realization',
-    concepts: ['wisdom', 'opulence'],
+    concepts: ['wisdom', 'guru'],
     reviewed: false,
   },
   '10.14': {
@@ -1860,7 +1860,7 @@ export const generatedCuration: Record<string, VerseCuration> = {
   },
   '10.25': {
     theme: 'Duty and action',
-    concepts: ['sacrifice', 'opulence'],
+    concepts: ['sacrifice', 'guru'],
     reviewed: false,
   },
   '10.26': {
@@ -2330,7 +2330,7 @@ export const generatedCuration: Record<string, VerseCuration> = {
   },
   '13.5': {
     theme: 'Knowledge and realization',
-    concepts: ['wisdom', 'soul'],
+    concepts: ['wisdom', 'guru'],
     reviewed: false,
   },
   '13.6': {
@@ -2959,8 +2959,8 @@ export const generatedCuration: Record<string, VerseCuration> = {
     reviewed: false,
   },
   '18.2': {
-    theme: 'Knowledge and realization',
-    concepts: ['renunciation', 'wisdom', 'desire', 'knowledge'],
+    theme: 'Duty and action',
+    concepts: ['renunciation', 'wisdom', 'desire', 'karma-yoga'],
     reviewed: false,
   },
   '18.3': {
@@ -2990,12 +2990,12 @@ export const generatedCuration: Record<string, VerseCuration> = {
   },
   '18.8': {
     theme: 'Duty and action',
-    concepts: ['renunciation', 'modes-of-nature', 'action'],
+    concepts: ['renunciation', 'modes-of-nature', 'karma-yoga', 'action'],
     reviewed: false,
   },
   '18.9': {
     theme: 'Duty and action',
-    concepts: ['renunciation', 'duty', 'action', 'attachment'],
+    concepts: ['renunciation', 'duty', 'karma-yoga', 'action'],
     reviewed: false,
   },
   '18.10': {
@@ -3005,7 +3005,7 @@ export const generatedCuration: Record<string, VerseCuration> = {
   },
   '18.11': {
     theme: 'Duty and action',
-    concepts: ['renunciation', 'action', 'detachment'],
+    concepts: ['renunciation', 'karma-yoga', 'action', 'detachment'],
     reviewed: false,
   },
   '18.12': {
@@ -3064,8 +3064,8 @@ export const generatedCuration: Record<string, VerseCuration> = {
     reviewed: false,
   },
   '18.23': {
-    theme: 'Meditation and mind',
-    concepts: ['attachment', 'detachment', 'action', 'desire'],
+    theme: 'Duty and action',
+    concepts: ['attachment', 'detachment', 'karma-yoga', 'action'],
     reviewed: false,
   },
   '18.24': {

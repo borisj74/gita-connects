@@ -12,6 +12,7 @@
 // src/data/curation.ts always take precedence.
 //
 // Usage: node scripts/generate-concepts.mjs
+//        node scripts/generate-concepts.mjs --explain 4.34 3.3   (score breakdown, no write)
 import { readFile, writeFile, readdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -49,10 +50,11 @@ const LEXICON = {
   faith: [['faith', 3], ['faithful', 3], ['belief', 2], ['believe', 2], ['shraddha', 3], ['trust', 1], ['doubt', 2], ['doubting', 2]],
   grace: [['grace', 3], ['mercy', 2], ['protect', 2], ['protection', 2], ['deliver', 2], ['rescue', 2], ['save', 1], ['carry what they lack', 3]],
   grief: [['grief', 3], ['grieve', 3], ['lament', 3], ['sorrow', 3], ['sorrowful', 3], ['despair', 3], ['despondent', 3], ['tears', 2], ['weep', 2], ['distress', 2], ['anxiety', 2], ['anxious', 2], ['fear', 1]],
-  guru: [['guru', 3], ['teacher', 3], ['spiritual master', 3], ['preceptor', 3], ['disciple', 2], ['disciplic', 3], ['instruct', 1], ['succession', 2]],
+  guru: [['guru', 3], ['teacher', 3], ['spiritual master', 3], ['preceptor', 3], ['disciple', 2], ['disciplic', 3], ['instruct', 2], ['succession', 2], ['prostration', 3], ['prostrate', 3], ['enquiry', 3], ['inquiry', 3], ['enquire', 2], ['inquire', 2], ['question', 2], ['teach', 2], ['taught', 2], ['approach', 2], ['submissive', 2], ['seer', 2], ['seers', 2]],
   illusion: [['illusion', 3], ['maya', 3], ['delusion', 3], ['deluded', 3], ['bewilder', 3], ['bewildered', 3], ['ignorance', 2], ['ignorant', 2], ['confusion', 2], ['confused', 2], ['dream', 1]],
   impermanence: [['impermanent', 3], ['temporary', 3], ['transient', 3], ['fleeting', 3], ['perishable', 3], ['passing', 1], ['nonpermanent', 3], ['come and go', 3], ['appear and disappear', 3]],
-  'karma-yoga': [['karma-yoga', 3], ['karma yoga', 3], ['yoga of action', 3], ['work without', 2], ['selfless', 3], ['without desire for', 2], ['sacrifice of work', 2], ['fruit', 1]],
+  // The concept named outright is decisive on its own (weight 5 clears MIN_SCORE).
+  'karma-yoga': [['karma-yoga', 5], ['karma yoga', 5], ['yoga of action', 5], ['yoga of work', 5], ['skill in action', 5], ['skill in work', 5], ['skill in works', 5], ['work without', 2], ['selfless', 3], ['without desire for', 2], ['sacrifice of work', 2], ['fruit', 1]],
   knowledge: [['knowledge', 3], ['know', 1], ['knows', 1], ['knowing', 1], ['jnana', 3], ['understand', 2], ['understanding', 2], ['learn', 1], ['wise', 1]],
   liberation: [['liberation', 3], ['liberated', 3], ['freedom', 2], ['free from', 1], ['moksha', 3], ['release', 2], ['released', 2], ['salvation', 3], ['supreme abode', 3], ['nirvana', 3], ['emancipation', 3]],
   meditation: [['meditation', 3], ['meditate', 3], ['meditating', 3], ['dhyana', 3], ['concentrate', 2], ['concentration', 2], ['contemplate', 2], ['fix the mind', 3], ['fixed mind', 2], ['yoga', 1], ['yogi', 2]],
@@ -151,7 +153,19 @@ function scoreAll(text) {
     }
     if (s > 0) out.push([concept, s]);
   }
-  return out.sort((a, b) => b[1] - a[1]);
+
+  // Karma-yoga is selfless action, so it never outscores "action" and
+  // "detachment" on the words that describe it — they take the same
+  // evidence. Derive it instead: a verse confident in action and in letting
+  // go of the result is a karma-yoga verse, ranked just above the weaker of
+  // the two so it survives the top-N cut.
+  const by = new Map(out);
+  const action = by.get('action') ?? 0;
+  const lettingGo = Math.max(by.get('detachment') ?? 0, by.get('renunciation') ?? 0);
+  if (action >= MIN_SCORE && lettingGo >= MIN_SCORE) {
+    by.set('karma-yoga', Math.max(by.get('karma-yoga') ?? 0, Math.min(action, lettingGo) + 1));
+  }
+  return [...by].sort((a, b) => b[1] - a[1]);
 }
 
 /**
@@ -195,6 +209,27 @@ const signalByIndex = new Map();
 for (const t of translations) {
   if (!SIGNAL_AUTHORS.has(t.authorName)) continue;
   signalByIndex.set(t.verse_id, `${signalByIndex.get(t.verse_id) ?? ''} ${t.description}`);
+}
+
+// ---- explain mode: show the evidence for specific verses and exit ----
+const explainIds = process.argv.slice(2).filter((a) => /^\d+\.\d+$/.test(a));
+if (process.argv.includes('--explain')) {
+  for (const id of explainIds) {
+    const i = verses.findIndex((v) => v.id === id);
+    if (i === -1) { console.log(`${id}: not found`); continue; }
+    const v = verses[i];
+    const text = `${v.wordMeanings} ${signalByIndex.get(i + 1) ?? ''}`;
+    const { concepts, padded } = pick(text, v.chapter);
+    console.log(`\n=== ${id} ===  hand-curated: ${handCurated.has(id)}`);
+    console.log(`picked: ${concepts.join(', ')}  (padded ${padded})`);
+    for (const [c, sc] of scoreAll(text).slice(0, 8)) {
+      const hits = compiled[c]
+        .map(([re, w]) => { const n = (fold(text).match(re) ?? []).length; return n ? `${re.source.replace(/\\b/g, '')}×${n}(${w})` : null; })
+        .filter(Boolean).join(' ');
+      console.log(`  ${String(sc).padStart(3)}  ${c.padEnd(18)} ${hits}`);
+    }
+  }
+  process.exit(0);
 }
 
 // ---- generate ----

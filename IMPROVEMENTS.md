@@ -68,11 +68,14 @@ Audit performed 2026-06-06. Items grouped by category; numbers are stable IDs fo
     threshold and remain uncurated. Review workflow: move an entry from
     `curation.generated.ts` into `curation.ts`, write a real theme, drop the flag.)*
 
-55. **Review the 551 generated entries** — every one is a machine guess. Known misses:
-    4.34 (the guru verse) scored below threshold for `guru`; `karma-yoga` was assigned once.
-    Placeholder themes are just capitalised concept pairs ("Knowledge & Wisdom") and want
-    real titles. Review chapter by chapter; the badge disappears as entries move to
-    `curation.ts`.
+55. **Review the 664 generated entries** — every one is a machine guess. Review chapter by
+    chapter; the badge disappears as entries move to `curation.ts`.
+    *(known misses fixed — 2026-09-07: 4.34 now tags `guru` (lexicon gained prostration,
+    enquiry, teach, approach — the verse's own vocabulary). `karma-yoga` went from 1 verse to
+    14: it is now derived whenever a verse is confident in both `action` and
+    `detachment`/`renunciation`, since those two always outscored it on the same words; and
+    the concept named outright — "skill in action", "yoga of action" — is decisive alone.
+    `node scripts/generate-concepts.mjs --explain 4.34` shows the evidence for any verse.)*
 
 56. **113 verses still untagged** — mostly narrative and list verses (ch. 1 army rosters,
     ch. 10 opulence lists) where the lexicon finds nothing decisive. Either lower
