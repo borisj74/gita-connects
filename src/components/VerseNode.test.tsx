@@ -16,6 +16,7 @@ const verse: Verse = {
   concepts: ['duty', 'detachment'],
   summary: 'You have a right to action alone, never to its fruits.',
   curated: true,
+  reviewed: true,
 };
 
 function renderNode(data: Partial<Parameters<typeof VerseNode>[0]['data']> = {}) {

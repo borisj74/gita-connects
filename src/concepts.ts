@@ -15,12 +15,19 @@
  *
  * Keep this list sorted and free of duplicates — both are asserted in
  * src/concepts.test.ts.
+ *
+ * The first 36 terms were derived from the 37 hand-curated verses. Five were
+ * added before tagging the remaining 664, for ideas those verses barely touch:
+ * austerity and charity (ch. 16-17), guru (ch. 4), opulence (ch. 10) and
+ * universal-form (ch. 11).
  */
 export const CONCEPTS = [
   'action',
   'anger',
   'attachment',
+  'austerity',
   'bondage',
+  'charity',
   'compassion',
   'death',
   'desire',
@@ -34,6 +41,7 @@ export const CONCEPTS = [
   'faith',
   'grace',
   'grief',
+  'guru',
   'illusion',
   'impermanence',
   'karma-yoga',
@@ -41,6 +49,7 @@ export const CONCEPTS = [
   'liberation',
   'meditation',
   'modes-of-nature',
+  'opulence',
   'purity',
   'remembrance',
   'renunciation',
@@ -51,6 +60,7 @@ export const CONCEPTS = [
   'surrender',
   'transcendence',
   'unity',
+  'universal-form',
   'war',
   'wisdom',
 ] as const;

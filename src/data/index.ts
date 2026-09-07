@@ -1,5 +1,6 @@
 import type { Verse, VerseText } from '../types.js';
 import { verseCuration, connections } from './curation.js';
+import { generatedCuration } from './curation.generated.js';
 import { chapters } from './chapters.js';
 
 import ch01 from './verses/ch-01.json';
@@ -31,13 +32,15 @@ const verseTexts: VerseText[] = [
  * chapter then verse, so callers can rely on scripture order without sorting.
  */
 export const verses: Verse[] = verseTexts.map((text) => {
-  const curation = verseCuration[text.id];
+  // Hand-written curation always wins over the generated proposal.
+  const curation = verseCuration[text.id] ?? generatedCuration[text.id];
   return {
     ...text,
     theme: curation?.theme,
     concepts: curation?.concepts ?? [],
     summary: curation?.summary,
     curated: curation !== undefined,
+    reviewed: curation !== undefined && curation.reviewed !== false,
   };
 });
 
@@ -45,8 +48,11 @@ const byId = new Map(verses.map((v) => [v.id, v]));
 
 export const getVerse = (id: string): Verse | undefined => byId.get(id);
 
-/** Verses that have a theme and concepts attached. */
+/** Verses that have a theme and concepts attached, reviewed or not. */
 export const curatedVerses = verses.filter((v) => v.curated);
+
+/** Verses whose curation a person has checked. */
+export const reviewedVerses = verses.filter((v) => v.reviewed);
 
 /**
  * Prabhupada's translation and purport for a verse, on the Bhaktivedanta Book

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { CONCEPTS, isConcept } from './concepts.js';
 import { verseCuration } from './data/curation.js';
+import { generatedCuration } from './data/curation.generated.js';
 import { verses } from './data/index.js';
 
 describe('CONCEPTS vocabulary', () => {
@@ -39,10 +40,11 @@ describe('isConcept', () => {
 });
 
 describe('curation against the vocabulary', () => {
-  const tags = Object.values(verseCuration).flatMap((c) => c.concepts);
+  const allCuration = { ...generatedCuration, ...verseCuration };
+  const tags = Object.values(allCuration).flatMap((c) => c.concepts);
 
   it('tags every curated verse only with vocabulary terms', () => {
-    for (const [id, curation] of Object.entries(verseCuration)) {
+    for (const [id, curation] of Object.entries(allCuration)) {
       for (const concept of curation.concepts) {
         expect(isConcept(concept), `${id} uses "${concept}"`).toBe(true);
       }
@@ -50,7 +52,7 @@ describe('curation against the vocabulary', () => {
   });
 
   it('repeats no concept within a single verse', () => {
-    for (const [id, curation] of Object.entries(verseCuration)) {
+    for (const [id, curation] of Object.entries(allCuration)) {
       expect(new Set(curation.concepts).size, id).toBe(curation.concepts.length);
     }
   });
@@ -69,6 +71,20 @@ describe('curation against the vocabulary', () => {
     expect(distinct / tags.length).toBeLessThan(0.5);
   });
 
+  it('marks every generated entry unreviewed and every hand entry reviewed', () => {
+    for (const [id, c] of Object.entries(generatedCuration)) {
+      expect(c.reviewed, `generated ${id}`).toBe(false);
+    }
+    for (const [id, c] of Object.entries(verseCuration)) {
+      expect(c.reviewed, `hand ${id}`).not.toBe(false);
+    }
+  });
+
+  it('never lets a generated entry shadow a hand-written one', () => {
+    const overlap = Object.keys(generatedCuration).filter((id) => id in verseCuration);
+    expect(overlap).toEqual([]);
+  });
+
   it('gives most concepts more than one verse to match against', () => {
     const counts = new Map<string, number>();
     for (const tag of tags) counts.set(tag, (counts.get(tag) ?? 0) + 1);
@@ -77,10 +93,22 @@ describe('curation against the vocabulary', () => {
   });
 });
 
-describe('uncurated verses', () => {
-  it('carry no concepts at all', () => {
+describe('verse flags', () => {
+  it('leaves uncurated verses with no concepts and not reviewed', () => {
     for (const verse of verses.filter((v) => !v.curated)) {
       expect(verse.concepts, verse.id).toEqual([]);
+      expect(verse.reviewed, verse.id).toBe(false);
     }
+  });
+
+  it('never marks a verse reviewed unless it is curated', () => {
+    for (const verse of verses) {
+      if (verse.reviewed) expect(verse.curated, verse.id).toBe(true);
+    }
+  });
+
+  it('reports reviewed verses as exactly the hand-curated set', () => {
+    const reviewed = verses.filter((v) => v.reviewed).map((v) => v.id).sort();
+    expect(reviewed).toEqual(Object.keys(verseCuration).sort());
   });
 });

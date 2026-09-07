@@ -41,7 +41,9 @@ function VerseNode({ data }: VerseNodeProps) {
 
       <div className="node-header">
         <div className="node-verse-id">{verse.id}</div>
-        <div className="node-theme">{verse.theme ?? 'Uncurated'}</div>
+        <div className={`node-theme ${verse.curated && !verse.reviewed ? 'unreviewed' : ''}`}>
+          {verse.theme ?? 'Uncurated'}
+        </div>
       </div>
 
       {/* Uncurated verses have no summary of their own, so show the

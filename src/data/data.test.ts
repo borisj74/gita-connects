@@ -88,11 +88,11 @@ describe('verses', () => {
     }
   });
 
-  it('holds all 701 verses, of which a known subset is curated', () => {
+  it('holds all 701 verses, with hand curation a subset of all curation', () => {
     expect(verses).toHaveLength(701);
-    expect(verses.filter((v) => v.curated).length).toBe(
-      Object.keys(verseCuration).length,
-    );
+    const curated = verses.filter((v) => v.curated).length;
+    expect(curated).toBeGreaterThanOrEqual(Object.keys(verseCuration).length);
+    expect(verses.filter((v) => v.reviewed).length).toBe(Object.keys(verseCuration).length);
   });
 });
 
@@ -160,14 +160,16 @@ describe('connections', () => {
 
   // Uncurated verses are expected to have no connections yet; curated ones
   // exist precisely because someone linked them, so those must not be orphans.
-  it('leaves no curated verse orphaned', () => {
+  it('leaves no reviewed verse orphaned', () => {
     const connected = new Set(connections.flatMap((c) => [c.from, c.to]));
-    const orphans = verses.filter((v) => v.curated && !connected.has(v.id)).map((v) => v.id);
+    const orphans = verses.filter((v) => v.reviewed && !connected.has(v.id)).map((v) => v.id);
     expect(orphans).toEqual([]);
   });
 
-  it('connects only curated verses', () => {
-    const curated = new Set(verses.filter((v) => v.curated).map((v) => v.id));
+  // Authored connections are scholarship; they may only join verses whose
+  // curation a person has reviewed, never a generated proposal.
+  it('connects only reviewed verses', () => {
+    const curated = new Set(verses.filter((v) => v.reviewed).map((v) => v.id));
     for (const c of connections) {
       expect(curated, `${c.from} -> ${c.to}`).toContain(c.from);
       expect(curated, `${c.from} -> ${c.to}`).toContain(c.to);

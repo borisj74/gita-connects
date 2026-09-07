@@ -250,3 +250,9 @@
 .expand-text {
   letter-spacing: 0.01em;
 }
+
+/* Generated, not yet reviewed theme. */
+.node-theme.unreviewed {
+  font-style: italic;
+  opacity: 0.75;
+}

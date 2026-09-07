@@ -62,6 +62,21 @@ Audit performed 2026-06-06. Items grouped by category; numbers are stable IDs fo
     and connections. Needs a curation workflow: generating candidate concept tags from the
     word-by-word glosses for review is the likely path. The controlled vocabulary it depends
     on (item 53) is now in place, so this is unblocked.
+    *(first pass done — 2026-09-07: `scripts/generate-concepts.mjs` proposes concepts and a
+    placeholder theme for 551 of the 664, all `reviewed: false` and badged in the UI.
+    Suggested connections follow from concepts at runtime. 113 verses scored below the
+    threshold and remain uncurated. Review workflow: move an entry from
+    `curation.generated.ts` into `curation.ts`, write a real theme, drop the flag.)*
+
+55. **Review the 551 generated entries** — every one is a machine guess. Known misses:
+    4.34 (the guru verse) scored below threshold for `guru`; `karma-yoga` was assigned once.
+    Placeholder themes are just capitalised concept pairs ("Knowledge & Wisdom") and want
+    real titles. Review chapter by chapter; the badge disappears as entries move to
+    `curation.ts`.
+
+56. **113 verses still untagged** — mostly narrative and list verses (ch. 1 army rosters,
+    ch. 10 opulence lists) where the lexicon finds nothing decisive. Either lower
+    `MIN_SCORE`, extend the lexicon, or tag by hand.
 
 54. **Vocabulary needs review against the remaining 664** — the 36 terms were derived from
     the 37 curated verses only. Chapters 10, 11 and 17 are barely represented, so ideas like

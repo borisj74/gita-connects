@@ -113,7 +113,14 @@ export default function VerseDetail({
       <div className="detail-content">
         {/* Theme */}
         <div className="detail-section">
-          <div className="section-label">Theme</div>
+          <div className="section-label">
+            Theme
+            {verse.curated && !verse.reviewed && (
+              <span className="unreviewed-badge" title="Proposed by script; not yet checked by a person">
+                unreviewed
+              </span>
+            )}
+          </div>
           <div className="verse-theme-large">{verse.theme ?? verse.transliteration}</div>
         </div>
 
@@ -206,6 +213,11 @@ export default function VerseDetail({
           <div className="section-label">
             <Tag size={14} />
             Key Concepts
+            {verse.curated && !verse.reviewed && (
+              <span className="unreviewed-badge" title="Proposed by script; not yet checked by a person">
+                unreviewed
+              </span>
+            )}
           </div>
           <div className="concepts-grid">
             {verse.concepts.map(concept => (

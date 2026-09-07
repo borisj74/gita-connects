@@ -40,16 +40,19 @@ the imported copy under `src/data/verses/` is the search index and offline fallb
 During `vite dev` a small plugin in `vite.config.ts` runs the function locally; on Vercel
 it deploys as a Function.
 
-Of the 701 verses, **37 are curated** — given a theme, concepts, and a summary written in
-our own words — and joined by 120 connections. The other 664 render fully (Sanskrit,
-transliteration, glosses, Vedabase link) but carry no theme or connections until curated.
+Of the 701 verses, **37 are hand-curated** — theme, concepts, a summary in our own words,
+and 120 authored connections between them. A further **551 carry machine-proposed concepts**
+from [`scripts/generate-concepts.mjs`](scripts/generate-concepts.mjs), marked `unreviewed`
+in the UI until a person checks them; suggested connections for these come from concept
+overlap at runtime. 113 verses have no curation yet.
 
 Data is split by provenance:
 
 | Path | Contents | Edit by hand? |
 | --- | --- | --- |
 | `src/data/verses/ch-NN.json` | Imported public-domain verse text | No — regenerate with the script |
-| `src/data/curation.ts` | Themes, concepts, summaries, connections | Yes — this is the original work |
+| `src/data/curation.ts` | Reviewed themes, concepts, summaries, connections | Yes — this is the original work |
+| `src/data/curation.generated.ts` | Machine-proposed concepts, `reviewed: false` | No — regenerate, or promote entries into `curation.ts` |
 | `src/data/chapters.ts` | Chapter metadata | Yes |
 | `src/data/index.ts` | Merges the above into the `Verse` the app consumes | — |
 

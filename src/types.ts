@@ -16,6 +16,11 @@ export interface VerseCuration {
   /** Drawn from the controlled vocabulary in src/concepts.ts. */
   concepts: Concept[];
   summary?: string;
+  /**
+   * False for entries produced by scripts/generate-concepts.mjs that nobody
+   * has checked yet. Hand-written entries omit it (treated as reviewed).
+   */
+  reviewed?: boolean;
 }
 
 /**
@@ -31,7 +36,10 @@ export interface Verse extends VerseText {
   theme?: string;
   concepts: Concept[];
   summary?: string;
+  /** Has any curation at all, hand-written or generated. */
   curated: boolean;
+  /** Curation has been checked by a person. Always false when !curated. */
+  reviewed: boolean;
 }
 
 export interface Connection {

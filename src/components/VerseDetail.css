@@ -667,3 +667,19 @@
   line-height: 1.5;
   color: var(--text-secondary);
 }
+
+/* Marks curation produced by scripts/generate-concepts.mjs that nobody has
+   checked yet. Deliberately visible: an unreviewed thematic claim about
+   scripture must not read as scholarship. */
+.unreviewed-badge {
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  border: 1px dashed var(--border);
+  vertical-align: middle;
+}
