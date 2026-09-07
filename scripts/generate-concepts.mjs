@@ -74,7 +74,57 @@ const LEXICON = {
 };
 
 const MIN_SCORE = 5; // a single weight-3 hit plus a supporting word, or two mid hits
+const MIN_CONCEPTS = 2; // every verse needs at least two, so suggestions have something to match
 const MAX_CONCEPTS = 4;
+const PAD_MIN_SCORE = 2; // weakest evidence accepted when padding up to MIN_CONCEPTS
+
+// When the lexicon finds too little, fall back to the chapter's own subject.
+// These follow the chapter backbone in the project design: each pair names
+// what the chapter is about, so a padded verse still lands in the right
+// cluster even if the specific concepts are a guess.
+const CHAPTER_DEFAULTS = {
+  1: ['war', 'grief'], 2: ['soul', 'wisdom'], 3: ['action', 'duty'],
+  4: ['knowledge', 'sacrifice'], 5: ['renunciation', 'action'], 6: ['meditation', 'discipline'],
+  7: ['supreme-person', 'knowledge'], 8: ['remembrance', 'death'], 9: ['devotion', 'supreme-person'],
+  10: ['opulence', 'supreme-person'], 11: ['universal-form', 'supreme-person'], 12: ['devotion', 'surrender'],
+  13: ['soul', 'knowledge'], 14: ['modes-of-nature', 'transcendence'], 15: ['supreme-person', 'soul'],
+  16: ['purity', 'faith'], 17: ['faith', 'austerity'], 18: ['renunciation', 'liberation'],
+};
+
+// Mirror of src/clusters.ts, used only to label generated themes.
+const CLUSTER_LABEL = {
+  'arjuna-dilemma': "Arjuna's dilemma", 'soul-and-self': 'Soul and self',
+  'duty-and-action': 'Duty and action', 'knowledge-and-realization': 'Knowledge and realization',
+  'meditation-and-mind': 'Meditation and mind', 'krishna-supremacy': "Kṛṣṇa's supremacy",
+  'devotion-and-surrender': 'Devotion and surrender', 'cosmic-vision': 'Cosmic vision',
+  'modes-of-nature': 'Modes of nature', 'faith-and-character': 'Faith and character',
+  'final-liberation': 'Final liberation',
+};
+const CONCEPT_CLUSTER = {
+  grief: 'arjuna-dilemma', war: 'arjuna-dilemma',
+  soul: 'soul-and-self', death: 'soul-and-self', impermanence: 'soul-and-self',
+  duty: 'duty-and-action', action: 'duty-and-action', 'karma-yoga': 'duty-and-action', dharma: 'duty-and-action',
+  sacrifice: 'duty-and-action', detachment: 'duty-and-action', renunciation: 'duty-and-action',
+  knowledge: 'knowledge-and-realization', wisdom: 'knowledge-and-realization', 'self-realization': 'knowledge-and-realization',
+  illusion: 'knowledge-and-realization', guru: 'knowledge-and-realization',
+  meditation: 'meditation-and-mind', discipline: 'meditation-and-mind', equanimity: 'meditation-and-mind',
+  desire: 'meditation-and-mind', anger: 'meditation-and-mind', attachment: 'meditation-and-mind', ego: 'meditation-and-mind',
+  'supreme-person': 'krishna-supremacy', opulence: 'krishna-supremacy', unity: 'krishna-supremacy',
+  devotion: 'devotion-and-surrender', surrender: 'devotion-and-surrender', grace: 'devotion-and-surrender', remembrance: 'devotion-and-surrender',
+  'universal-form': 'cosmic-vision',
+  'modes-of-nature': 'modes-of-nature', bondage: 'modes-of-nature',
+  faith: 'faith-and-character', purity: 'faith-and-character', austerity: 'faith-and-character',
+  charity: 'faith-and-character', compassion: 'faith-and-character',
+  liberation: 'final-liberation', transcendence: 'final-liberation',
+};
+
+function clusterOf(concepts) {
+  const counts = new Map();
+  for (const c of concepts) counts.set(CONCEPT_CLUSTER[c], (counts.get(CONCEPT_CLUSTER[c]) ?? 0) + 1);
+  let best = CONCEPT_CLUSTER[concepts[0]];
+  for (const [id, n] of counts) if (n > counts.get(best)) best = id;
+  return best;
+}
 
 /** Fold diacritics and lowercase, so "Kṛṣṇa" and "krsna" both match. */
 const fold = (s) =>
@@ -89,7 +139,8 @@ const compiled = Object.fromEntries(
   ]),
 );
 
-function score(text) {
+/** All concepts with any evidence, strongest first. */
+function scoreAll(text) {
   const t = fold(text);
   const out = [];
   for (const [concept, patterns] of Object.entries(compiled)) {
@@ -98,12 +149,35 @@ function score(text) {
       const hits = (t.match(re) ?? []).length;
       if (hits) s += weight * Math.min(hits, 3);
     }
-    if (s >= MIN_SCORE) out.push([concept, s]);
+    if (s > 0) out.push([concept, s]);
   }
-  return out.sort((a, b) => b[1] - a[1]).slice(0, MAX_CONCEPTS);
+  return out.sort((a, b) => b[1] - a[1]);
 }
 
-const label = (c) => c.split('-').map((w) => w[0].toUpperCase() + w.slice(1)).join(' ');
+/**
+ * Pick concepts for a verse. Confident hits first; then pad to MIN_CONCEPTS
+ * from weaker evidence, and finally from the chapter's defaults. Returns the
+ * concepts and how many came from padding, so the stats can say so.
+ */
+function pick(text, chapter) {
+  const scored = scoreAll(text);
+  const chosen = scored.filter(([, s]) => s >= MIN_SCORE).slice(0, MAX_CONCEPTS).map(([c]) => c);
+  let padded = 0;
+  for (const [c, s] of scored) {
+    if (chosen.length >= MIN_CONCEPTS) break;
+    if (s < PAD_MIN_SCORE || chosen.includes(c)) continue;
+    chosen.push(c);
+    padded++;
+  }
+  for (const c of CHAPTER_DEFAULTS[chapter]) {
+    if (chosen.length >= MIN_CONCEPTS) break;
+    if (chosen.includes(c)) continue;
+    chosen.push(c);
+    padded++;
+  }
+  return { concepts: chosen, padded };
+}
+
 
 // ---- load inputs ----
 const verseFiles = (await readdir(VERSES_DIR)).filter((f) => f.endsWith('.json')).sort();
@@ -125,19 +199,21 @@ for (const t of translations) {
 
 // ---- generate ----
 const entries = [];
-const stats = { tagged: 0, untagged: 0, perConcept: {} };
+const stats = { tagged: 0, confident: 0, paddedWeak: 0, paddedDefault: 0, perConcept: {}, perCluster: {} };
 verses.forEach((v, i) => {
   if (handCurated.has(v.id)) return;
   const text = `${v.wordMeanings} ${signalByIndex.get(i + 1) ?? ''}`;
-  const picked = score(text);
-  if (picked.length === 0) {
-    stats.untagged++;
-    return;
-  }
+  const { concepts, padded } = pick(text, v.chapter);
   stats.tagged++;
-  const concepts = picked.map(([c]) => c);
+  if (padded === 0) stats.confident++;
+  else if (concepts.length - padded > 0) stats.paddedWeak++;
+  else stats.paddedDefault++;
   for (const c of concepts) stats.perConcept[c] = (stats.perConcept[c] ?? 0) + 1;
-  const theme = concepts.slice(0, 2).map(label).join(' & ');
+  const cluster = clusterOf(concepts);
+  stats.perCluster[cluster] = (stats.perCluster[cluster] ?? 0) + 1;
+  // Theme is the cluster label: readable, and shared with every verse in the
+  // cluster so suggestions have a theme match to lean on.
+  const theme = CLUSTER_LABEL[cluster].replace(/'/g, "\\'");
   entries.push(`  '${v.id}': {\n    theme: '${theme}',\n    concepts: [${concepts.map((c) => `'${c}'`).join(', ')}],\n    reviewed: false,\n  },`);
 });
 
@@ -156,7 +232,9 @@ ${entries.join('\n')}
 `, 'utf8');
 
 console.log(`hand-curated (skipped): ${handCurated.size}`);
-console.log(`generated: ${stats.tagged}   left untagged: ${stats.untagged}`);
+console.log(`generated: ${stats.tagged}  (confident ${stats.confident}, padded from weak evidence ${stats.paddedWeak}, chapter default only ${stats.paddedDefault})`);
+console.log('\nper cluster:');
+for (const [c, n] of Object.entries(stats.perCluster).sort((a, b) => b[1] - a[1])) console.log(`  ${String(n).padStart(4)}  ${c}`);
 console.log('\nper concept:');
 for (const [c, n] of Object.entries(stats.perConcept).sort((a, b) => b[1] - a[1])) {
   console.log(`  ${String(n).padStart(4)}  ${c}`);

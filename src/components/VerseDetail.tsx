@@ -1,6 +1,7 @@
 import { BookMarked, Tag, Network, X, ScrollText, Plus, Check, Sparkles, ExternalLink, BookOpen } from 'lucide-react';
 import { verses, connections, vedabaseUrl } from '../data/index.js';
 import { useVerseText } from '../hooks/useVerseText.js';
+import { clusterLabel } from '../clusters.js';
 import { suggestSimilar, suggestionConnection } from '../suggestions.js';
 import { useBottomSheet } from '../hooks/useBottomSheet.js';
 import './VerseDetail.css';
@@ -122,6 +123,9 @@ export default function VerseDetail({
             )}
           </div>
           <div className="verse-theme-large">{verse.theme ?? verse.transliteration}</div>
+          {verse.cluster && (
+            <div className="verse-cluster">{clusterLabel(verse.cluster)}</div>
+          )}
         </div>
 
         {/* Sanskrit */}

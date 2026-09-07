@@ -76,7 +76,18 @@ Audit performed 2026-06-06. Items grouped by category; numbers are stable IDs fo
 
 56. **113 verses still untagged** — mostly narrative and list verses (ch. 1 army rosters,
     ch. 10 opulence lists) where the lexicon finds nothing decisive. Either lower
-    `MIN_SCORE`, extend the lexicon, or tag by hand.
+    `MIN_SCORE`, extend the lexicon, or tag by hand. *(done — 2026-09-07: every verse now
+    gets at least two concepts. 363 from confident lexicon hits, 188 padded from weaker
+    evidence, 113 from the chapter's default pair alone. The generator prints which tier
+    each run lands in; the 113 default-only ones are the weakest guesses and the best place
+    to start reviewing.)*
+
+57. **Theme clusters** — the eleven logical clusters from the project design now sit above
+    the concept vocabulary (`src/clusters.ts`). Generated verses use the cluster label as
+    their theme, and `suggestSimilar()` scores a shared cluster at +1, which is what
+    guarantees every curated verse at least one suggestion. Open question: whether the
+    hand-curated 37 should also show a cluster-derived theme, or keep their bespoke ones
+    (currently bespoke, with the cluster shown underneath).
 
 54. **Vocabulary needs review against the remaining 664** — the 36 terms were derived from
     the 37 curated verses only. Chapters 10, 11 and 17 are barely represented, so ideas like

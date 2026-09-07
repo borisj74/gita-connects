@@ -41,10 +41,12 @@ During `vite dev` a small plugin in `vite.config.ts` runs the function locally; 
 it deploys as a Function.
 
 Of the 701 verses, **37 are hand-curated** — theme, concepts, a summary in our own words,
-and 120 authored connections between them. A further **551 carry machine-proposed concepts**
-from [`scripts/generate-concepts.mjs`](scripts/generate-concepts.mjs), marked `unreviewed`
-in the UI until a person checks them; suggested connections for these come from concept
-overlap at runtime. 113 verses have no curation yet.
+and 120 authored connections between them. The other **664 carry machine-proposed
+concepts** from [`scripts/generate-concepts.mjs`](scripts/generate-concepts.mjs), marked
+`unreviewed` in the UI until a person checks them. Every verse has at least two concepts
+and belongs to one of eleven **theme clusters** ([`src/clusters.ts`](src/clusters.ts) —
+Arjuna's dilemma, Soul and self, Duty and action, …); suggested connections come from
+concept overlap and cluster membership at runtime, so no verse is a dead end.
 
 Data is split by provenance:
 
@@ -102,6 +104,7 @@ src/
   data/                 verse text (imported) + curation (authored)
   types.ts              VerseText, VerseCuration, Verse, Connection, Chapter
   concepts.ts           the controlled concept vocabulary (Concept union type)
+  clusters.ts           eleven theme clusters; every concept maps to one
   connectionTypes.ts    predefined + custom types, localStorage helpers
   suggestions.ts        connection suggestions
   components/           VerseNetwork, VerseDetail, ChapterSidebar,

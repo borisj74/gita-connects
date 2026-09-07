@@ -54,12 +54,32 @@ describe('suggestSimilar', () => {
     }
   });
 
-  it('scores as sharedConcepts * 2 plus 1 for a matching theme', () => {
+  it('scores as sharedConcepts * 2, plus 1 for a matching theme, plus 1 for a matching cluster', () => {
     for (const verse of verses) {
       for (const s of suggestSimilar(verse.id, 50)) {
-        expect(s.score).toBe(s.shared.length * 2 + (s.sameTheme ? 1 : 0));
+        expect(s.score).toBe(
+          s.shared.length * 2 + (s.sameTheme ? 1 : 0) + (s.sameCluster ? 1 : 0),
+        );
       }
     }
+  });
+
+  it('reports sameCluster only when both verses share a cluster', () => {
+    for (const verse of verses) {
+      for (const s of suggestSimilar(verse.id, 50)) {
+        const both = verse.cluster !== undefined && s.verse.cluster !== undefined;
+        expect(s.sameCluster).toBe(both && verse.cluster === s.verse.cluster);
+      }
+    }
+  });
+
+  // The whole point of clusters and the two-concept minimum: nobody opens a
+  // verse and finds nothing to explore.
+  it('offers at least one suggestion for every curated verse', () => {
+    const empty = verses
+      .filter((v) => v.curated && suggestSimilar(v.id, 5).length === 0)
+      .map((v) => v.id);
+    expect(empty).toEqual([]);
   });
 
   it('reports shared concepts that both verses actually have', () => {

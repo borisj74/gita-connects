@@ -1,4 +1,5 @@
 import type { Concept } from './concepts.js';
+import type { ClusterId } from './clusters.js';
 
 /** Public-domain verse text, imported from src/data/verses/ch-NN.json. */
 export interface VerseText {
@@ -40,6 +41,8 @@ export interface Verse extends VerseText {
   curated: boolean;
   /** Curation has been checked by a person. Always false when !curated. */
   reviewed: boolean;
+  /** Theme cluster derived from the concepts; undefined when uncurated. */
+  cluster?: ClusterId;
 }
 
 export interface Connection {

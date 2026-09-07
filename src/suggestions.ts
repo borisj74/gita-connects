@@ -5,6 +5,7 @@ export interface Suggestion {
   verse: Verse;
   shared: string[];
   sameTheme: boolean;
+  sameCluster: boolean;
   score: number;
 }
 
@@ -32,8 +33,12 @@ export function suggestSimilar(verseId: string, limit = 5): Suggestion[] {
         source.theme !== undefined &&
         v.theme !== undefined &&
         v.theme.toLowerCase() === source.theme.toLowerCase();
-      const score = shared.length * 2 + (sameTheme ? 1 : 0);
-      return { verse: v, shared, sameTheme, score };
+      // Same cluster is worth one point: weaker than a shared concept, but
+      // enough that a verse always has neighbours to suggest.
+      const sameCluster =
+        source.cluster !== undefined && v.cluster !== undefined && v.cluster === source.cluster;
+      const score = shared.length * 2 + (sameTheme ? 1 : 0) + (sameCluster ? 1 : 0);
+      return { verse: v, shared, sameTheme, sameCluster, score };
     })
     .filter((s) => s.score > 0)
     .sort((a, b) => b.score - a.score || b.shared.length - a.shared.length)

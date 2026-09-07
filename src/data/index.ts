@@ -2,6 +2,7 @@ import type { Verse, VerseText } from '../types.js';
 import { verseCuration, connections } from './curation.js';
 import { generatedCuration } from './curation.generated.js';
 import { chapters } from './chapters.js';
+import { clusterOf } from '../clusters.js';
 
 import ch01 from './verses/ch-01.json';
 import ch02 from './verses/ch-02.json';
@@ -41,6 +42,7 @@ export const verses: Verse[] = verseTexts.map((text) => {
     summary: curation?.summary,
     curated: curation !== undefined,
     reviewed: curation !== undefined && curation.reviewed !== false,
+    cluster: clusterOf(curation?.concepts ?? []),
   };
 });
 

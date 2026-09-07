@@ -683,3 +683,12 @@
   border: 1px dashed var(--border);
   vertical-align: middle;
 }
+
+/* The logical theme cluster the verse belongs to. */
+.verse-cluster {
+  margin-top: 0.35rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
