@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { ChevronDown, Trash2 } from 'lucide-react';
 import type { ConnectionTypeDef } from '../connectionTypes.js';
-import { connections } from '../data.js';
+import { connections } from '../data/index.js';
 import './ConnectionFilters.css';
 
 interface ConnectionFiltersProps {

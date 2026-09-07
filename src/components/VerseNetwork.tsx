@@ -14,7 +14,7 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { X, MousePointer2, Undo2, Redo2 } from 'lucide-react';
-import { verses, connections } from '../data.js';
+import { verses, connections } from '../data/index.js';
 import VerseNode from './VerseNode.js';
 import ConnectionEdge from './ConnectionEdge.js';
 import ConnectionDialog from './ConnectionDialog.js';

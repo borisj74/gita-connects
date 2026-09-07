@@ -11,9 +11,11 @@ const verse: Verse = {
   id: '2.47',
   sanskrit: 'कर्मण्येवाधिकारस्ते',
   transliteration: 'karmany evadhikaras te',
-  translation: 'You have a right to action alone, never to its fruits.',
+  wordMeanings: 'karmaṇi—in prescribed duties; eva—only; adhikāraḥ—right',
   theme: 'Selfless action',
   concepts: ['duty', 'detachment'],
+  summary: 'You have a right to action alone, never to its fruits.',
+  curated: true,
 };
 
 function renderNode(data: Partial<Parameters<typeof VerseNode>[0]['data']> = {}) {
@@ -31,18 +33,18 @@ function renderNode(data: Partial<Parameters<typeof VerseNode>[0]['data']> = {})
 }
 
 describe('VerseNode', () => {
-  it('renders the verse id, theme, translation, and concepts', () => {
+  it('renders the verse id, theme, summary, and concepts', () => {
     renderNode();
     expect(screen.getByText('2.47')).toBeInTheDocument();
     expect(screen.getByText('Selfless action')).toBeInTheDocument();
-    expect(screen.getByText(verse.translation)).toBeInTheDocument();
+    expect(screen.getByText(verse.summary!)).toBeInTheDocument();
     expect(screen.getByText('duty')).toBeInTheDocument();
     expect(screen.getByText('detachment')).toBeInTheDocument();
   });
 
   it('calls onSelect when the node body is clicked', async () => {
     const { onSelect } = renderNode();
-    await userEvent.click(screen.getByText(verse.translation));
+    await userEvent.click(screen.getByText(verse.summary!));
     expect(onSelect).toHaveBeenCalledOnce();
   });
 

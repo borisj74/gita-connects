@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronRight, GripVertical, Check, Plus } from 'lucide-react';
-import { chapters, verses } from '../data.js';
+import { chapters, verses } from '../data/index.js';
 import './ChapterSidebar.css';
 
 interface ChapterSidebarProps {
@@ -103,7 +103,7 @@ export default function ChapterSidebar({
                         : <GripVertical size={14} className={`verse-grip ${isMobile ? 'verse-grip-hidden' : ''}`} />}
                       <div className="verse-item-body">
                         <div className="verse-number">{verse.id}</div>
-                        <div className="verse-theme">{verse.theme}</div>
+                        <div className="verse-theme">{verse.theme ?? verse.transliteration}</div>
                         <div className="verse-concepts">
                           {verse.concepts.slice(0, 2).map(concept => (
                             <span key={concept} className="concept-tag">{concept}</span>

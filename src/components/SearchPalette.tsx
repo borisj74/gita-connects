@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { Search, SearchX, Plus, Check, X } from 'lucide-react';
-import { verses } from '../data.js';
+import { verses } from '../data/index.js';
 import { useMediaQuery, MOBILE_BREAKPOINT } from '../hooks/useMediaQuery.js';
 import './SearchPalette.css';
 
@@ -43,9 +43,9 @@ export default function SearchPalette({ onVerseSelect, onAddVerse, networkVerses
       .filter((verse) => {
         if (verse.id.includes(q)) return true;
         if (`chapter ${verse.chapter}`.includes(q)) return true;
-        if (verse.theme.toLowerCase().includes(q)) return true;
+        if (verse.theme?.toLowerCase().includes(q)) return true;
         if (verse.concepts.some((c) => c.toLowerCase().includes(q))) return true;
-        if (verse.translation.toLowerCase().includes(q)) return true;
+        if (verse.wordMeanings.toLowerCase().includes(q)) return true;
         if (verse.transliteration.toLowerCase().includes(q)) return true;
         return false;
       })
@@ -121,7 +121,7 @@ export default function SearchPalette({ onVerseSelect, onAddVerse, networkVerses
                       <span className="palette-result-id">{highlight(verse.id, query)}</span>
                       <span className="palette-result-chapter">Ch. {verse.chapter}</span>
                     </div>
-                    <div className="palette-result-theme">{highlight(verse.theme, query)}</div>
+                    <div className="palette-result-theme">{highlight(verse.theme ?? verse.transliteration, query)}</div>
                     <div className="palette-result-concepts">
                       {verse.concepts.slice(0, 3).map((c) => (
                         <span key={c} className="palette-result-concept">{highlight(c, query)}</span>
@@ -155,7 +155,7 @@ export default function SearchPalette({ onVerseSelect, onAddVerse, networkVerses
 
         {!query && (
           <div className="palette-hint">
-            Type to search across {verses.length} verses — by number, concept, theme, or translation
+            Type to search across {verses.length} verses — by number, concept, theme, or Sanskrit
           </div>
         )}
       </div>

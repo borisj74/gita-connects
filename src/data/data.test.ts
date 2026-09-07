@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { chapters, verses, connections } from './data.js';
-import { PREDEFINED_CONNECTION_TYPES } from './connectionTypes.js';
+import { chapters, verses, connections, vedabaseUrl } from './index.js';
+import { verseCuration } from './curation.js';
+import { PREDEFINED_CONNECTION_TYPES } from '../connectionTypes.js';
 
 const verseIds = new Set(verses.map((v) => v.id));
 const chapterNumbers = new Set(chapters.map((c) => c.number));
@@ -49,21 +50,49 @@ describe('verses', () => {
     }
   });
 
-  it('fills in sanskrit, transliteration, translation, and theme', () => {
+  it('fills in sanskrit, transliteration, and word meanings for every verse', () => {
     for (const verse of verses) {
       expect(verse.sanskrit.trim(), verse.id).not.toBe('');
       expect(verse.transliteration.trim(), verse.id).not.toBe('');
-      expect(verse.translation.trim(), verse.id).not.toBe('');
-      expect(verse.theme.trim(), verse.id).not.toBe('');
+      expect(verse.wordMeanings.trim(), verse.id).not.toBe('');
     }
   });
 
-  it('gives every verse at least one concept, with no blanks or duplicates', () => {
+  it('carries no English translation, which would be BBT copyright', () => {
     for (const verse of verses) {
+      expect(verse, verse.id).not.toHaveProperty('translation');
+    }
+  });
+
+  it('links every verse to its Vedabase page', () => {
+    for (const verse of verses) {
+      expect(vedabaseUrl(verse)).toBe(
+        `https://vedabase.io/en/library/bg/${verse.chapter}/${verse.verse}/`,
+      );
+    }
+  });
+
+  it('gives every curated verse a theme and at least one concept', () => {
+    for (const verse of verses.filter((v) => v.curated)) {
+      expect(verse.theme?.trim(), verse.id).not.toBe('');
       expect(verse.concepts.length, verse.id).toBeGreaterThan(0);
       expect(verse.concepts.every((c) => c.trim() !== ''), verse.id).toBe(true);
       expect(new Set(verse.concepts).size, verse.id).toBe(verse.concepts.length);
     }
+  });
+
+  it('leaves uncurated verses without a theme or concepts', () => {
+    for (const verse of verses.filter((v) => !v.curated)) {
+      expect(verse.theme, verse.id).toBeUndefined();
+      expect(verse.concepts, verse.id).toEqual([]);
+    }
+  });
+
+  it('holds all 701 verses, of which a known subset is curated', () => {
+    expect(verses).toHaveLength(701);
+    expect(verses.filter((v) => v.curated).length).toBe(
+      Object.keys(verseCuration).length,
+    );
   });
 });
 
@@ -129,9 +158,19 @@ describe('connections', () => {
     }
   });
 
-  it('leaves no verse orphaned', () => {
+  // Uncurated verses are expected to have no connections yet; curated ones
+  // exist precisely because someone linked them, so those must not be orphans.
+  it('leaves no curated verse orphaned', () => {
     const connected = new Set(connections.flatMap((c) => [c.from, c.to]));
-    const orphans = [...verseIds].filter((id) => !connected.has(id));
+    const orphans = verses.filter((v) => v.curated && !connected.has(v.id)).map((v) => v.id);
     expect(orphans).toEqual([]);
+  });
+
+  it('connects only curated verses', () => {
+    const curated = new Set(verses.filter((v) => v.curated).map((v) => v.id));
+    for (const c of connections) {
+      expect(curated, `${c.from} -> ${c.to}`).toContain(c.from);
+      expect(curated, `${c.from} -> ${c.to}`).toContain(c.to);
+    }
   });
 });

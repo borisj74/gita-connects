@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { suggestSimilar, suggestionConnection } from './suggestions.js';
-import { verses, connections } from './data.js';
+import { verses, connections } from './data/index.js';
 
 describe('suggestSimilar', () => {
   const sample = verses[0];
@@ -76,7 +76,10 @@ describe('suggestSimilar', () => {
   it('matches themes case-insensitively', () => {
     for (const verse of verses) {
       for (const s of suggestSimilar(verse.id, 50)) {
-        expect(s.sameTheme).toBe(s.verse.theme.toLowerCase() === verse.theme.toLowerCase());
+        const bothThemed = s.verse.theme !== undefined && verse.theme !== undefined;
+        expect(s.sameTheme).toBe(
+          bothThemed && s.verse.theme!.toLowerCase() === verse.theme!.toLowerCase(),
+        );
       }
     }
   });

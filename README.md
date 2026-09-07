@@ -21,11 +21,30 @@ Draw your own connections, filter by type, and save networks for later.
 - **Light and dark themes**
 - **Mobile layout** — drawers and bottom sheets instead of side panels
 
-## Current data coverage
+## Data and sources
 
-37 verses across the 18 chapters, with 120 curated connections. All content lives in
-[`src/data.ts`](src/data.ts). Chapter metadata (titles, Sanskrit names, verse counts) covers
-all 18 chapters; verse-level content is a curated subset, not the full ~700 verses.
+All **701 verses** are present. Each carries Sanskrit, IAST transliteration, and
+word-by-word glosses, imported from the public-domain
+[gita/gita](https://github.com/gita/gita) dataset (Unlicense) by
+[`scripts/import-verses.mjs`](scripts/import-verses.mjs).
+
+**No English translation ships with this app.** Prabhupada's translation and purport in
+*Bhagavad-gītā As It Is* are Bhaktivedanta Book Trust copyright, so every verse links out
+to its page on [vedabase.io](https://vedabase.io/en/library/bg/) instead of reproducing
+that text. The word-by-word glosses are public domain and provide searchable English.
+
+Of the 701 verses, **37 are curated** — given a theme, concepts, and a summary written in
+our own words — and joined by 120 connections. The other 664 render fully (Sanskrit,
+transliteration, glosses, Vedabase link) but carry no theme or connections until curated.
+
+Data is split by provenance:
+
+| Path | Contents | Edit by hand? |
+| --- | --- | --- |
+| `src/data/verses/ch-NN.json` | Imported public-domain verse text | No — regenerate with the script |
+| `src/data/curation.ts` | Themes, concepts, summaries, connections | Yes — this is the original work |
+| `src/data/chapters.ts` | Chapter metadata | Yes |
+| `src/data/index.ts` | Merges the above into the `Verse` the app consumes | — |
 
 ## Tech stack
 
@@ -69,8 +88,8 @@ another port if 5173 is taken).
 ```
 src/
   App.tsx               top-level layout, theme, panel state
-  data.ts               chapters, verses, connections (all content)
-  types.ts              Verse, Connection, Chapter
+  data/                 verse text (imported) + curation (authored)
+  types.ts              VerseText, VerseCuration, Verse, Connection, Chapter
   connectionTypes.ts    predefined + custom types, localStorage helpers
   suggestions.ts        connection suggestions
   components/           VerseNetwork, VerseDetail, ChapterSidebar,
@@ -115,8 +134,9 @@ Clearing site data resets the app to defaults. Nothing is sent to a server.
 
 - **`.js` extensions in imports are intentional** — required by the TypeScript
   `moduleResolution` setting. Do not rewrite them as extensionless.
-- Adding verses or connections means editing `src/data.ts` and redeploying; content is not
-  externalized yet.
+- Add themes, concepts, or connections in `src/data/curation.ts`. Never hand-edit
+  `src/data/verses/*.json` — rerun `node scripts/import-verses.mjs` instead.
+- Do not add Prabhupada's translations or purports to this repo; link to Vedabase.
 - Known gaps and planned work are tracked in [IMPROVEMENTS.md](IMPROVEMENTS.md).
 - Common runtime problems are in [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
 - Agent/automation setup notes are in [AGENTS.md](AGENTS.md).

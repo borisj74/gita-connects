@@ -4,14 +4,14 @@ Audit performed 2026-06-06. Items grouped by category; numbers are stable IDs fo
 
 ## Data + Content
 
-1. **Verse coverage low** — 38 of ~700 verses, 120 connections. Scaling options: load from JSON/CDN, lazy-load per chapter, or back with SQLite-via-wasm.
-2. **No source attribution** — translation source missing (Prabhupada? Vyasa? AI?). Add `source` field + footer credit.
-3. **Connections in source code** — content edits force redeploy. Move to JSON or headless CMS (Sanity / Notion / markdown).
+1. **Verse coverage low** — 38 of ~700 verses, 120 connections. Scaling options: load from JSON/CDN, lazy-load per chapter, or back with SQLite-via-wasm. *(done — 2026-09-07: all 701 verses imported from the public-domain gita/gita dataset. 37 remain curated; 664 have text but no theme or connections.)*
+2. **No source attribution** — translation source missing (Prabhupada? Vyasa? AI?). Add `source` field + footer credit. *(resolved — 2026-09-07: the 37 translations were verbatim BBT text and have been removed. Verses now link to vedabase.io; Sanskrit/transliteration/glosses credit gita/gita in the README.)*
+3. **Connections in source code** — content edits force redeploy. Move to JSON or headless CMS (Sanity / Notion / markdown). *(partly done — 2026-09-07: verse text is now JSON under src/data/verses/. Curation and connections are still in src/data/curation.ts.)*
 4. **No commentary** — add `purport` field for verse depth. *(done — 2026-06-06)*
 
 ## Performance
 
-5. **Whole `data.ts` (1239 lines) bundled** — split per chapter, dynamic import on expand.
+5. **Whole `data.ts` (1239 lines) bundled** — split per chapter, dynamic import on expand. *(partly done — 2026-09-07: split into 18 per-chapter JSON files, but still eagerly imported. ~590 KB raw now in the bundle; dynamic import per chapter still outstanding.)*
 6. **`verses.find()` / `connections.filter()` everywhere** — O(n) per render. Build `Map<id, Verse>` + `Map<id, Connection[]>` once.
 7. **`ChapterSidebar` re-renders all 18 chapters + nested verses** — wrap items in `memo`, virtualize with `react-window` for long lists.
 8. **`filteredEdges` recomputes on every `allEdges` change** — fine, but pair grouping `Map` rebuilds; cache by edge id.
@@ -57,6 +57,15 @@ Audit performed 2026-06-06. Items grouped by category; numbers are stable IDs fo
     under two types. Decide whether this is intentional; if not, dedupe and tighten
     the `data.test.ts` uniqueness check from the (from, to, type) triple to the
     unordered pair.
+
+52. **664 uncurated verses** — all 701 verses now load, but only 37 have a theme, concepts,
+    and connections. Needs a curation workflow: generating candidate concept tags from the
+    word-by-word glosses for review is the likely path, and a controlled concept vocabulary
+    (see item 53) should land first.
+
+53. **No controlled concept vocabulary** — 92 distinct concept tags across 37 verses, 64 of
+    them used exactly once, so `suggestSimilar()` has little to match on. Define a fixed
+    vocabulary as a union type and assert it in tests before curating the remaining 664.
 
 ## Persistence + Saved Networks
 

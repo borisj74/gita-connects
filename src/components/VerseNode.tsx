@@ -41,10 +41,12 @@ function VerseNode({ data }: VerseNodeProps) {
 
       <div className="node-header">
         <div className="node-verse-id">{verse.id}</div>
-        <div className="node-theme">{verse.theme}</div>
+        <div className="node-theme">{verse.theme ?? 'Uncurated'}</div>
       </div>
 
-      <div className="node-translation">{verse.translation}</div>
+      {/* Uncurated verses have no summary of their own, so show the
+          transliteration — every verse has one. */}
+      <div className="node-translation">{verse.summary ?? verse.transliteration}</div>
 
       <div className="node-concepts">
         {verse.concepts.map(concept => (

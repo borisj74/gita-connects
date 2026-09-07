@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Search, SearchX, X } from 'lucide-react';
-import { verses } from '../data.js';
+import { verses } from '../data/index.js';
 import './SearchBar.css';
 
 interface SearchBarProps {
@@ -38,14 +38,14 @@ export default function SearchBar({ onVerseSelect }: SearchBarProps) {
       // Search by chapter (e.g., "chapter 2")
       if (`chapter ${verse.chapter}`.includes(lowerQuery)) return true;
 
-      // Search by theme
-      if (verse.theme.toLowerCase().includes(lowerQuery)) return true;
+      // Search by theme (curated verses only)
+      if (verse.theme?.toLowerCase().includes(lowerQuery)) return true;
 
       // Search by concepts
       if (verse.concepts.some(c => c.toLowerCase().includes(lowerQuery))) return true;
 
-      // Search in translation
-      if (verse.translation.toLowerCase().includes(lowerQuery)) return true;
+      // Search the word-by-word glosses — the only English every verse has
+      if (verse.wordMeanings.toLowerCase().includes(lowerQuery)) return true;
 
       // Search in transliteration
       if (verse.transliteration.toLowerCase().includes(lowerQuery)) return true;
@@ -97,7 +97,7 @@ export default function SearchBar({ onVerseSelect }: SearchBarProps) {
                 <span className="result-id">{highlight(verse.id, query)}</span>
                 <span className="result-chapter">Ch. {verse.chapter}</span>
               </div>
-              <div className="result-theme">{highlight(verse.theme, query)}</div>
+              <div className="result-theme">{highlight(verse.theme ?? verse.transliteration, query)}</div>
               <div className="result-concepts">
                 {verse.concepts.slice(0, 3).map(concept => (
                   <span key={concept} className="result-concept">

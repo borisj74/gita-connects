@@ -1,5 +1,5 @@
-import { BookMarked, Tag, Network, X, ScrollText, Plus, Check, Sparkles } from 'lucide-react';
-import { verses, connections } from '../data.js';
+import { BookMarked, Tag, Network, X, ScrollText, Plus, Check, Sparkles, ExternalLink } from 'lucide-react';
+import { verses, connections, vedabaseUrl } from '../data/index.js';
 import { suggestSimilar, suggestionConnection } from '../suggestions.js';
 import { useBottomSheet } from '../hooks/useBottomSheet.js';
 import './VerseDetail.css';
@@ -109,7 +109,7 @@ export default function VerseDetail({
         {/* Theme */}
         <div className="detail-section">
           <div className="section-label">Theme</div>
-          <div className="verse-theme-large">{verse.theme}</div>
+          <div className="verse-theme-large">{verse.theme ?? verse.transliteration}</div>
         </div>
 
         {/* Sanskrit */}
@@ -124,22 +124,35 @@ export default function VerseDetail({
           <div className="transliteration-text">{verse.transliteration}</div>
         </div>
 
-        {/* Translation */}
+        {/* Word-by-word meanings */}
         <div className="detail-section">
-          <div className="section-label">Translation</div>
-          <div className="translation-text">{verse.translation}</div>
+          <div className="section-label">Word by word</div>
+          <div className="word-meanings-text">{verse.wordMeanings}</div>
         </div>
 
-        {/* Purport / Commentary */}
-        {verse.purport && (
+        {/* Summary — our own words. Prabhupada's translation and purport are
+            BBT copyright, so we link to Vedabase rather than reproduce them. */}
+        {verse.summary && (
           <div className="detail-section">
             <div className="section-label">
               <ScrollText size={14} />
-              Purport
+              Summary
             </div>
-            <div className="purport-text">{verse.purport}</div>
+            <div className="purport-text">{verse.summary}</div>
           </div>
         )}
+
+        <div className="detail-section">
+          <a
+            className="vedabase-link"
+            href={vedabaseUrl(verse)}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <ExternalLink size={14} />
+            Read the translation and purport on Vedabase
+          </a>
+        </div>
 
         {/* Concepts */}
         <div className="detail-section">

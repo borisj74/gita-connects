@@ -1,13 +1,34 @@
-export interface Verse {
+/** Public-domain verse text, imported from src/data/verses/ch-NN.json. */
+export interface VerseText {
+  id: string; // e.g., "2.47"
   chapter: number;
   verse: number;
-  id: string; // e.g., "2.47"
   sanskrit: string;
   transliteration: string;
-  translation: string;
+  wordMeanings: string; // word-by-word Sanskrit-English glosses
+}
+
+/** Hand-authored scholarship layered on top of a verse. */
+export interface VerseCuration {
   theme: string;
   concepts: string[];
-  purport?: string;
+  summary?: string;
+}
+
+/**
+ * A verse as the app consumes it: imported text plus curation when it exists.
+ *
+ * `theme` and `summary` are absent and `concepts` is empty for uncurated
+ * verses — most of the 701 — so treat `curated` as the flag for "has
+ * scholarship attached". No English translation is carried: Prabhupada's
+ * translation and purport are Bhaktivedanta Book Trust copyright, so the app
+ * links out to vedabase.io via vedabaseUrl() rather than reproducing them.
+ */
+export interface Verse extends VerseText {
+  theme?: string;
+  concepts: string[];
+  summary?: string;
+  curated: boolean;
 }
 
 export interface Connection {

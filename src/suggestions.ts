@@ -1,4 +1,4 @@
-import { verses, connections } from './data.js';
+import { verses, connections } from './data/index.js';
 import type { Verse } from './types.js';
 
 export interface Suggestion {
@@ -27,7 +27,11 @@ export function suggestSimilar(verseId: string, limit = 5): Suggestion[] {
     .filter((v) => v.id !== verseId && !alreadyConnected.has(v.id))
     .map((v) => {
       const shared = v.concepts.filter((c) => sourceConcepts.has(c));
-      const sameTheme = v.theme.toLowerCase() === source.theme.toLowerCase();
+      // Two uncurated verses both lack a theme; that is not a match.
+      const sameTheme =
+        source.theme !== undefined &&
+        v.theme !== undefined &&
+        v.theme.toLowerCase() === source.theme.toLowerCase();
       const score = shared.length * 2 + (sameTheme ? 1 : 0);
       return { verse: v, shared, sameTheme, score };
     })
