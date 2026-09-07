@@ -15,6 +15,7 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import { X, MousePointer2, Undo2, Redo2 } from 'lucide-react';
 import { verses, connections } from '../data/index.js';
+import { expandableNeighbors, edgesJoining } from '../neighbors.js';
 import VerseNode from './VerseNode.js';
 import ConnectionEdge from './ConnectionEdge.js';
 import ConnectionDialog from './ConnectionDialog.js';
@@ -397,25 +398,20 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
   }, [setNodes, fitView, commit]);
 
   const handleExpandNetwork = useCallback((verseId: string) => {
-    const connectedVerseIds = connections
-      .filter(conn => conn.from === verseId || conn.to === verseId)
-      .map(conn => conn.from === verseId ? conn.to : conn.from)
-      .filter(id => !networkVerses.has(id));
+    // Authored links when the verse has any; its top suggestions otherwise.
+    const links = expandableNeighbors(verseId, networkVerses);
+    const connectedVerseIds = links.map((l) => l.id);
 
     if (connectedVerseIds.length === 0) return;
     commit();
 
     setNodes((currentNodes) => {
       const origin = nextPlacementOrigin(currentNodes);
+      const willBeOnCanvas = new Set([...networkVerses, ...connectedVerseIds]);
 
       const newNodes: Node[] = connectedVerseIds.map((vId, index) => {
         const verse = verses.find(v => v.id === vId);
         if (!verse) return null;
-
-        const newConnectedCount = connections
-          .filter(conn => conn.from === vId || conn.to === vId)
-          .map(conn => conn.from === vId ? conn.to : conn.from)
-          .filter(id => !networkVerses.has(id) && !connectedVerseIds.includes(id)).length;
 
         return {
           id: vId,
@@ -430,7 +426,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
             onRemove: () => handleRemoveNode(vId),
             onExpand: () => expandRef.current(vId),
             isSelected: selectedVerseId === vId,
-            connectedCount: newConnectedCount,
+            connectedCount: expandableNeighbors(vId, willBeOnCanvas).length,
           },
         };
       }).filter(Boolean) as Node[];
@@ -438,16 +434,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       return [...currentNodes, ...newNodes];
     });
 
-    const newEdges: Edge[] = [];
-    connections.forEach(conn => {
-      const isRelevant =
-        (conn.from === verseId && connectedVerseIds.includes(conn.to)) ||
-        (conn.to === verseId && connectedVerseIds.includes(conn.from));
-
-      if (isRelevant) {
-        newEdges.push(buildEdge(conn, connectionTypes));
-      }
-    });
+    const newEdges: Edge[] = links.map((l) => buildEdge(l.connection, connectionTypes));
 
     setAllEdges((eds) => [...eds, ...newEdges]);
     setNetworkVerses(prev => new Set([...prev, ...connectedVerseIds]));
@@ -478,10 +465,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         y: event.clientY - reactFlowBounds.top - 50,
       };
 
-      const connectedCount = connections
-        .filter(conn => conn.from === verseId || conn.to === verseId)
-        .map(conn => conn.from === verseId ? conn.to : conn.from)
-        .filter(id => !networkVerses.has(id)).length;
+      const connectedCount = expandableNeighbors(verseId, networkVerses).length;
 
       const newNode: Node = {
         id: verseId,
@@ -500,15 +484,9 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       setNodes((nds) => [...nds, newNode]);
       setNetworkVerses(prev => new Set([...prev, verseId]));
 
-      const newEdges: Edge[] = [];
-      connections.forEach(conn => {
-        if (
-          (conn.from === verseId && networkVerses.has(conn.to)) ||
-          (conn.to === verseId && networkVerses.has(conn.from))
-        ) {
-          newEdges.push(buildEdge(conn, connectionTypes));
-        }
-      });
+      const newEdges: Edge[] = edgesJoining([verseId], networkVerses).map((c) =>
+        buildEdge(c, connectionTypes),
+      );
 
       if (newEdges.length > 0) {
         setAllEdges((eds) => [...eds, ...newEdges]);
@@ -534,10 +512,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         .map((vId, i) => {
           const verse = verses.find((v) => v.id === vId);
           if (!verse) return null;
-          const connectedCount = connections
-            .filter((c) => c.from === vId || c.to === vId)
-            .map((c) => (c.from === vId ? c.to : c.from))
-            .filter((id) => !finalSet.has(id)).length;
+          const connectedCount = expandableNeighbors(vId, finalSet).length;
           return {
             id: vId,
             type: 'verseNode',
@@ -559,13 +534,8 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
 
       setNodes((nds) => [...nds, ...newNodes]);
 
-      const newEdges: Edge[] = [];
-      connections.forEach((conn) => {
-        const touchesNew = toAdd.includes(conn.from) || toAdd.includes(conn.to);
-        if (touchesNew && finalSet.has(conn.from) && finalSet.has(conn.to)) {
-          newEdges.push(buildEdge(conn, connectionTypes));
-        }
-      });
+      const existing = new Set([...finalSet].filter((id) => !toAdd.includes(id)));
+      const newEdges: Edge[] = edgesJoining(toAdd, existing).map((c) => buildEdge(c, connectionTypes));
       if (newEdges.length > 0) setAllEdges((eds) => [...eds, ...newEdges]);
 
       setNetworkVerses(finalSet);
@@ -733,10 +703,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       }
 
       return nds.map((node) => {
-        const connectedCount = connections
-          .filter(conn => conn.from === node.id || conn.to === node.id)
-          .map(conn => conn.from === node.id ? conn.to : conn.from)
-          .filter(id => !networkVerses.has(id)).length;
+        const connectedCount = expandableNeighbors(node.id, networkVerses).length;
 
         const dimmed =
           spotlight && node.id !== selectedVerseId && !neighbors.has(node.id);

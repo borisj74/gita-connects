@@ -101,6 +101,12 @@ Audit performed 2026-06-06. Items grouped by category; numbers are stable IDs fo
     tags fail the build. 92 tags collapsed to 36; singletons fell from 69% to 22%; verses
     with at least one suggestion went from 31/37 to 37/37.)*
 
+58. **"Show N connected verses" counted reciprocal pairs twice** — 2.14 reported 9 where the
+    canvas could only add 7, because the dataset holds A→B and B→A as separate connections.
+    *(fixed — 2026-09-07: `src/neighbors.ts` collapses to one neighbour per verse, keeping
+    the strongest link, matching what the canvas and detail panel already did for edges.
+    Item 51's reciprocal-pair question still stands; this just stops it miscounting.)*
+
 ## Persistence + Saved Networks
 
 34. **localStorage only** — no cross-device. Optional: Vercel KV / Supabase auth + cloud save.
