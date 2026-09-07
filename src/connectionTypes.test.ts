@@ -37,7 +37,7 @@ describe('relation model', () => {
     const T = PREDEFINED_CONNECTION_TYPES;
     const directional = T.filter((t) => isDirectionalType(T, t.id)).map((t) => t.id);
     expect(directional).toEqual([
-      'sequential', 'progression', 'goal',
+      'sequential', 'progression',
       'dependency', 'question-answer', 'definition', 'illustration',
     ]);
     expect(isDirectionalType(T, 'nope')).toBe(false);

@@ -199,8 +199,8 @@ export const verseCuration: Record<string, VerseCuration> = {
 
 // Relation types follow the verse-relationship model (see PREDEFINED_CONNECTION_TYPES
 // in connectionTypes.ts). Directional types read from -> to: for progression the
-// concept introduced in `from` is developed in `to`; for goal, `from` points toward
-// `to` as its aim; for dependency, `from` rests on a premise `to` explains.
+// concept introduced in `from` is developed in `to`; for dependency, `from` uses a
+// premise that `to` establishes. Goal, thematic and parallel are undirected.
 // Direction of every directional link was reviewed on 2026-09-07.
 export const connections: Connection[] = [
   {
@@ -1006,7 +1006,7 @@ export const connections: Connection[] = [
     from: '12.13',
     to: '18.66',
     type: 'goal',
-    description: "The devotee's compassionate, friendly character points toward total surrender as its aim",
+    description: "The devotee's compassionate, friendly character and total surrender converge on the same aim",
     strength: 9,
   },
   {

@@ -5,8 +5,10 @@ export interface ConnectionTypeDef {
   description?: string;
   isCustom?: boolean;
   /**
-   * True when `from -> to` carries meaning (A develops into B, A leads to
-   * the goal B). Undirected types describe a quality the pair shares.
+   * True when `from -> to` carries meaning (A develops into B, A uses a
+   * premise B establishes). Undirected types describe a quality the pair
+   * shares — including goal: two verses can converge on surrender or
+   * liberation without one leading to the other.
    */
   directional?: boolean;
 }
@@ -16,16 +18,17 @@ export interface ConnectionTypeDef {
  * the rest were added for links the model's rules describe but did not name
  * (dependency, from its link-rule system) or that the Gītā's dialogue form
  * makes common (question–answer). For directional types the connection's
- * `from` is the earlier, more basic, asking, defining or illustrating verse,
- * and `to` the later, developed, answering, using or illustrated one.
+ * `from` is the earlier, more basic, asking, defining, illustrating or
+ * premise-using verse, and `to` the later, developed, answering, used,
+ * illustrated or premise-establishing one.
  */
 export const PREDEFINED_CONNECTION_TYPES: ConnectionTypeDef[] = [
   { id: 'sequential', label: 'Sequential', color: '#9b6a8b', description: 'The next verse supports or expands the previous one', directional: true },
   { id: 'thematic', label: 'Thematic', color: '#ca7558', description: 'Both verses share a concept — soul, action, devotion, renunciation' },
   { id: 'progression', label: 'Progression', color: '#5a7a96', description: 'A concept introduced here is developed more fully there', directional: true },
   { id: 'contrast', label: 'Contrast', color: '#b5533c', description: 'One verse presents the material condition, the other its transcendence' },
-  { id: 'goal', label: 'Goal', color: '#c8a04a', description: 'Both point toward the same ultimate aim, especially surrender to Kṛṣṇa', directional: true },
-  { id: 'dependency', label: 'Dependency', color: '#7d8a6e', description: 'This verse rests on a premise that verse explains', directional: true },
+  { id: 'goal', label: 'Goal', color: '#c8a04a', description: 'Both converge on the same ultimate aim, especially surrender to Kṛṣṇa' },
+  { id: 'dependency', label: 'Dependency', color: '#7d8a6e', description: 'This verse uses a premise that verse establishes', directional: true },
   { id: 'question-answer', label: 'Question–answer', color: '#5e9b8e', description: 'Arjuna asks here; Kṛṣṇa answers there', directional: true },
   { id: 'definition', label: 'Definition', color: '#8d7a66', description: 'This verse defines a term that verse relies on', directional: true },
   { id: 'illustration', label: 'Illustration', color: '#b08bc0', description: 'This verse gives an example or metaphor for that principle', directional: true },

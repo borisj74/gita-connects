@@ -14,7 +14,7 @@ Draw your own connections, filter by type, and save networks for later.
 - **Verse network canvas** — React Flow graph; drag verses in, auto-arrange with dagre
 - **Typed connections** — ten relation types: the verse-relationship model's five
   (sequential, thematic, progression, contrast, goal) plus dependency, question–answer,
-  definition, illustration and parallel. Seven are directional and drawn with arrowheads.
+  definition, illustration and parallel. Six are directional and drawn with arrowheads.
   Readers can also define custom types
 - **Draw your own edges** — connect two nodes, pick a type, set strength (1–10), add a description
 - **Filtering** — show/hide connection types; selection persists across reloads
