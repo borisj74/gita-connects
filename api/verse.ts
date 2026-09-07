@@ -14,7 +14,7 @@
  */
 import { parse, type HTMLElement } from 'node-html-parser';
 
-export const config = { runtime: 'nodejs' };
+// Node.js runtime is the default; no config export needed.
 
 const ATTRIBUTION =
   'Content used with permission of © The Bhaktivedanta Book Trust International, Inc. All rights reserved.';
@@ -40,7 +40,9 @@ function paragraphs(root: HTMLElement, selector: string): string[] {
 }
 
 export default async function handler(request: Request): Promise<Response> {
-  const url = new URL(request.url);
+  // On Vercel request.url is the bare path ("/api/verse?chapter=1&verse=6"),
+  // which URL() rejects without a base. The base is only used to parse.
+  const url = new URL(request.url, 'http://localhost');
   const chapter = Number(url.searchParams.get('chapter'));
   const verse = Number(url.searchParams.get('verse'));
 
