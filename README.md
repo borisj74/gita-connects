@@ -43,7 +43,7 @@ No backend, no database, no API keys. It is a fully client-side SPA.
 
 ## Getting started
 
-Requires Node.js 20+.
+Requires Node.js 22.22.2+ (jsdom 30 and Vitest 5 both drop Node 20).
 
 ```bash
 npm install
