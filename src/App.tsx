@@ -33,7 +33,7 @@ function App() {
     [customTypes],
   );
   const [activeFilters, setActiveFilters] = useState<Set<string>>(() =>
-    loadActiveFilters(PREDEFINED_CONNECTION_TYPES.map((t) => t.id)),
+    loadActiveFilters([...PREDEFINED_CONNECTION_TYPES, ...loadCustomConnectionTypes()].map((t) => t.id)),
   );
   const [networkVerses, setNetworkVerses] = useState<Set<string>>(new Set());
   const [networkEdges, setNetworkEdges] = useState<Edge[]>([]);
@@ -53,8 +53,8 @@ function App() {
 
   // Persist active filters so they survive reloads.
   useEffect(() => {
-    saveActiveFilters(activeFilters);
-  }, [activeFilters]);
+    saveActiveFilters(activeFilters, connectionTypes.map((t) => t.id));
+  }, [activeFilters, connectionTypes]);
 
   // Apply + persist theme.
   useEffect(() => {

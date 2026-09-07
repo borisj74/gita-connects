@@ -26,20 +26,26 @@ const custom = (over: Partial<ConnectionTypeDef> = {}): ConnectionTypeDef => ({
 });
 
 describe('relation model', () => {
-  it('has exactly the five types from the verse-relationship model', () => {
+  it('has the model\'s five types first, then the five added ones', () => {
     expect(PREDEFINED_CONNECTION_TYPES.map((t) => t.id)).toEqual([
       'sequential', 'thematic', 'progression', 'contrast', 'goal',
+      'dependency', 'question-answer', 'definition', 'illustration', 'parallel',
     ]);
   });
 
-  it('marks sequential, progression and goal as directional and the rest not', () => {
+  it('marks exactly the types with a natural direction as directional', () => {
     const T = PREDEFINED_CONNECTION_TYPES;
-    expect(isDirectionalType(T, 'sequential')).toBe(true);
-    expect(isDirectionalType(T, 'progression')).toBe(true);
-    expect(isDirectionalType(T, 'goal')).toBe(true);
-    expect(isDirectionalType(T, 'thematic')).toBe(false);
-    expect(isDirectionalType(T, 'contrast')).toBe(false);
+    const directional = T.filter((t) => isDirectionalType(T, t.id)).map((t) => t.id);
+    expect(directional).toEqual([
+      'sequential', 'progression', 'goal',
+      'dependency', 'question-answer', 'definition', 'illustration',
+    ]);
     expect(isDirectionalType(T, 'nope')).toBe(false);
+  });
+
+  it('gives every type a distinct color', () => {
+    const colors = PREDEFINED_CONNECTION_TYPES.map((t) => t.color.toLowerCase());
+    expect(new Set(colors).size).toBe(colors.length);
   });
 
   it('maps every legacy id onto a current type', () => {
@@ -135,36 +141,59 @@ describe('custom connection type persistence', () => {
 });
 
 describe('active filter persistence', () => {
-  it('round-trips a filter set', () => {
-    // The fallback doubles as the list of known ids; unknown ids are dropped.
-    saveActiveFilters(new Set(['thematic', 'goal']));
-    expect(loadActiveFilters(['sequential', 'thematic', 'progression', 'contrast', 'goal']))
-      .toEqual(new Set(['thematic', 'goal']));
+  const KNOWN = ['sequential', 'thematic', 'progression', 'contrast', 'goal', 'dependency', 'parallel'];
+  const HIDDEN_KEY = 'gita-connects-hidden-filters';
+
+  it('shows everything when nothing is stored', () => {
+    expect(loadActiveFilters(KNOWN)).toEqual(new Set(KNOWN));
   });
 
-  it('falls back to the supplied defaults when nothing is stored', () => {
-    expect(loadActiveFilters(['thematic'])).toEqual(new Set(['thematic']));
+  it('round-trips by persisting what was hidden', () => {
+    saveActiveFilters(new Set(['thematic', 'goal']), KNOWN);
+    expect(JSON.parse(localStorage.getItem(HIDDEN_KEY)!)).toEqual(
+      ['sequential', 'progression', 'contrast', 'dependency', 'parallel'],
+    );
+    expect(loadActiveFilters(KNOWN)).toEqual(new Set(['thematic', 'goal']));
   });
 
-  it('falls back to the defaults on malformed JSON', () => {
-    localStorage.setItem(FILTERS_KEY, 'nope');
-    expect(loadActiveFilters(['conceptual'])).toEqual(new Set(['conceptual']));
+  it('shows a type added after the preference was saved', () => {
+    saveActiveFilters(new Set(['thematic']), ['thematic', 'goal']);
+    expect(loadActiveFilters([...KNOWN, 'brand-new'])).toContain('brand-new');
+    expect(loadActiveFilters([...KNOWN, 'brand-new'])).not.toContain('goal');
   });
 
-  it('falls back to the defaults when the stored set maps to nothing', () => {
-    saveActiveFilters(new Set());
-    expect(loadActiveFilters(['thematic'])).toEqual(new Set(['thematic']));
+  it('keeps a custom type visible unless it was hidden', () => {
+    saveActiveFilters(new Set(['thematic', 'custom-a-1']), ['thematic', 'custom-a-1', 'custom-b-2']);
+    const loaded = loadActiveFilters(['thematic', 'custom-a-1', 'custom-b-2']);
+    expect(loaded).toContain('custom-a-1');
+    expect(loaded).not.toContain('custom-b-2');
   });
 
-  it('migrates legacy ids in a stored filter set', () => {
-    localStorage.setItem(FILTERS_KEY, JSON.stringify(['conceptual', 'narrative', 'thematic']));
-    expect(loadActiveFilters(['sequential', 'thematic', 'progression', 'contrast', 'goal']))
-      .toEqual(new Set(['thematic', 'sequential']));
+  it('migrates a legacy active list once, defaulting newer types on', () => {
+    localStorage.setItem(FILTERS_KEY, JSON.stringify(['conceptual', 'narrative']));
+    const loaded = loadActiveFilters(KNOWN);
+    expect(loaded).toContain('thematic');    // conceptual -> thematic
+    expect(loaded).toContain('sequential');  // narrative -> sequential
+    expect(loaded).not.toContain('goal');    // legacy could name it and did not
+    expect(loaded).toContain('dependency');  // newer than the legacy format
+    expect(loaded).toContain('parallel');
   });
 
-  it('drops unknown ids but keeps custom ones', () => {
-    localStorage.setItem(FILTERS_KEY, JSON.stringify(['bogus', 'custom-mine-1', 'goal']));
-    expect(loadActiveFilters(['goal'])).toEqual(new Set(['custom-mine-1', 'goal']));
+  it('removes the legacy key on the next save', () => {
+    localStorage.setItem(FILTERS_KEY, JSON.stringify(['thematic']));
+    saveActiveFilters(new Set(['thematic']), KNOWN);
+    expect(localStorage.getItem(FILTERS_KEY)).toBeNull();
+    expect(localStorage.getItem(HIDDEN_KEY)).not.toBeNull();
+  });
+
+  it('shows everything on malformed JSON', () => {
+    localStorage.setItem(HIDDEN_KEY, 'nope');
+    expect(loadActiveFilters(KNOWN)).toEqual(new Set(KNOWN));
+  });
+
+  it('does not let a legacy set that hides everything win', () => {
+    localStorage.setItem(FILTERS_KEY, JSON.stringify([]));
+    expect(loadActiveFilters(KNOWN)).toEqual(new Set(KNOWN));
   });
 });
 

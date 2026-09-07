@@ -117,6 +117,12 @@ Audit performed 2026-06-06. Items grouped by category; numbers are stable IDs fo
     the strongest link, matching what the canvas and detail panel already did for edges.
     Item 51's reciprocal-pair question still stands; this just stops it miscounting.)*
 
+59. **Filter preference stored the active list, so new types arrived hidden** — adding five
+    relation types showed them unchecked for anyone with a saved preference. *(fixed —
+    2026-09-07: persistence now stores the HIDDEN set under `gita-connects-hidden-filters`;
+    anything the reader never touched is visible. The old `gita-connects-active-filters`
+    list migrates once and is removed.)*
+
 ## Persistence + Saved Networks
 
 34. **localStorage only** — no cross-device. Optional: Vercel KV / Supabase auth + cloud save.
