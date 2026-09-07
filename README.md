@@ -28,10 +28,17 @@ word-by-word glosses, imported from the public-domain
 [gita/gita](https://github.com/gita/gita) dataset (Unlicense) by
 [`scripts/import-verses.mjs`](scripts/import-verses.mjs).
 
-**No English translation ships with this app.** Prabhupada's translation and purport in
-*Bhagavad-gītā As It Is* are Bhaktivedanta Book Trust copyright, so every verse links out
-to its page on [vedabase.io](https://vedabase.io/en/library/bg/) instead of reproducing
-that text. The word-by-word glosses are public domain and provide searchable English.
+**Prabhupada's text is displayed, never stored.** The Bhaktivedanta Book Trust has granted
+this project permission to *display* the translation and purport from *Bhagavad-gītā As It
+Is* — not to redistribute it. So that text is not in this repository and not in the built
+bundle: [`api/verse.ts`](api/verse.ts) fetches a verse from vedabase.io when a reader opens
+it and passes it through with the required attribution. The Sanskrit, transliteration and
+synonyms shown in the panel come from the same fetch, so the verse matches Vedabase exactly;
+the imported copy under `src/data/verses/` is the search index and offline fallback. See
+[NOTICE](NOTICE) for the licence split.
+
+During `vite dev` a small plugin in `vite.config.ts` runs the function locally; on Vercel
+it deploys as a Function.
 
 Of the 701 verses, **37 are curated** — given a theme, concepts, and a summary written in
 our own words — and joined by 120 connections. The other 664 render fully (Sanskrit,
@@ -58,7 +65,8 @@ Data is split by provenance:
 | Persistence | `localStorage` |
 | Hosting | Vercel |
 
-No backend, no database, no API keys. It is a fully client-side SPA.
+No database, no API keys. One serverless function (`api/verse.ts`) proxies vedabase.io;
+everything else is client-side.
 
 ## Getting started
 

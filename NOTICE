@@ -1,0 +1,40 @@
+Gita Connects — third-party content notice
+==========================================
+
+The MIT licence in LICENSE covers the SOURCE CODE of this project only.
+
+Bhagavad-gita As It Is (translation and purport)
+------------------------------------------------
+
+    Content used with permission of
+    © The Bhaktivedanta Book Trust International, Inc.
+    All rights reserved.
+
+Prabhupada's translations and purports are the copyrighted work of the
+Bhaktivedanta Book Trust International, Inc. This project has been granted
+permission to DISPLAY that text. That permission does NOT extend to
+redistribution, copying, modification, publication, sublicensing or sale.
+
+For that reason the text is deliberately NOT part of this repository:
+
+  * It is never committed to source control.
+  * It is never bundled into the deployed JavaScript.
+  * It is fetched from vedabase.io at request time by api/verse.ts and passed
+    to the reader, with the attribution above shown alongside it.
+
+Nothing in the MIT licence grants you any right to this text. If you fork this
+repository you receive the code and none of the Bhaktivedanta Book Trust's
+content, and you must obtain your own permission before displaying it.
+
+Sanskrit, transliteration and word-by-word glosses
+--------------------------------------------------
+
+Imported from the gita/gita dataset (https://github.com/gita/gita), released
+under the Unlicense. The underlying Sanskrit is an ancient text in the public
+domain. See scripts/import-verses.mjs.
+
+Themes, concepts, summaries and connections
+-------------------------------------------
+
+Original work of this project, in src/data/curation.ts, covered by the MIT
+licence in LICENSE.

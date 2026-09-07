@@ -644,3 +644,26 @@
 .vedabase-link:hover {
   text-decoration: underline;
 }
+
+/* Prabhupada's translation and purport, fetched from Vedabase at view time. */
+.purport-label {
+  margin-top: 1.1rem;
+}
+
+.vedabase-loading {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  padding: 0.5rem 0;
+}
+
+/* The Bhaktivedanta Book Trust's permission is display-only and requires this
+   credit to appear with the text. Keep it visible — do not hide or truncate. */
+.vedabase-attribution {
+  margin-top: 1rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}

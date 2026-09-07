@@ -1,5 +1,6 @@
-import { BookMarked, Tag, Network, X, ScrollText, Plus, Check, Sparkles, ExternalLink } from 'lucide-react';
+import { BookMarked, Tag, Network, X, ScrollText, Plus, Check, Sparkles, ExternalLink, BookOpen } from 'lucide-react';
 import { verses, connections, vedabaseUrl } from '../data/index.js';
+import { useVerseText } from '../hooks/useVerseText.js';
 import { suggestSimilar, suggestionConnection } from '../suggestions.js';
 import { useBottomSheet } from '../hooks/useBottomSheet.js';
 import './VerseDetail.css';
@@ -27,6 +28,10 @@ export default function VerseDetail({
     enabled: isMobile && !!verseId,
     onClose,
   });
+
+  // Above the early returns below, so hook order is identical on every render.
+  const verseText = useVerseText(verseId);
+  const live = verseText.status === 'ready' ? verseText.text : null;
 
   if (!verseId) {
     return (
@@ -115,19 +120,21 @@ export default function VerseDetail({
         {/* Sanskrit */}
         <div className="detail-section">
           <div className="section-label">Sanskrit</div>
-          <div className="sanskrit-text large">{verse.sanskrit}</div>
+          <div className="sanskrit-text large">{live?.sanskrit || verse.sanskrit}</div>
         </div>
 
         {/* Transliteration */}
         <div className="detail-section">
           <div className="section-label">Transliteration</div>
-          <div className="transliteration-text">{verse.transliteration}</div>
+          <div className="transliteration-text">
+            {live?.transliteration || verse.transliteration}
+          </div>
         </div>
 
         {/* Word-by-word meanings */}
         <div className="detail-section">
           <div className="section-label">Word by word</div>
-          <div className="word-meanings-text">{verse.wordMeanings}</div>
+          <div className="word-meanings-text">{live?.synonyms || verse.wordMeanings}</div>
         </div>
 
         {/* Summary — our own words. Prabhupada's translation and purport are
@@ -142,7 +149,47 @@ export default function VerseDetail({
           </div>
         )}
 
+        {/* Prabhupada's translation and purport. Fetched at view time from
+            /api/verse; never stored, never committed — the Bhaktivedanta Book
+            Trust permits display only. Falls back to a link if unavailable. */}
         <div className="detail-section">
+          <div className="section-label">
+            <BookOpen size={14} />
+            Translation
+          </div>
+
+          {verseText.status === 'loading' && (
+            <div className="vedabase-loading">Loading from Vedabase…</div>
+          )}
+
+          {verseText.status === 'ready' && (
+            <>
+              <div className="translation-text">{verseText.text.translation}</div>
+
+              {verseText.text.purport.length > 0 && (
+                <>
+                  <div className="section-label purport-label">
+                    <ScrollText size={14} />
+                    Purport
+                  </div>
+                  {verseText.text.purport.map((paragraph, i) => (
+                    <p key={i} className="purport-text">
+                      {paragraph}
+                    </p>
+                  ))}
+                </>
+              )}
+
+              <div className="vedabase-attribution">{verseText.text.attribution}</div>
+            </>
+          )}
+
+          {verseText.status === 'unavailable' && (
+            <div className="vedabase-loading">
+              Could not load the translation right now.
+            </div>
+          )}
+
           <a
             className="vedabase-link"
             href={vedabaseUrl(verse)}
@@ -150,7 +197,7 @@ export default function VerseDetail({
             rel="noopener noreferrer"
           >
             <ExternalLink size={14} />
-            Read the translation and purport on Vedabase
+            Open {verse.id} on vedabase.io
           </a>
         </div>
 
