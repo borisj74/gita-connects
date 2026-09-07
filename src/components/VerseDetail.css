@@ -692,3 +692,12 @@
   text-transform: uppercase;
   color: var(--text-secondary);
 }
+
+/* primary_theme / secondary_theme from the verse-relationship model. */
+.concept-badge.primary {
+  font-weight: 700;
+}
+.concept-badge.secondary {
+  font-weight: 600;
+  opacity: 0.9;
+}

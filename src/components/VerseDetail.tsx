@@ -224,8 +224,12 @@ export default function VerseDetail({
             )}
           </div>
           <div className="concepts-grid">
-            {verse.concepts.map(concept => (
-              <div key={concept} className="concept-badge">
+            {verse.concepts.map((concept, i) => (
+              <div
+                key={concept}
+                className={`concept-badge ${i === 0 ? 'primary' : i === 1 ? 'secondary' : ''}`}
+                title={i === 0 ? 'Primary theme' : i === 1 ? 'Secondary theme' : undefined}
+              >
                 {concept}
               </div>
             ))}

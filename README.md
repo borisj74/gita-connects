@@ -5,14 +5,15 @@ Explore thematic connections between verses of the Bhagavad Gita as an interacti
 **Live:** https://gita-connects.vercel.app
 
 Drag verses from the chapter sidebar onto a canvas, and the app draws the scholarly
-connections between them — thematic, conceptual, devotional, philosophical, and more.
+connections between them — sequential, thematic, progression, contrast, goal.
 Draw your own connections, filter by type, and save networks for later.
 
 ## Features
 
 - **Verse network canvas** — React Flow graph; drag verses in, auto-arrange with dagre
-- **Typed connections** — 6 predefined types (thematic, conceptual, practical, devotional,
-  philosophical, narrative) plus custom types you define
+- **Typed connections** — the five relation types from the verse-relationship model
+  (sequential, thematic, progression, contrast, goal; three of them directional, drawn with
+  arrowheads) plus custom types you define
 - **Draw your own edges** — connect two nodes, pick a type, set strength (1–10), add a description
 - **Filtering** — show/hide connection types; selection persists across reloads
 - **Verse detail** — Sanskrit, transliteration, translation, theme, concepts, and purport

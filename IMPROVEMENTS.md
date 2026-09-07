@@ -50,7 +50,14 @@ Audit performed 2026-06-06. Items grouped by category; numbers are stable IDs fo
 32. **ESLint warnings on hooks deps** — verify VerseNetwork callbacks include all deps.
 33. **`.claude/launch.json`** — currently untracked. Add to `.gitignore` to keep that way.
 
-51. **19 reciprocal connection pairs** — the same verse pair appears twice in
+51. **19 reciprocal connection pairs** *(reframed — 2026-09-07: connection types are now the
+    model's five — sequential, thematic, progression, contrast, goal — three of them
+    directional. The 120 authored connections were migrated mechanically by old type
+    (conceptual/metaphorical→thematic, practical/philosophical→progression,
+    narrative→sequential, devotional→goal); the direction of each `from → to` was NOT
+    reviewed, so a progression pointing the wrong way is possible until checked. Reciprocal
+    pairs are now legitimate where the two directions carry different relations.)*
+    — the same verse pair appears twice in
     `connections`, usually under two different types (e.g. `2.56`/`14.22` as both
     `thematic` and `conceptual`). Three share a type outright (`6.17`/`6.35`,
     `7.7`/`10.20`, `2.56`/`5.18`) and `4.7`→`18.66` repeats in the same direction

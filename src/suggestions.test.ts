@@ -106,8 +106,8 @@ describe('suggestSimilar', () => {
 });
 
 describe('suggestionConnection', () => {
-  it('always produces a conceptual connection', () => {
-    expect(suggestionConnection(['duty']).type).toBe('conceptual');
+  it('always produces a thematic connection', () => {
+    expect(suggestionConnection(['duty']).type).toBe('thematic');
   });
 
   it('lists the shared concepts in the description', () => {

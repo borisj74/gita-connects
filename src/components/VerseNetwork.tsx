@@ -20,7 +20,7 @@ import VerseNode from './VerseNode.js';
 import ConnectionEdge from './ConnectionEdge.js';
 import ConnectionDialog from './ConnectionDialog.js';
 import type { ConnectionTypeDef } from '../connectionTypes.js';
-import { getTypeColor, getTypeLabel } from '../connectionTypes.js';
+import { getTypeColor, getTypeLabel, isDirectionalType } from '../connectionTypes.js';
 import './VerseNetwork.css';
 
 interface VerseNetworkProps {
@@ -100,14 +100,15 @@ function buildEdge(
     target: conn.to,
     type: 'connectionEdge',
     animated: false,
+    // Directional relations (sequential, progression, goal) point from the
+    // earlier or more basic verse to the later or resolving one.
+    markerEnd: isDirectionalType(connectionTypes, conn.type)
+      ? { type: MarkerType.ArrowClosed, color, width: 18, height: 18 }
+      : undefined,
     label,
     style: {
       stroke: color,
       strokeWidth: Math.max(1, conn.strength / 3),
-    },
-    markerEnd: {
-      type: MarkerType.ArrowClosed,
-      color,
     },
     data: {
       typeId: conn.type,
@@ -672,7 +673,11 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         ...edge,
         label,
         style: { ...edge.style, stroke: color, opacity: dimmed ? 0.12 : 1 },
-        markerEnd: { type: MarkerType.ArrowClosed, color },
+        // Only directional relations get an arrowhead; this pass rebuilds
+        // every edge, so it must decide again rather than inherit.
+        markerEnd: isDirectionalType(connectionTypes, typeId)
+          ? { type: MarkerType.ArrowClosed, color, width: 18, height: 18 }
+          : undefined,
         data: {
           ...edge.data,
           color,

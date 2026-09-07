@@ -8,6 +8,9 @@ import {
   makeCustomTypeId,
   getTypeColor,
   getTypeLabel,
+  isDirectionalType,
+  normalizeTypeId,
+  LEGACY_TYPE_MAP,
   type ConnectionTypeDef,
 } from './connectionTypes.js';
 
@@ -20,6 +23,44 @@ const custom = (over: Partial<ConnectionTypeDef> = {}): ConnectionTypeDef => ({
   color: '#123456',
   isCustom: true,
   ...over,
+});
+
+describe('relation model', () => {
+  it('has exactly the five types from the verse-relationship model', () => {
+    expect(PREDEFINED_CONNECTION_TYPES.map((t) => t.id)).toEqual([
+      'sequential', 'thematic', 'progression', 'contrast', 'goal',
+    ]);
+  });
+
+  it('marks sequential, progression and goal as directional and the rest not', () => {
+    const T = PREDEFINED_CONNECTION_TYPES;
+    expect(isDirectionalType(T, 'sequential')).toBe(true);
+    expect(isDirectionalType(T, 'progression')).toBe(true);
+    expect(isDirectionalType(T, 'goal')).toBe(true);
+    expect(isDirectionalType(T, 'thematic')).toBe(false);
+    expect(isDirectionalType(T, 'contrast')).toBe(false);
+    expect(isDirectionalType(T, 'nope')).toBe(false);
+  });
+
+  it('maps every legacy id onto a current type', () => {
+    const ids = new Set(PREDEFINED_CONNECTION_TYPES.map((t) => t.id));
+    for (const [legacy, current] of Object.entries(LEGACY_TYPE_MAP)) {
+      expect(ids, legacy).toContain(current);
+      expect(ids, legacy).not.toContain(legacy);
+    }
+  });
+
+  it('normalizes legacy ids and passes current and custom ids through', () => {
+    expect(normalizeTypeId('conceptual')).toBe('thematic');
+    expect(normalizeTypeId('practical')).toBe('progression');
+    expect(normalizeTypeId('thematic')).toBe('thematic');
+    expect(normalizeTypeId('custom-x-1')).toBe('custom-x-1');
+  });
+
+  it('resolves color and label for a legacy id', () => {
+    expect(getTypeColor(PREDEFINED_CONNECTION_TYPES, 'devotional')).toBe('#c8a04a');
+    expect(getTypeLabel(PREDEFINED_CONNECTION_TYPES, 'narrative')).toBe('Sequential');
+  });
 });
 
 describe('PREDEFINED_CONNECTION_TYPES', () => {
@@ -95,8 +136,10 @@ describe('custom connection type persistence', () => {
 
 describe('active filter persistence', () => {
   it('round-trips a filter set', () => {
-    saveActiveFilters(new Set(['thematic', 'devotional']));
-    expect(loadActiveFilters([])).toEqual(new Set(['thematic', 'devotional']));
+    // The fallback doubles as the list of known ids; unknown ids are dropped.
+    saveActiveFilters(new Set(['thematic', 'goal']));
+    expect(loadActiveFilters(['sequential', 'thematic', 'progression', 'contrast', 'goal']))
+      .toEqual(new Set(['thematic', 'goal']));
   });
 
   it('falls back to the supplied defaults when nothing is stored', () => {
@@ -108,9 +151,20 @@ describe('active filter persistence', () => {
     expect(loadActiveFilters(['conceptual'])).toEqual(new Set(['conceptual']));
   });
 
-  it('distinguishes an empty stored set from an absent one', () => {
+  it('falls back to the defaults when the stored set maps to nothing', () => {
     saveActiveFilters(new Set());
-    expect(loadActiveFilters(['thematic'])).toEqual(new Set());
+    expect(loadActiveFilters(['thematic'])).toEqual(new Set(['thematic']));
+  });
+
+  it('migrates legacy ids in a stored filter set', () => {
+    localStorage.setItem(FILTERS_KEY, JSON.stringify(['conceptual', 'narrative', 'thematic']));
+    expect(loadActiveFilters(['sequential', 'thematic', 'progression', 'contrast', 'goal']))
+      .toEqual(new Set(['thematic', 'sequential']));
+  });
+
+  it('drops unknown ids but keeps custom ones', () => {
+    localStorage.setItem(FILTERS_KEY, JSON.stringify(['bogus', 'custom-mine-1', 'goal']));
+    expect(loadActiveFilters(['goal'])).toEqual(new Set(['custom-mine-1', 'goal']));
   });
 });
 

@@ -48,7 +48,7 @@ export function suggestSimilar(verseId: string, limit = 5): Suggestion[] {
 // Build the connection metadata for an accepted suggestion.
 export function suggestionConnection(shared: string[]) {
   return {
-    type: 'conceptual',
+    type: 'thematic',
     description: shared.length
       ? `Shared concepts: ${shared.join(', ')}`
       : 'Similar theme',

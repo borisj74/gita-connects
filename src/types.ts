@@ -43,6 +43,13 @@ export interface Verse extends VerseText {
   reviewed: boolean;
   /** Theme cluster derived from the concepts; undefined when uncurated. */
   cluster?: ClusterId;
+  /**
+   * The verse-relationship model's primary_theme / secondary_theme. Concepts
+   * are ordered by evidence, so these are the first two; both undefined when
+   * uncurated, secondary undefined when there is only one.
+   */
+  primaryConcept?: Concept;
+  secondaryConcept?: Concept;
 }
 
 export interface Connection {

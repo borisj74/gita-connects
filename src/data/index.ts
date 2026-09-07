@@ -43,6 +43,8 @@ export const verses: Verse[] = verseTexts.map((text) => {
     curated: curation !== undefined,
     reviewed: curation !== undefined && curation.reviewed !== false,
     cluster: clusterOf(curation?.concepts ?? []),
+    primaryConcept: curation?.concepts[0],
+    secondaryConcept: curation?.concepts[1],
   };
 });
 

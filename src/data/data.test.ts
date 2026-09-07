@@ -96,6 +96,23 @@ describe('verses', () => {
   });
 });
 
+describe('primary and secondary concepts', () => {
+  it('gives every curated verse a primary and a secondary concept', () => {
+    for (const v of verses.filter((x) => x.curated)) {
+      expect(v.primaryConcept, v.id).toBe(v.concepts[0]);
+      expect(v.secondaryConcept, v.id).toBe(v.concepts[1]);
+      expect(v.secondaryConcept, v.id).toBeDefined();
+    }
+  });
+
+  it('leaves both undefined for uncurated verses', () => {
+    for (const v of verses.filter((x) => !x.curated)) {
+      expect(v.primaryConcept, v.id).toBeUndefined();
+      expect(v.secondaryConcept, v.id).toBeUndefined();
+    }
+  });
+});
+
 describe('connections', () => {
   it('references only verses that exist', () => {
     for (const c of connections) {
