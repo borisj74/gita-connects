@@ -27,6 +27,9 @@ import {
 } from './connectionTypes.js';
 import { verses } from './data/index.js';
 import { useNotes } from './notes.js';
+import { collectUsage, downloadJson } from './usage.js';
+import { buildPdf, downloadBlob, downloadDataUrl } from './exportNetwork.js';
+import ExportDialog, { type ExportFormat } from './components/ExportDialog.js';
 import type { Concept } from './concepts.js';
 import './App.css';
 
@@ -41,6 +44,7 @@ function App() {
   const noteVerseIds = useMemo(() => new Set(Object.keys(notes)), [notes]);
   const [noteEdit, setNoteEdit] = useState<{ verseId: string; seq: number } | null>(null);
   const [noteToast, setNoteToast] = useState<string | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(
     () => typeof window !== 'undefined' && window.innerWidth > 768,
   );
@@ -108,6 +112,29 @@ function App() {
     document.addEventListener('mousedown', onDown);
     return () => document.removeEventListener('mousedown', onDown);
   }, [mobileMenuOpen]);
+
+  const handleExport = useCallback(async (format: ExportFormat, includeNotes: boolean) => {
+    const net = verseNetworkRef.current;
+    if (!net?.captureImage) throw new Error('Canvas is not ready.');
+    const image = await net.captureImage();
+    const stamp = new Date().toISOString().slice(0, 10);
+    if (format === 'png') {
+      downloadDataUrl(`gita-network-${stamp}.png`, image.dataUrl);
+    } else {
+      const { nodes, edges } = net.getNetworkState();
+      const blob = await buildPdf({
+        title: 'Gita Connects network',
+        image,
+        nodes,
+        edges,
+        connectionTypes: renderableTypes,
+        includeNotes,
+      });
+      downloadBlob(`gita-network-${stamp}.pdf`, blob);
+    }
+    setExportOpen(false);
+    setNoteToast(`Exported ${format.toUpperCase()}`);
+  }, [renderableTypes]);
 
   const handleOpenNote = useCallback((verseId: string) => {
     setSelectedVerseId(verseId);
@@ -482,6 +509,9 @@ function App() {
                 onToggleTheme={toggleTheme}
                 onClearCanvas={handleClearAll}
                 canClear={networkVerses.size > 0}
+                onExport={() => setExportOpen(true)}
+                canExport={networkVerses.size > 0}
+                onExportUsage={() => downloadJson(`gita-usage-${new Date().toISOString().slice(0, 10)}.json`, collectUsage())}
                 onShowShortcuts={() => setShortcutsOpen(true)}
               />
             </div>
@@ -647,6 +677,15 @@ function App() {
         />
       )}
 
+      {exportOpen && (
+        <ExportDialog
+          verseCount={networkVerses.size}
+          linkCount={networkEdges.length}
+          noteCount={[...networkVerses].filter((id) => noteVerseIds.has(id)).length}
+          onCancel={() => setExportOpen(false)}
+          onExport={handleExport}
+        />
+      )}
       {clearDialogOpen && (
         <ClearCanvasDialog
           verseCount={networkVerses.size}

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { MoreHorizontal, Download, Moon, Sun, CircleHelp, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Download, FileJson, Moon, Sun, CircleHelp, Trash2 } from 'lucide-react';
 import './Toolbar.css';
 
 interface OverflowMenuProps {
@@ -8,6 +8,10 @@ interface OverflowMenuProps {
   onClearCanvas: () => void;
   canClear: boolean;
   onExport?: () => void;
+  /** False when the canvas is empty. */
+  canExport?: boolean;
+  /** Download per-verse usage counts from this device (feeds the review queue). */
+  onExportUsage?: () => void;
   onShowShortcuts?: () => void;
 }
 
@@ -21,6 +25,8 @@ export default function OverflowMenu({
   onClearCanvas,
   canClear,
   onExport,
+  canExport = true,
+  onExportUsage,
   onShowShortcuts,
 }: OverflowMenuProps) {
   const [open, setOpen] = useState(false);
@@ -73,13 +79,20 @@ export default function OverflowMenu({
             role="menuitem"
             className="tb-menu-item"
             onClick={run(onExport)}
-            disabled={!onExport}
-            title={onExport ? undefined : 'Coming soon'}
+            disabled={!onExport || !canExport}
+            title={!onExport ? 'Coming soon' : !canExport ? 'Add a verse first' : undefined}
           >
             <Download size={16} />
             <span className="tb-menu-item-label">Export as PNG or PDF…</span>
             {!onExport && <span className="tb-menu-item-hint">Soon</span>}
           </button>
+          {onExportUsage && (
+            <button type="button" role="menuitem" className="tb-menu-item" onClick={run(onExportUsage)}>
+              <FileJson size={16} />
+              <span className="tb-menu-item-label">Export usage data</span>
+              <span className="tb-menu-item-hint">JSON</span>
+            </button>
+          )}
           <button type="button" role="menuitem" className="tb-menu-item" onClick={run(onToggleTheme)}>
             {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
             <span className="tb-menu-item-label">{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>

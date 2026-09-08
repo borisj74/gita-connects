@@ -18,6 +18,7 @@ import { verses, connections } from '../data/index.js';
 import { expandableNeighbors, edgesJoining } from '../neighbors.js';
 import VerseNode from './VerseNode.js';
 import ConnectionEdge from './ConnectionEdge.js';
+import { captureCanvas, type CanvasImage } from '../exportNetwork.js';
 import ConnectionDialog from './ConnectionDialog.js';
 import ZoomControls from './ZoomControls.js';
 import type { ConnectionTypeDef } from '../connectionTypes.js';
@@ -67,6 +68,8 @@ export interface VerseNetworkRef {
   undo: () => void;
   redo: () => void;
   focusNode: (verseId: string) => void;
+  /** Render the whole canvas to a PNG data URL, framed to the cards. */
+  captureImage: () => Promise<CanvasImage>;
   addVerse: (verseId: string) => void;
   addConnection: (
     fromId: string,
@@ -258,6 +261,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     // otherwise the initial mount (run twice under StrictMode) would wipe a
     // restore that is still waiting for the user's answer.
     const hadContent = useRef(false);
+  const containerRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
       if (nodes.length === 0 && !hadContent.current) return;
       hadContent.current = true;
@@ -918,6 +922,12 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     );
   }, [commit]);
 
+  const captureImage = useCallback(() => {
+    const viewport = containerRef.current?.querySelector<HTMLElement>('.react-flow__viewport');
+    if (!viewport || nodesRef.current.length === 0) return Promise.reject(new Error('Nothing on the canvas to export.'));
+    return captureCanvas(viewport, nodesRef.current, theme);
+  }, [theme]);
+
   useImperativeHandle(ref, () => ({
     handleAutoArrange,
     handleClearAll,
@@ -927,6 +937,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     undo,
     redo,
     focusNode,
+    captureImage,
     addVerse,
     addConnection,
   }));
@@ -935,6 +946,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
 
   return (
     <div
+      ref={containerRef}
       className={`verse-network ${showConnectHint ? 'connect-hint-active' : ''} ${isMobile ? 'is-mobile' : ''}`}
       onDragOver={isMobile ? undefined : handleDragOver}
       onDrop={isMobile ? undefined : handleDrop}
