@@ -19,6 +19,7 @@ import { expandableNeighbors, edgesJoining } from '../neighbors.js';
 import VerseNode from './VerseNode.js';
 import ConnectionEdge from './ConnectionEdge.js';
 import ConnectionDialog from './ConnectionDialog.js';
+import ZoomControls from './ZoomControls.js';
 import type { ConnectionTypeDef } from '../connectionTypes.js';
 import { getTypeColor, getTypeLabel, isDirectionalType } from '../connectionTypes.js';
 import './VerseNetwork.css';
@@ -834,8 +835,8 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         elementsSelectable
       >
         {theme === 'light' && <Background color="#FBF8F4" gap={20} />}
-        {nodes.length > 0 && (
-          <Panel position={isMobile ? 'bottom-left' : 'bottom-right'} className="canvas-zoom">
+        {(nodes.length > 0 || canUndo || canRedo) && (
+          <Panel position="bottom-left" className="canvas-history">
             <button
               className="control-button icon-only"
               onClick={undo}
@@ -854,6 +855,11 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
             >
               <Redo2 size={16} />
             </button>
+          </Panel>
+        )}
+        {!isMobile && nodes.length > 0 && (
+          <Panel position="bottom-right" className="canvas-zoom">
+            <ZoomControls />
           </Panel>
         )}
       </ReactFlow>

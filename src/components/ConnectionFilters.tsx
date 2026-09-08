@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { ChevronDown, Trash2 } from 'lucide-react';
 import type { ConnectionTypeDef } from '../connectionTypes.js';
 import { connections } from '../data/index.js';
+import './Toolbar.css';
 import './ConnectionFilters.css';
 
 interface ConnectionFiltersProps {
@@ -31,7 +32,8 @@ export default function ConnectionFilters({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const activeCount = activeFilters.size;
+  const activeCount = connectionTypes.filter((t) => activeFilters.has(t.id)).length;
+  const totalCount = connectionTypes.length;
 
   // Count connections per type from the base dataset.
   const countsByType = useMemo(() => {
@@ -43,11 +45,16 @@ export default function ConnectionFilters({
   return (
     <div className="connection-filters" ref={dropdownRef}>
       <button
-        className="filters-button"
+        type="button"
+        className="tb-button filters-button"
         onClick={() => setIsOpen(!isOpen)}
+        aria-haspopup="menu"
+        aria-expanded={isOpen}
+        aria-label={`Link types, ${activeCount} of ${totalCount} shown`}
       >
-        <span className="filters-label">Connections ({activeCount})</span>
-        <ChevronDown size={16} className={`chevron ${isOpen ? 'open' : ''}`} />
+        <span className="filters-label">Link types</span>
+        <span className="tb-button-muted">{activeCount} of {totalCount}</span>
+        <ChevronDown size={16} className="tb-chevron" />
       </button>
 
       {isOpen && (

@@ -213,31 +213,6 @@
   position: relative;
 }
 
-/* Floating overlays over the canvas (no top header) */
-.canvas-actions {
-  position: absolute;
-  top: 16px;
-  right: 24px;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  z-index: var(--z-sticky);
-}
-
-/* Theme toggle, bottom-right corner */
-.theme-toggle-btn {
-  position: absolute;
-  bottom: 16px;
-  right: 24px;
-  color: var(--brown-700);
-  box-shadow: var(--shadow-sm);
-  z-index: var(--z-sticky);
-}
-
-[data-theme="dark"] .theme-toggle-btn {
-  background: var(--beige-50);
-}
-
 /* Responsive Design */
 @media (max-width: 1400px) {
   .app-subtitle {
@@ -291,32 +266,18 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
 
-  /* Desktop canvas actions collapse into the hamburger; keep search icon */
-  .canvas-actions {
-    top: max(12px, env(safe-area-inset-top));
-    right: max(12px, env(safe-area-inset-right));
-    gap: 0.5rem;
-  }
-
-  .canvas-actions .connection-filters,
-  .canvas-actions .arrange-button,
-  .canvas-actions .clear-button,
-  .canvas-actions .save-load-controls {
-    display: none;
-  }
-
+  /* Desktop canvas actions collapse into the hamburger */
   .canvas-actions .mobile-actions {
     display: block;
+  }
+
+  .canvas-actions .tb-mobile-only {
+    display: inline-flex;
   }
 
   .sidebar-floating-toggle.chapters-fab {
     top: max(12px, env(safe-area-inset-top));
     left: max(12px, env(safe-area-inset-left));
-  }
-
-  .theme-toggle-btn {
-    bottom: max(12px, env(safe-area-inset-bottom));
-    right: max(12px, env(safe-area-inset-right));
   }
 
   .network-empty-state {
@@ -372,6 +333,11 @@
 
 [data-theme="dark"] .theme-toggle {
   background: var(--beige-50);
+}
+
+/* Mobile-only controls — hidden on desktop */
+.tb-mobile-only {
+  display: none;
 }
 
 /* Mobile actions menu (hamburger) — hidden on desktop */

@@ -1,0 +1,423 @@
+/* ============ Canvas toolbar (App 11 — Improved toolbar) ============ */
+
+/* Shared 38px pill button used by every toolbar control */
+.tb-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--beige-300);
+  border-radius: 8px;
+  background: white;
+  color: var(--brown-700);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 18px;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: background var(--transition-base), border-color var(--transition-base);
+  white-space: nowrap;
+}
+
+.tb-button:hover:not(:disabled) {
+  background: var(--beige-100);
+  border-color: var(--beige-400);
+}
+
+.tb-button:focus-visible {
+  outline: 2px solid var(--brown-900);
+  outline-offset: 2px;
+}
+
+.tb-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tb-button .tb-chevron {
+  color: var(--brown-600);
+  transition: transform var(--transition-base);
+}
+
+.tb-button[aria-expanded="true"] .tb-chevron {
+  transform: rotate(180deg);
+}
+
+.tb-button-muted {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 16px;
+  color: var(--brown-600);
+}
+
+/* Square icon-only variant (⋯ overflow) */
+.tb-button.tb-icon {
+  width: 38px;
+  padding: 0;
+  justify-content: center;
+}
+
+/* Open state: filled, so the trigger reads as the menu's anchor */
+.tb-button[aria-expanded="true"],
+.tb-button.tb-icon[aria-expanded="true"] {
+  background: var(--beige-200);
+  border-color: var(--beige-400);
+}
+
+[data-theme="dark"] .tb-button {
+  background: var(--beige-50);
+}
+
+[data-theme="dark"] .tb-button:hover:not(:disabled) {
+  background: var(--beige-200);
+}
+
+[data-theme="dark"] .tb-button[aria-expanded="true"] {
+  background: var(--beige-200);
+}
+
+/* ---- Toolbar row over the canvas ---- */
+.canvas-toolbar {
+  position: absolute;
+  top: 14px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: var(--z-sticky);
+  pointer-events: none;
+}
+
+.canvas-toolbar > * {
+  pointer-events: auto;
+}
+
+/* Chapters FAB (12px + 114px + gap) sits in the row when the sidebar is closed */
+.canvas-toolbar.sidebar-collapsed {
+  left: 142px;
+}
+
+/* ---- Search field: fills the slack, shrinks first ---- */
+.tb-search {
+  flex: 0 1 362px;
+  min-width: 0;
+  margin-right: auto;
+  height: 38px;
+  padding: 0 12px;
+  gap: 10px;
+  justify-content: flex-start;
+  font-weight: 400;
+}
+
+.tb-search-icon {
+  color: var(--brown-600);
+  flex-shrink: 0;
+}
+
+.tb-search-label {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  color: var(--brown-400);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tb-kbd {
+  flex-shrink: 0;
+  padding: 2px 7px;
+  border: 1px solid var(--beige-300);
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 14px;
+  color: var(--brown-600);
+}
+
+/* ---- Right tool group ---- */
+.canvas-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* Tight canvases: drop the shortcut hint, then collapse search to its icon */
+@media (max-width: 1180px) {
+  .tb-search .tb-kbd {
+    display: none;
+  }
+}
+
+@media (max-width: 1024px) {
+  .tb-search {
+    flex: 0 0 38px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .tb-search-label {
+    display: none;
+  }
+}
+
+/* ---- Dropdown menus (Networks, overflow, link types) ---- */
+.tb-menu-anchor {
+  position: relative;
+}
+
+.tb-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  background: white;
+  border: 1px solid var(--beige-300);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
+  z-index: var(--z-popover);
+  animation: dropdownFadeIn 0.15s ease-out;
+}
+
+[data-theme="dark"] .tb-menu {
+  background: var(--beige-50);
+}
+
+.tb-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--brown-800);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 18px;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.tb-menu-item > svg {
+  flex-shrink: 0;
+  color: var(--brown-700);
+}
+
+.tb-menu-item-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.tb-menu-item-hint {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--brown-600);
+}
+
+.tb-menu-item:hover:not(:disabled),
+.tb-menu-item:focus-visible {
+  background: var(--beige-100);
+  outline: none;
+}
+
+.tb-menu-item:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.tb-menu-item.danger,
+.tb-menu-item.danger > svg {
+  color: #b3354a;
+}
+
+.tb-menu-item.danger:hover:not(:disabled) {
+  background: rgb(179 53 74 / 0.08);
+}
+
+.tb-menu-divider {
+  height: 1px;
+  margin: 6px 0;
+  background: var(--beige-200);
+}
+
+.tb-menu-heading {
+  padding: 8px 10px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brown-600);
+}
+
+/* Overflow menu */
+.tb-overflow-menu {
+  width: 222px;
+}
+
+/* Networks menu */
+.tb-networks-menu {
+  width: 296px;
+}
+
+.tb-recent-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 6px;
+}
+
+.tb-recent-row:hover {
+  background: var(--beige-100);
+}
+
+.tb-recent-open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  font-family: var(--font-ui);
+  text-align: left;
+  cursor: pointer;
+}
+
+.tb-recent-open:focus-visible {
+  outline: 2px solid var(--brown-900);
+  outline-offset: -2px;
+}
+
+.tb-recent-name {
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--brown-900);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tb-recent-meta {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--brown-600);
+}
+
+.tb-recent-delete {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin-right: 4px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--brown-400);
+  cursor: pointer;
+}
+
+.tb-recent-delete:hover {
+  background: rgb(179 53 74 / 0.08);
+  color: #b3354a;
+}
+
+.tb-recent-empty {
+  padding: 8px 10px 10px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--brown-600);
+}
+
+/* ---- Zoom cluster, bottom-right ---- */
+.tb-zoom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px;
+  background: white;
+  border: 1px solid var(--beige-300);
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.08);
+}
+
+[data-theme="dark"] .tb-zoom {
+  background: var(--beige-50);
+}
+
+.tb-zoom-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--brown-700);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.tb-zoom-btn:hover:not(:disabled) {
+  background: var(--beige-100);
+}
+
+.tb-zoom-btn:focus-visible {
+  outline: 2px solid var(--brown-900);
+  outline-offset: -2px;
+}
+
+.tb-zoom-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tb-zoom-sep {
+  width: 1px;
+  height: 20px;
+  background: var(--beige-300);
+}
+
+.tb-zoom-level {
+  min-width: 38px;
+  text-align: center;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--brown-700);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Mobile ---- */
+@media (max-width: 768px) {
+  .tb-search {
+    display: none;
+  }
+
+  .canvas-toolbar {
+    top: max(12px, env(safe-area-inset-top));
+    right: max(12px, env(safe-area-inset-right));
+    left: auto;
+  }
+
+  .canvas-actions {
+    gap: 8px;
+  }
+
+  .canvas-actions .tb-desktop-only {
+    display: none;
+  }
+}

@@ -2,50 +2,21 @@
   position: relative;
 }
 
-.filters-button {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1rem;
-  background: white;
-  border: 1px solid var(--beige-300);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all var(--transition-base);
-  box-shadow: var(--shadow-sm);
-}
-
-.filters-button:hover {
-  border-color: var(--beige-400);
-  box-shadow: var(--shadow);
-}
-
 .filters-label {
-  font-size: 0.875rem;
-  font-weight: 500;
   color: var(--brown-700);
-}
-
-.chevron {
-  transition: transform var(--transition-base);
-  color: var(--brown-600);
-}
-
-.chevron.open {
-  transform: rotate(180deg);
 }
 
 .filters-dropdown {
   position: absolute;
-  top: calc(100% + 0.5rem);
-  left: 0;
+  top: calc(100% + 10px);
+  right: 0;
   background: white;
   border: 1px solid var(--beige-300);
   border-radius: 8px;
   box-shadow: var(--shadow-lg);
   padding: 0.5rem;
-  min-width: 200px;
-  z-index: 100;
+  min-width: 240px;
+  z-index: var(--z-popover);
   animation: dropdownFadeIn 0.2s ease-out;
 }
 

@@ -9,6 +9,10 @@ import VerseDetail from './components/VerseDetail.js';
 import SearchPalette from './components/SearchPalette.js';
 import ConnectionFilters from './components/ConnectionFilters.js';
 import SaveLoadControls, { type SaveLoadControlsRef } from './components/SaveLoadControls.js';
+import OverflowMenu from './components/OverflowMenu.js';
+import ClearCanvasDialog from './components/ClearCanvasDialog.js';
+import UndoToast from './components/UndoToast.js';
+import './components/Toolbar.css';
 import {
   PREDEFINED_CONNECTION_TYPES,
   loadCustomConnectionTypes,
@@ -42,6 +46,8 @@ function App() {
   );
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [clearDialogOpen, setClearDialogOpen] = useState(false);
+  const [clearedToast, setClearedToast] = useState<{ verses: number; links: number } | null>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const verseNetworkRef = useRef<VerseNetworkRef>(null);
   const saveLoadRef = useRef<SaveLoadControlsRef>(null);
@@ -117,7 +123,7 @@ function App() {
       // Cmd/Ctrl+S — save (works anywhere)
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
         e.preventDefault();
-        saveLoadRef.current?.openSave();
+        saveLoadRef.current?.saveChanges();
         return;
       }
 
@@ -168,16 +174,47 @@ function App() {
     verseNetworkRef.current?.removeEdgesByType?.(typeId);
   }, []);
 
+  const toggleTheme = useCallback(() => {
+    setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
+  }, []);
+
   const handleAutoArrange = () => {
     if (verseNetworkRef.current?.handleAutoArrange) {
       verseNetworkRef.current.handleAutoArrange();
     }
   };
 
+  // "Clear canvas…" opens a confirm; the actual clear happens on confirm.
   const handleClearAll = () => {
-    if (verseNetworkRef.current?.handleClearAll) {
-      verseNetworkRef.current.handleClearAll();
-    }
+    if (networkVerses.size === 0) return;
+    setClearDialogOpen(true);
+  };
+
+  const confirmClearCanvas = () => {
+    setClearDialogOpen(false);
+    const verses = networkVerses.size;
+    const links = networkEdges.length;
+    verseNetworkRef.current?.handleClearAll?.();
+    setClearedToast({ verses, links });
+  };
+
+  const undoClear = useCallback(() => {
+    setClearedToast(null);
+    verseNetworkRef.current?.undo?.();
+  }, []);
+
+  const dismissClearedToast = useCallback(() => setClearedToast(null), []);
+
+  // The toast only makes sense while the canvas is still empty — if the user
+  // undoes via ⌘Z or adds a verse, it has nothing left to offer.
+  const handleNetworkVersesChange = useCallback((verses: Set<string>) => {
+    setNetworkVerses(verses);
+    if (verses.size > 0) setClearedToast(null);
+  }, []);
+
+  const saveBeforeClear = () => {
+    setClearDialogOpen(false);
+    saveLoadRef.current?.openSave();
   };
 
 
@@ -254,36 +291,66 @@ function App() {
         )}
 
         <div className="main-content">
-          {/* Floating actions, top-right over the canvas */}
+          {/* Toolbar row: search on the left, canvas tools on the right */}
+          <div className={`canvas-toolbar ${!sidebarOpen ? 'sidebar-collapsed' : ''}`}>
+          <button
+            type="button"
+            className="tb-button tb-search"
+            onClick={() => setSearchOpen(true)}
+            aria-label="Search verses"
+            title="Search verses (⌘K)"
+          >
+            <Search size={16} className="tb-search-icon" />
+            <span className="tb-search-label">Search verses</span>
+            <kbd className="tb-kbd">⌘K</kbd>
+          </button>
+
+          {/* Canvas tools, top-right */}
           <div className="canvas-actions">
+            <div className="tb-desktop-only">
+              <ConnectionFilters
+                connectionTypes={connectionTypes}
+                activeFilters={activeFilters}
+                onToggleFilter={handleToggleFilter}
+                onRemoveCustomType={handleRemoveCustomType}
+              />
+            </div>
             <button
-              className="control-button icon-only"
-              onClick={() => setSearchOpen(true)}
-              title="Search verses (⌘K)"
-              aria-label="Search verses"
+              type="button"
+              className="tb-button tb-desktop-only"
+              onClick={handleAutoArrange}
+              disabled={networkVerses.size === 0}
+              title="Arrange verses automatically"
             >
-              <Search size={16} />
-            </button>
-            <SaveLoadControls
-              ref={saveLoadRef}
-              getNetworkState={getNetworkState}
-              selectedVerseId={selectedVerseId}
-              onLoadNetwork={handleLoadNetwork}
-            />
-            <ConnectionFilters
-              connectionTypes={connectionTypes}
-              activeFilters={activeFilters}
-              onToggleFilter={handleToggleFilter}
-              onRemoveCustomType={handleRemoveCustomType}
-            />
-            <button className="action-button arrange-button" onClick={handleAutoArrange}>
+              <LayoutGrid size={15} />
               Auto Arrange
             </button>
-            <button className="action-button clear-button" onClick={handleClearAll}>
-              Clear All
-            </button>
+            <div className="tb-desktop-only">
+              <SaveLoadControls
+                ref={saveLoadRef}
+                getNetworkState={getNetworkState}
+                selectedVerseId={selectedVerseId}
+                onLoadNetwork={handleLoadNetwork}
+              />
+            </div>
+            <div className="tb-desktop-only">
+              <OverflowMenu
+                theme={theme}
+                onToggleTheme={toggleTheme}
+                onClearCanvas={handleClearAll}
+                canClear={networkVerses.size > 0}
+              />
+            </div>
 
-            {/* Mobile: collapse all actions into a hamburger menu */}
+            {/* Mobile: search + everything else in a hamburger menu */}
+            <button
+              type="button"
+              className="tb-button tb-icon tb-mobile-only"
+              onClick={() => setSearchOpen(true)}
+              aria-label="Search verses"
+            >
+              <Search size={18} />
+            </button>
             <div className="mobile-actions" ref={mobileMenuRef}>
               <button
                 className="hamburger-button"
@@ -322,25 +389,31 @@ function App() {
                     <LayoutGrid size={16} /> Auto Arrange
                   </button>
                   <button
+                    className="mobile-menu-item"
+                    onClick={() => { toggleTheme(); setMobileMenuOpen(false); }}
+                  >
+                    {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+                    {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+                  </button>
+                  <button
                     className="mobile-menu-item danger"
                     onClick={() => { handleClearAll(); setMobileMenuOpen(false); }}
                   >
-                    <Trash2 size={16} /> Clear All
+                    <Trash2 size={16} /> Clear canvas
                   </button>
                 </div>
               )}
             </div>
           </div>
+          </div>
 
-          {/* Theme toggle, bottom-right corner */}
-          <button
-            className="control-button icon-only theme-toggle-btn"
-            onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
-            title="Toggle dark mode"
-            aria-label="Toggle dark mode"
-          >
-            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-          </button>
+          {clearedToast && (
+            <UndoToast
+              message={`Canvas cleared — ${clearedToast.verses} ${clearedToast.verses === 1 ? 'verse' : 'verses'}, ${clearedToast.links} ${clearedToast.links === 1 ? 'link' : 'links'}`}
+              onUndo={undoClear}
+              onDismiss={dismissClearedToast}
+            />
+          )}
 
           <div className="network-container">
             <ReactFlowProvider>
@@ -350,7 +423,7 @@ function App() {
                 selectedVerseId={selectedVerseId}
                 activeFilters={activeFilters}
                 onToggleFilter={handleToggleFilter}
-                onNetworkVersesChange={setNetworkVerses}
+                onNetworkVersesChange={handleNetworkVersesChange}
                 onNetworkEdgesChange={setNetworkEdges}
                 connectionTypes={connectionTypes}
                 onAddCustomType={handleAddCustomType}
@@ -384,6 +457,16 @@ function App() {
             if (showDetailBackdrop) setSelectedVerseId(null);
             else setSidebarOpen(false);
           }}
+        />
+      )}
+
+      {clearDialogOpen && (
+        <ClearCanvasDialog
+          verseCount={networkVerses.size}
+          linkCount={networkEdges.length}
+          onCancel={() => setClearDialogOpen(false)}
+          onConfirm={confirmClearCanvas}
+          onSaveFirst={saveBeforeClear}
         />
       )}
 

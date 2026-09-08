@@ -349,7 +349,7 @@
 /* One-time connect onboarding hint */
 .connect-hint {
   position: absolute;
-  top: 1rem;
+  top: 62px; /* clear the 38px toolbar row at top: 14px */
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -471,22 +471,29 @@
   background: var(--beige-50);
 }
 
-/* Undo/redo — desktop: bottom-right, stacked above theme toggle */
-.verse-network:not(.is-mobile) .react-flow__panel.canvas-zoom {
+/* Undo/redo — bottom-left */
+.react-flow__panel.canvas-history {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 0.5rem;
   margin: 0;
-  bottom: 64px;
-  right: 24px;
+  bottom: 20px;
+  left: 20px;
 }
 
-.canvas-zoom .control-button {
+.canvas-history .control-button {
   box-shadow: var(--shadow-sm);
 }
 
-[data-theme="dark"] .canvas-zoom .control-button {
+[data-theme="dark"] .canvas-history .control-button {
   background: var(--beige-50);
+}
+
+/* Zoom cluster — bottom-right */
+.react-flow__panel.canvas-zoom {
+  margin: 0;
+  bottom: 20px;
+  right: 20px;
 }
 
 /* Mobile canvas adjustments */
@@ -502,18 +509,12 @@
     padding: 0.75rem 1rem;
   }
 
-  /* Undo/redo on bottom-left — theme toggle stays bottom-right */
-  .verse-network.is-mobile .react-flow__panel.canvas-zoom {
-    display: flex;
-    margin: 0;
+  .verse-network.is-mobile .react-flow__panel.canvas-history {
     bottom: max(12px, env(safe-area-inset-bottom));
     left: max(12px, env(safe-area-inset-left));
-    right: auto;
-    flex-direction: row;
-    gap: 0.5rem;
   }
 
-  .verse-network.is-mobile .canvas-zoom .control-button {
+  .verse-network.is-mobile .canvas-history .control-button {
     width: 44px;
     height: 44px;
   }
