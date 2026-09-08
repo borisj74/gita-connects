@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Noto+Serif+Devanagari:wght@400;500&display=swap');
 
 :root {
   /* Natural Earthy Palette */
@@ -49,6 +49,8 @@
   /* Typography */
   --font-display: 'Cormorant Garamond', serif;
   --font-ui: 'Inter', sans-serif;
+  /* Cormorant carries no Devanagari glyphs; load a face that does. */
+  --font-sanskrit: 'Noto Serif Devanagari', 'Noto Sans Devanagari', serif;
 
   /* Spacing & Layout */
   --sidebar-width: 320px;

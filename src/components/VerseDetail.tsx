@@ -1,9 +1,14 @@
-import { BookMarked, Tag, Network, X, ScrollText, Plus, Check, Sparkles, ExternalLink, BookOpen } from 'lucide-react';
-import { verses, connections, vedabaseUrl } from '../data/index.js';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import {
+  BookMarked, Tag, Link2, X, Plus, Check, Sparkles, ExternalLink,
+  ChevronDown, ChevronRight, ChevronUp,
+} from 'lucide-react';
+import { verses, connections, chapters, vedabaseUrl } from '../data/index.js';
 import { useVerseText } from '../hooks/useVerseText.js';
 import { clusterLabel } from '../clusters.js';
 import { suggestSimilar, suggestionConnection } from '../suggestions.js';
 import { useBottomSheet } from '../hooks/useBottomSheet.js';
+import { PREDEFINED_CONNECTION_TYPES, getTypeLabel } from '../connectionTypes.js';
 import './VerseDetail.css';
 
 interface VerseDetailProps {
@@ -13,7 +18,73 @@ interface VerseDetailProps {
   onAddToNetwork: (verseId: string) => void;
   onAddSuggestion: (fromId: string, toId: string, conn: { type: string; description: string; strength: number }) => void;
   connectedNeighbors: Set<string>;
+  /** Move to another verse (prev/next in the chapter). */
+  onNavigate?: (verseId: string) => void;
   isMobile?: boolean;
+}
+
+type SectionKey = 'sanskrit' | 'transliteration' | 'translation' | 'commentary';
+const SECTIONS_KEY = 'gita-connects-detail-sections';
+const DEFAULT_OPEN: Record<SectionKey, boolean> = {
+  sanskrit: true,
+  transliteration: false,
+  translation: true,
+  commentary: false,
+};
+
+function loadOpenSections(): Record<SectionKey, boolean> {
+  try {
+    const raw = localStorage.getItem(SECTIONS_KEY);
+    if (!raw) return DEFAULT_OPEN;
+    const parsed = JSON.parse(raw) as Partial<Record<SectionKey, boolean>>;
+    return { ...DEFAULT_OPEN, ...parsed };
+  } catch {
+    return DEFAULT_OPEN;
+  }
+}
+
+/** Reading time for the commentary, at a slow-scripture 180 wpm. */
+function readMinutes(paragraphs: string[]): number {
+  const words = paragraphs.join(' ').split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 180));
+}
+
+/** 1–10 strength → 0–5 bars plus a plain-language verdict. */
+function strengthMeter(strength: number): { bars: number; verdict: string } {
+  const bars = Math.max(1, Math.min(5, Math.ceil(strength / 2)));
+  const verdict = strength >= 8 ? 'Strong link' : strength >= 5 ? 'Moderate link' : 'Light link';
+  return { bars, verdict };
+}
+
+const truncate = (s: string, n = 28) => (s.length > n ? `${s.slice(0, n).trimEnd()}…` : s);
+
+interface DisclosureProps {
+  id: SectionKey;
+  label: string;
+  open: boolean;
+  onToggle: (id: SectionKey) => void;
+  /** Shown beside the label while collapsed. */
+  preview?: ReactNode;
+  children: ReactNode;
+}
+
+function Disclosure({ id, label, open, onToggle, preview, children }: DisclosureProps) {
+  return (
+    <section className={`vd-section vd-disclosure ${open ? 'is-open' : ''}`}>
+      <button
+        type="button"
+        className="vd-disclosure-header"
+        onClick={() => onToggle(id)}
+        aria-expanded={open}
+        aria-controls={`vd-${id}`}
+      >
+        {open ? <ChevronDown size={13} strokeWidth={2.6} /> : <ChevronRight size={13} strokeWidth={2.6} />}
+        <span className="vd-label">{label}</span>
+        {!open && preview && <span className="vd-preview">{preview}</span>}
+      </button>
+      {open && <div id={`vd-${id}`} className="vd-disclosure-body">{children}</div>}
+    </section>
+  );
 }
 
 export default function VerseDetail({
@@ -23,6 +94,7 @@ export default function VerseDetail({
   onAddToNetwork,
   onAddSuggestion,
   connectedNeighbors,
+  onNavigate,
   isMobile = false,
 }: VerseDetailProps) {
   const { sheetClassName, sheetStyle, grabberProps } = useBottomSheet({
@@ -33,6 +105,47 @@ export default function VerseDetail({
   // Above the early returns below, so hook order is identical on every render.
   const verseText = useVerseText(verseId);
   const live = verseText.status === 'ready' ? verseText.text : null;
+
+  // Open/closed state persists across verses: if you opened Transliteration
+  // on 2.47 it stays open on 2.48, so the pager doesn't make you re-open it.
+  const [openSections, setOpenSections] = useState(loadOpenSections);
+  const toggleSection = useCallback((id: SectionKey) => {
+    setOpenSections((prev) => {
+      const next = { ...prev, [id]: !prev[id] };
+      try {
+        localStorage.setItem(SECTIONS_KEY, JSON.stringify(next));
+      } catch {
+        // Preference only; losing it is harmless.
+      }
+      return next;
+    });
+  }, []);
+
+  const verse = verseId ? verses.find((v) => v.id === verseId) : undefined;
+  const chapter = verse ? chapters.find((c) => c.number === verse.chapter) : undefined;
+  const prevId = verse && verse.verse > 1 ? `${verse.chapter}.${verse.verse - 1}` : null;
+  const nextId = verse && chapter && verse.verse < chapter.verses ? `${verse.chapter}.${verse.verse + 1}` : null;
+
+  // ↑ / ↓ page through the chapter while the panel is open. Left alone when
+  // typing or when focus is on the canvas, where React Flow uses arrows to
+  // nudge the selected node.
+  useEffect(() => {
+    if (!verseId || !onNavigate) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (target?.closest('.react-flow')) return;
+      const dest = e.key === 'ArrowUp' ? prevId : nextId;
+      if (!dest) return;
+      e.preventDefault();
+      onNavigate(dest);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [verseId, prevId, nextId, onNavigate]);
 
   if (!verseId) {
     return (
@@ -48,323 +161,303 @@ export default function VerseDetail({
     );
   }
 
-  const verse = verses.find(v => v.id === verseId);
-  if (!verse) return null;
+  if (!verse || !chapter) return null;
 
   const inNetwork = networkVerses.has(verse.id);
 
-  // Find connections for this verse that are in the network
-  const relatedConnections = connections.filter(
-    c => c.from === verseId || c.to === verseId
-  );
-
-  // One entry per connected verse, keeping the strongest connection — mirrors
-  // the canvas, which collapses multiple connections per pair to one edge.
-  const strongestByVerse = new Map<string, typeof connections[number]>();
-  relatedConnections.forEach(conn => {
+  // One entry per connected verse on the canvas, keeping the strongest link —
+  // mirrors the canvas, which collapses multiple links per pair to one edge.
+  const strongestByVerse = new Map<string, (typeof connections)[number]>();
+  connections.forEach((conn) => {
+    if (conn.from !== verseId && conn.to !== verseId) return;
     const connectedId = conn.from === verseId ? conn.to : conn.from;
     if (!networkVerses.has(connectedId)) return;
     const current = strongestByVerse.get(connectedId);
-    if (!current || conn.strength > current.strength) {
-      strongestByVerse.set(connectedId, conn);
-    }
+    if (!current || conn.strength > current.strength) strongestByVerse.set(connectedId, conn);
   });
-
   const connectedVerses = [...strongestByVerse.entries()]
-    .map(([connectedId, connection]) => ({
-      verse: verses.find(v => v.id === connectedId),
-      connection,
-    }))
-    .filter(item => item.verse);
+    .map(([id, connection]) => ({ verse: verses.find((v) => v.id === id), connection }))
+    .filter((item): item is { verse: (typeof verses)[number]; connection: (typeof connections)[number] } => !!item.verse);
 
-  // Discovery: verses similar by concept that aren't already authored-linked.
   const suggestions = suggestSimilar(verse.id, 5);
 
-  const detailHeader = (
-    <div className="detail-header">
-      <button
-        className="close-button"
-        onClick={onClose}
-        onPointerDown={(e) => e.stopPropagation()}
-        aria-label="Close panel"
-      >
-        <X size={20} />
-      </button>
-      <div className="detail-header-row">
-        <div className="detail-header-meta">
-          <div className="verse-id-large">{verse.id}</div>
-          <div className="chapter-info">
-            Chapter {verse.chapter} • Verse {verse.verse}
-          </div>
-        </div>
-        <button
-          className={`add-to-network-button ${inNetwork ? 'in-network' : ''}`}
-          onClick={() => onAddToNetwork(verse.id)}
-          onPointerDown={(e) => e.stopPropagation()}
-          disabled={inNetwork}
-        >
-          {inNetwork ? <Check size={16} /> : <Plus size={16} />}
-          {inNetwork ? 'In network' : 'Add to network'}
-        </button>
-      </div>
-    </div>
+  const sanskrit = live?.sanskrit || verse.sanskrit;
+  const transliteration = live?.transliteration || verse.transliteration;
+  const wordMeanings = live?.synonyms || verse.wordMeanings;
+  const purport = live?.purport ?? [];
+
+  const addButton = (
+    <button
+      type="button"
+      className={`vd-add ${inNetwork ? 'in-network' : ''}`}
+      onClick={() => onAddToNetwork(verse.id)}
+      onPointerDown={(e) => e.stopPropagation()}
+      disabled={inNetwork}
+    >
+      {inNetwork ? <Check size={14} /> : <Plus size={14} />}
+      {inNetwork ? 'In network' : 'Add to network'}
+    </button>
   );
 
-  const detailBody = (
-      <div className="detail-content">
-        {/* Theme */}
-        <div className="detail-section">
-          <div className="section-label">
-            Theme
-            {verse.curated && !verse.reviewed && (
-              <span className="unreviewed-badge" title="Proposed by script; not yet checked by a person">
-                unreviewed
-              </span>
-            )}
-          </div>
-          <div className="verse-theme-large">{verse.theme ?? verse.transliteration}</div>
-          {verse.cluster && (
-            <div className="verse-cluster">{clusterLabel(verse.cluster)}</div>
+  const pager = (
+    <nav className="vd-pager" aria-label="Verse navigation">
+      <button
+        type="button"
+        className="vd-pager-btn"
+        onClick={() => prevId && onNavigate?.(prevId)}
+        disabled={!prevId || !onNavigate}
+        title="Previous verse (↑)"
+        aria-label={prevId ? `Previous verse, ${prevId}` : 'First verse of the chapter'}
+      >
+        <ChevronUp size={14} strokeWidth={2.4} />
+        {prevId ?? '—'}
+      </button>
+      <span className="vd-pager-pos">
+        Verse {verse.verse} of {chapter.verses} · Chapter {verse.chapter}
+      </span>
+      <button
+        type="button"
+        className="vd-pager-btn"
+        onClick={() => nextId && onNavigate?.(nextId)}
+        disabled={!nextId || !onNavigate}
+        title="Next verse (↓)"
+        aria-label={nextId ? `Next verse, ${nextId}` : 'Last verse of the chapter'}
+      >
+        {nextId ?? '—'}
+        <ChevronDown size={14} strokeWidth={2.4} />
+      </button>
+    </nav>
+  );
+
+  const body = (
+    <div className="vd-body">
+      {/* Theme */}
+      <section className="vd-section">
+        <div className="vd-label muted">
+          Theme
+          {verse.curated && !verse.reviewed && (
+            <span className="unreviewed-badge" title="Proposed by script; not yet checked by a person">
+              unreviewed
+            </span>
           )}
         </div>
+        <h3 className="vd-theme">{verse.theme ?? 'Uncurated verse'}</h3>
+        {verse.cluster && <div className="vd-cluster">{clusterLabel(verse.cluster)}</div>}
+        {verse.summary && <p className="vd-summary">{verse.summary.replace(/\*/g, '')}</p>}
+      </section>
 
-        {/* Sanskrit */}
-        <div className="detail-section">
-          <div className="section-label">Sanskrit</div>
-          <div className="sanskrit-text large">{live?.sanskrit || verse.sanskrit}</div>
-        </div>
+      <Disclosure id="sanskrit" label="Sanskrit" open={openSections.sanskrit} onToggle={toggleSection}
+        preview={<span lang="sa">{truncate(sanskrit, 22)}</span>}>
+        <div className="vd-card vd-sanskrit" lang="sa">{sanskrit}</div>
+      </Disclosure>
 
-        {/* Transliteration */}
-        <div className="detail-section">
-          <div className="section-label">Transliteration</div>
-          <div className="transliteration-text">
-            {live?.transliteration || verse.transliteration}
-          </div>
-        </div>
-
-        {/* Word-by-word meanings */}
-        <div className="detail-section">
-          <div className="section-label">Word by word</div>
-          <div className="word-meanings-text">{live?.synonyms || verse.wordMeanings}</div>
-        </div>
-
-        {/* Summary — our own words. Prabhupada's translation and purport are
-            BBT copyright, so we link to Vedabase rather than reproduce them. */}
-        {verse.summary && (
-          <div className="detail-section">
-            <div className="section-label">
-              <ScrollText size={14} />
-              Summary
-            </div>
-            <div className="purport-text">{verse.summary}</div>
-          </div>
+      <Disclosure id="transliteration" label="Transliteration" open={openSections.transliteration} onToggle={toggleSection}
+        preview={<em>{truncate(transliteration)}</em>}>
+        <div className="vd-card vd-transliteration">{transliteration}</div>
+        {wordMeanings && (
+          <>
+            <div className="vd-sublabel">Word by word</div>
+            <div className="vd-word-meanings">{wordMeanings}</div>
+          </>
         )}
+      </Disclosure>
 
-        {/* Prabhupada's translation and purport. Fetched at view time from
-            /api/verse; never stored, never committed — the Bhaktivedanta Book
-            Trust permits display only. Falls back to a link if unavailable. */}
-        <div className="detail-section">
-          <div className="section-label">
-            <BookOpen size={14} />
-            Translation
-          </div>
+      <Disclosure id="translation" label="Translation" open={openSections.translation} onToggle={toggleSection}
+        preview={live ? truncate(live.translation, 32) : undefined}>
+        {verseText.status === 'loading' && <div className="vd-muted">Loading from Vedabase…</div>}
+        {live && <div className="vd-card vd-translation">{live.translation}</div>}
+        {verseText.status === 'unavailable' && (
+          <div className="vd-muted">Could not load the translation right now.</div>
+        )}
+        <a className="vd-link" href={vedabaseUrl(verse)} target="_blank" rel="noopener noreferrer">
+          <ExternalLink size={13} />
+          Open {verse.id} on vedabase.io
+        </a>
+      </Disclosure>
 
-          {verseText.status === 'loading' && (
-            <div className="vedabase-loading">Loading from Vedabase…</div>
-          )}
+      {/* Commentary: Prabhupada's purport, fetched at view time from /api/verse
+          and never stored — the Bhaktivedanta Book Trust permits display only. */}
+      {(purport.length > 0 || verseText.status === 'loading') && (
+        <Disclosure id="commentary" label="Commentary" open={openSections.commentary} onToggle={toggleSection}
+          preview={purport.length > 0 ? `${readMinutes(purport)} min read` : 'loading…'}>
+          {purport.map((paragraph, i) => (
+            <p key={i} className="vd-purport">{paragraph}</p>
+          ))}
+          {live && <div className="vedabase-attribution">{live.attribution}</div>}
+        </Disclosure>
+      )}
 
-          {verseText.status === 'ready' && (
-            <>
-              <div className="translation-text">{verseText.text.translation}</div>
-
-              {verseText.text.purport.length > 0 && (
-                <>
-                  <div className="section-label purport-label">
-                    <ScrollText size={14} />
-                    Purport
-                  </div>
-                  {verseText.text.purport.map((paragraph, i) => (
-                    <p key={i} className="purport-text">
-                      {paragraph}
-                    </p>
-                  ))}
-                </>
-              )}
-
-              <div className="vedabase-attribution">{verseText.text.attribution}</div>
-            </>
-          )}
-
-          {verseText.status === 'unavailable' && (
-            <div className="vedabase-loading">
-              Could not load the translation right now.
-            </div>
-          )}
-
-          <a
-            className="vedabase-link"
-            href={vedabaseUrl(verse)}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <ExternalLink size={14} />
-            Open {verse.id} on vedabase.io
-          </a>
-        </div>
-
-        {/* Concepts */}
-        <div className="detail-section">
-          <div className="section-label">
-            <Tag size={14} />
-            Key Concepts
+      {/* Key concepts */}
+      {verse.concepts.length > 0 && (
+        <section className="vd-section">
+          <div className="vd-label">
+            <Tag size={13} />
+            Key concepts
             {verse.curated && !verse.reviewed && (
               <span className="unreviewed-badge" title="Proposed by script; not yet checked by a person">
                 unreviewed
               </span>
             )}
           </div>
-          <div className="concepts-grid">
+          <div className="vd-chips">
             {verse.concepts.map((concept, i) => (
-              <div
+              <span
                 key={concept}
                 className={`concept-badge ${i === 0 ? 'primary' : i === 1 ? 'secondary' : ''}`}
                 title={i === 0 ? 'Primary theme' : i === 1 ? 'Secondary theme' : undefined}
               >
                 {concept}
-              </div>
+              </span>
             ))}
           </div>
-        </div>
+        </section>
+      )}
 
-        {/* Connected Verses */}
-        {connectedVerses.length > 0 && (
-          <div className="detail-section">
-            <div className="section-label">
-              <Network size={14} />
-              Connected Verses ({connectedVerses.length})
-            </div>
-            <div className="connected-verses">
-              {connectedVerses.map(({ verse: connVerse, connection }) => (
-                <div key={connVerse!.id} className="connected-verse-item">
-                  <div className="connected-header">
-                    <span className="connected-id">{connVerse!.id}</span>
-                    <span className={`connection-type ${connection.type}`}>
-                      {connection.type}
+      {/* Connected verses: solid cards */}
+      {connectedVerses.length > 0 && (
+        <section className="vd-section">
+          <div className="vd-label">
+            <Link2 size={13} />
+            Connected verses ({connectedVerses.length})
+          </div>
+          <div className="vd-stack">
+            {connectedVerses.map(({ verse: cv, connection }, index) => {
+              const { bars, verdict } = strengthMeter(connection.strength);
+              return (
+                <div key={cv.id} className="vd-connected">
+                  <div className="vd-connected-head">
+                    <span className="vd-verse-ref">{cv.id}</span>
+                    <span className="vd-type-pill">{getTypeLabel(PREDEFINED_CONNECTION_TYPES, connection.type)}</span>
+                  </div>
+                  <div className="vd-connected-theme">{cv.theme ?? cv.transliteration}</div>
+                  <div className="vd-connected-desc">{connection.description}</div>
+                  <div className="vd-meter" title={`Strength ${connection.strength} of 10`}>
+                    <span className="vd-meter-bars" aria-hidden="true">
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <span key={n} className={`vd-meter-bar ${n <= bars ? 'is-on' : ''}`} />
+                      ))}
                     </span>
-                  </div>
-                  <div className="connected-theme">{connVerse!.theme}</div>
-                  <div className="connection-description">
-                    {connection.description}
-                  </div>
-                  <div className="connection-strength">
-                    Strength: {connection.strength}/10
+                    <span className="vd-meter-verdict">{verdict}</span>
+                    {index === 0 && (
+                      <span className="vd-help">
+                        <button type="button" className="vd-help-btn" aria-describedby="vd-strength-tip" aria-label="What does link strength mean?">
+                          ?
+                        </button>
+                        <span role="tooltip" id="vd-strength-tip" className="vd-tooltip">
+                          <strong>How strongly these two verses relate</strong>
+                          Scored from shared concepts, shared theme, and how directly one verse answers the other. {bars} of five bars — {verdict.replace(' link', '').toLowerCase()}.
+                        </span>
+                      </span>
+                    )}
                   </div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </div>
-        )}
+        </section>
+      )}
 
-        {/* Suggested connections (discovery) */}
-        {suggestions.length > 0 && (
-          <div className="detail-section">
-            <div className="section-label">
-              <Sparkles size={14} />
-              Suggested Connections
-            </div>
-            <p className="suggested-hint">Similar verses by shared concepts — add one to link it here.</p>
-            <div className="suggested-verses">
-              {suggestions.map(({ verse: sv, shared, sameTheme }) => {
-                const added = connectedNeighbors.has(sv.id);
-                return (
-                <div key={sv.id} className="suggested-verse-item">
-                  <div className="suggested-main">
-                    <div className="connected-header">
-                      <span className="connected-id">{sv.id}</span>
-                      <span className="suggested-overlap">
-                        {shared.length > 0 ? `${shared.length} shared` : 'similar theme'}
-                      </span>
-                    </div>
-                    <div className="connected-theme">{sv.theme}</div>
+      {/* Suggested: ghost rows — an outline of a link that doesn't exist yet */}
+      {suggestions.length > 0 && (
+        <section className="vd-section">
+          <div className="vd-label">
+            <Sparkles size={13} />
+            Suggested connections
+          </div>
+          <p className="vd-hint">Similar verses by shared concepts — add one to link it here.</p>
+          <div className="vd-stack">
+            {suggestions.map(({ verse: sv, shared, sameTheme }) => {
+              const added = connectedNeighbors.has(sv.id);
+              return (
+                <div key={sv.id} className={`vd-suggested ${added ? 'is-added' : ''}`}>
+                  <div className="vd-suggested-main">
+                    <span className="vd-verse-ref">{sv.id}</span>
+                    <div className="vd-connected-theme">{sv.theme ?? sv.transliteration}</div>
                     {shared.length > 0 && (
-                      <div className="suggested-shared">
+                      <div className="vd-shared">
+                        <span className="vd-shared-prefix">Shares</span>
                         {shared.map((c) => (
-                          <span key={c} className="suggested-shared-tag">{c}</span>
+                          <span key={c} className="vd-shared-tag">{c}</span>
                         ))}
                       </div>
                     )}
                   </div>
+                  <span className="vd-suggested-status">{added ? 'Linked' : 'Not linked yet'}</span>
                   <button
-                    className={`suggested-add ${added ? 'added' : ''}`}
-                    onClick={() => onAddSuggestion(verse.id, sv.id, suggestionConnection(shared.length ? shared : (sameTheme ? ['theme'] : [])))}
+                    type="button"
+                    className="vd-suggested-add"
+                    onClick={() =>
+                      onAddSuggestion(
+                        verse.id,
+                        sv.id,
+                        suggestionConnection(shared.length ? shared : sameTheme ? ['theme'] : []),
+                      )
+                    }
                     disabled={added}
                     title={added ? 'Added' : 'Add & connect'}
                     aria-label={added ? `${sv.id} added` : `Add and connect ${sv.id}`}
                   >
-                    {added ? <Check size={16} /> : <Plus size={16} />}
+                    {added ? <Check size={14} /> : <Plus size={14} />}
                   </button>
                 </div>
-                );
-              })}
-            </div>
+              );
+            })}
           </div>
-        )}
-      </div>
-  );
-
-  const mobileSheetHeader = (
-    <div className="mobile-sheet-header">
-      <div className="mobile-sheet-title-row">
-        <div className="mobile-sheet-title-meta">
-          <div className="verse-id-large">{verse.id}</div>
-          <div className="chapter-info">
-            Chapter {verse.chapter} • Verse {verse.verse}
-          </div>
-        </div>
-        <button
-          className={`mobile-status-button ${inNetwork ? 'in-network' : 'add-network'}`}
-          onClick={() => onAddToNetwork(verse.id)}
-          onPointerDown={(e) => e.stopPropagation()}
-          disabled={inNetwork}
-        >
-          {inNetwork ? <Check size={16} strokeWidth={2.5} /> : <Plus size={16} strokeWidth={2.5} />}
-          {inNetwork ? 'In network' : 'Add to network'}
-        </button>
-      </div>
+        </section>
+      )}
     </div>
   );
 
   if (isMobile) {
     return (
-      <div
-        className={`verse-detail mobile-bottom-sheet ${sheetClassName}`}
-        style={sheetStyle}
-      >
-        <div
-          className="bottom-sheet-top"
-          {...grabberProps}
-          aria-label="Drag to resize verse details"
-        >
+      <div className={`verse-detail mobile-bottom-sheet ${sheetClassName}`} style={sheetStyle}>
+        <div className="bottom-sheet-top" {...grabberProps} aria-label="Drag to resize verse details">
           <div className="bottom-sheet-handle" aria-hidden="true" />
           <button
-            className="close-button mobile-close-button"
+            type="button"
+            className="vd-close mobile-close-button"
             onClick={onClose}
             onPointerDown={(e) => e.stopPropagation()}
             aria-label="Close panel"
           >
-            <X size={20} strokeWidth={1.75} />
+            <X size={18} />
           </button>
-          {mobileSheetHeader}
+          <div className="mobile-sheet-header">
+            <div className="mobile-sheet-title-row">
+              <div className="mobile-sheet-title-meta">
+                <div className="vd-id">{verse.id}</div>
+                <div className="vd-chapter">Chapter {verse.chapter} • Verse {verse.verse}</div>
+              </div>
+              {addButton}
+            </div>
+          </div>
+          {pager}
         </div>
-        <div className="bottom-sheet-body">{detailBody}</div>
+        <div className="bottom-sheet-body">{body}</div>
       </div>
     );
   }
 
   return (
     <div className="verse-detail">
-      {detailHeader}
-      {detailBody}
+      <header className="vd-header">
+        <div className="vd-header-meta">
+          <div className="vd-id">{verse.id}</div>
+          <div className="vd-chapter">Chapter {verse.chapter} • Verse {verse.verse}</div>
+        </div>
+        {addButton}
+        <button
+          type="button"
+          className="vd-close"
+          onClick={onClose}
+          onPointerDown={(e) => e.stopPropagation()}
+          aria-label="Close panel"
+        >
+          <X size={18} />
+        </button>
+      </header>
+      {pager}
+      {body}
     </div>
   );
 }

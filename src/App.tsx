@@ -453,6 +453,7 @@ function App() {
             onAddToNetwork={handleAddVerseToNetwork}
             onAddSuggestion={(fromId, toId, conn) => verseNetworkRef.current?.addConnection(fromId, toId, conn)}
             connectedNeighbors={connectedNeighbors}
+            onNavigate={handleVerseSelect}
             isMobile={isMobile}
           />
         )}
