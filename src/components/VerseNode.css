@@ -187,13 +187,41 @@
   transform: translate(-50%, 50%);
 }
 
+/* Hovering the card lights the source handle with a soft halo and pins
+   the instruction to it — the how-to lives on the thing you manipulate. */
+.verse-node:hover .node-handle.react-flow__handle-bottom,
 .node-handle:hover {
-  width: 16px;
-  height: 16px;
-  min-width: 16px;
-  min-height: 16px;
-  background: var(--terracotta-400);
-  box-shadow: 0 0 0 4px var(--terracotta-100);
+  background: var(--terracotta-500);
+  box-shadow: 0 0 0 5px rgb(202 117 88 / 0.22);
+}
+
+.node-handle.react-flow__handle-bottom::after {
+  content: 'Drag to connect';
+  position: absolute;
+  top: calc(100% + 9px);
+  left: 50%;
+  translate: -50%;
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: #3a3530;
+  font-family: var(--font-ui);
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 14px;
+  color: #ece6dd;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-fast);
+}
+
+.verse-node:hover .node-handle.react-flow__handle-bottom::after {
+  opacity: 1;
+}
+
+/* Hide the label once the reader is mid-drag: it has done its job */
+.react-flow.connecting .node-handle.react-flow__handle-bottom::after {
+  opacity: 0;
 }
 
 .node-handle.react-flow__handle-top:hover {

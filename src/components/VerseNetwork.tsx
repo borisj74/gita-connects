@@ -13,7 +13,7 @@ import ReactFlow, {
   type EdgeTypes,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { X, MousePointer2, Undo2, Redo2 } from 'lucide-react';
+import { X, MousePointer2, Undo2, Redo2, BookOpen, CircleHelp } from 'lucide-react';
 import { verses, connections } from '../data/index.js';
 import { expandableNeighbors, edgesJoining } from '../neighbors.js';
 import VerseNode from './VerseNode.js';
@@ -41,6 +41,11 @@ interface VerseNetworkProps {
   showEmptyState?: boolean;
   /** Links the reader just removed (popover or Delete key), for an undo toast. */
   onEdgesRemoved?: (removed: { source: string; target: string; label: string }[]) => void;
+  /** Whether the chapters sidebar is open — the empty state's copy depends on it. */
+  sidebarOpen?: boolean;
+  onOpenChapters?: () => void;
+  /** Opens the keyboard shortcuts / help overlay from the ? button. */
+  onShowHelp?: () => void;
   isMobile?: boolean;
   theme?: 'light' | 'dark';
 }
@@ -141,6 +146,9 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       onAutosaveStatus,
       showEmptyState = true,
       onEdgesRemoved,
+      sidebarOpen = true,
+      onOpenChapters,
+      onShowHelp,
       isMobile = false,
       theme = 'light',
     },
@@ -902,6 +910,17 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         )}
         {!isMobile && nodes.length > 0 && (
           <Panel position="bottom-right" className="canvas-zoom">
+            {onShowHelp && (
+              <button
+                type="button"
+                className="canvas-help-fab"
+                onClick={onShowHelp}
+                title="Help and keyboard shortcuts (?)"
+                aria-label="Help and keyboard shortcuts"
+              >
+                <CircleHelp size={19} />
+              </button>
+            )}
             <ZoomControls />
           </Panel>
         )}
@@ -909,18 +928,22 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
 
       {showConnectHint && (
         <div className="connect-hint" role="status">
-          <MousePointer2 size={16} className="connect-hint-icon" />
-          <span>
-            {isMobile
-              ? 'Tip: touch and drag from the bottom dot on one verse to the top dot on another to connect them'
-              : 'Tip: drag from the dot at the bottom of one verse to the dot on top of another to connect them'}
-          </span>
+          <MousePointer2 size={17} className="connect-hint-icon" />
+          <div className="connect-hint-text">
+            <div className="connect-hint-title">Connect two verses</div>
+            <div className="connect-hint-body">
+              {isMobile
+                ? 'Touch and drag from the dot under one card to the dot above another.'
+                : 'Drag from the dot under one card to the dot above another.'}
+            </div>
+          </div>
           <button
+            type="button"
             className="connect-hint-close"
             onClick={dismissConnectHint}
             aria-label="Dismiss tip"
           >
-            <X size={14} />
+            <X size={15} />
           </button>
         </div>
       )}
@@ -929,24 +952,31 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         <div className="network-empty-state">
           <h2 className="network-empty-state-title">Start Your Journey</h2>
           <p className="network-empty-state-description">
-            {isMobile
-              ? 'Tap Chapters to browse verses, or use the buttons below to seed your network with connected teachings from the Bhagavad Gita.'
-              : 'Drag a verse card from the left sidebar to begin exploring the beautiful connections between the teachings of the Bhagavad Gita.'}
+            {sidebarOpen && !isMobile
+              ? 'Drag a verse card from the chapters on the left, or seed the canvas with a set of connected teachings.'
+              : 'Open Chapters to browse all 18 chapters, or seed the canvas with a set of connected teachings.'}
           </p>
-          <ul className="network-empty-state-list">
-            <li>Each verse reveals thematic, conceptual, practical, and doctrinal connections</li>
-            <li>Connection lines display relationship types with colored badges</li>
-            <li>{isMobile ? 'Tap verses to read details and add suggestions' : 'Click verses to discover related teachings'}</li>
-            <li>{isMobile ? 'Pinch to zoom and drag the canvas to pan' : 'Drag verses around to organize your network'}</li>
-            <li>{isMobile ? 'Drag from verse dots to create custom connections' : 'Drag from one verse handle to another to create a custom connection'}</li>
-          </ul>
           <div className="network-empty-state-actions">
-            <button className="starter-button primary" onClick={handleAddStarterSet}>
-              Add starter set
-            </button>
-            <button className="starter-button" onClick={handleAddRandom}>
-              Add random verse
-            </button>
+            {(!sidebarOpen || isMobile) && onOpenChapters ? (
+              <>
+                <button type="button" className="starter-button primary" onClick={onOpenChapters}>
+                  <BookOpen size={17} />
+                  Open Chapters
+                </button>
+                <button type="button" className="starter-button" onClick={handleAddStarterSet}>
+                  Add starter set
+                </button>
+              </>
+            ) : (
+              <>
+                <button type="button" className="starter-button primary" onClick={handleAddStarterSet}>
+                  Add starter set
+                </button>
+                <button type="button" className="starter-button" onClick={handleAddRandom}>
+                  Add random verse
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}

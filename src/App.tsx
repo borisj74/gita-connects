@@ -13,6 +13,7 @@ import OverflowMenu from './components/OverflowMenu.js';
 import ClearCanvasDialog from './components/ClearCanvasDialog.js';
 import UndoToast from './components/UndoToast.js';
 import RestoreSessionCard from './components/RestoreSessionCard.js';
+import ShortcutsOverlay from './components/ShortcutsOverlay.js';
 import DeleteLinkTypeDialog from './components/DeleteLinkTypeDialog.js';
 import { readAutosave, clearAutosave, type Autosave } from './autosave.js';
 import './components/Toolbar.css';
@@ -64,6 +65,7 @@ function App() {
   const [pendingRestore, setPendingRestore] = useState<Autosave | null>(() => readAutosave());
   const [autosaveStatus, setAutosaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [typeToDelete, setTypeToDelete] = useState<ConnectionTypeDef | null>(null);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const verseNetworkRef = useRef<VerseNetworkRef>(null);
   const saveLoadRef = useRef<SaveLoadControlsRef>(null);
@@ -149,11 +151,25 @@ function App() {
       if (e.key === '/') {
         e.preventDefault();
         setSearchOpen(true);
+        return;
+      }
+
+      // "?" — keyboard shortcuts overlay (the overlay closes itself)
+      if (e.key === '?' && !shortcutsOpen) {
+        e.preventDefault();
+        setShortcutsOpen(true);
+        return;
+      }
+
+      // "B" — browse chapters
+      if (e.key.toLowerCase() === 'b' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        setSidebarOpen((v) => !v);
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selectedVerseId, searchOpen]);
+  }, [selectedVerseId, searchOpen, shortcutsOpen]);
 
   const handleToggleFilter = useCallback((type: string) => {
     setActiveFilters((prev) => {
@@ -222,6 +238,13 @@ function App() {
   }, []);
 
   const handleAutosaveStatus = useCallback((status: 'saving' | 'saved') => setAutosaveStatus(status), []);
+
+  // "All changes saved" lingers briefly, then gets out of the way.
+  useEffect(() => {
+    if (autosaveStatus !== 'saved') return;
+    const t = setTimeout(() => setAutosaveStatus('idle'), 2500);
+    return () => clearTimeout(t);
+  }, [autosaveStatus]);
 
   const toggleTheme = useCallback(() => {
     setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
@@ -371,16 +394,6 @@ function App() {
 
           {/* Canvas tools, top-right */}
           <div className="canvas-actions">
-            {autosaveStatus !== 'idle' && networkVerses.size > 0 && (
-              <span
-                className={`tb-autosave tb-desktop-only ${autosaveStatus === 'saving' ? 'is-saving' : ''}`}
-                role="status"
-                aria-live="polite"
-              >
-                <Check size={14} />
-                {autosaveStatus === 'saving' ? 'Saving…' : 'All changes saved'}
-              </span>
-            )}
             <div className="tb-desktop-only">
               <ConnectionFilters
                 connectionTypes={connectionTypes}
@@ -416,6 +429,7 @@ function App() {
                 onToggleTheme={toggleTheme}
                 onClearCanvas={handleClearAll}
                 canClear={networkVerses.size > 0}
+                onShowShortcuts={() => setShortcutsOpen(true)}
               />
             </div>
 
@@ -487,6 +501,16 @@ function App() {
           </div>
           </div>
 
+          {autosaveStatus !== 'idle' && networkVerses.size > 0 && !removedLinksToast && !clearedToast && (
+            <div
+              className={`autosave-pill ${autosaveStatus === 'saving' ? 'is-saving' : ''}`}
+              role="status"
+              aria-live="polite"
+            >
+              <Check size={14} />
+              {autosaveStatus === 'saving' ? 'Saving…' : 'All changes saved'}
+            </div>
+          )}
           {removedLinksToast && !clearedToast && (
             <UndoToast message={removedLinksToast} onUndo={undoRemovedLinks} onDismiss={dismissRemovedLinks} />
           )}
@@ -521,6 +545,9 @@ function App() {
                 onAutosaveStatus={handleAutosaveStatus}
                 showEmptyState={!pendingRestore}
                 onEdgesRemoved={handleEdgesRemoved}
+                sidebarOpen={sidebarOpen}
+                onOpenChapters={() => setSidebarOpen(true)}
+                onShowHelp={() => setShortcutsOpen(true)}
                 isMobile={isMobile}
                 theme={theme}
               />
@@ -576,6 +603,8 @@ function App() {
           }}
         />
       )}
+
+      {shortcutsOpen && <ShortcutsOverlay onClose={() => setShortcutsOpen(false)} />}
 
       {searchOpen && (
         <SearchPalette

@@ -422,30 +422,59 @@
   }
 }
 
-/* Autosave status, sits between search and the tools group */
-.tb-autosave {
+/* Autosave status — bottom-center pill, fades out a moment after saving */
+.autosave-pill {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  translate: -50%;
+  z-index: var(--z-sticky);
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-right: 10px;
+  padding: 7px 12px;
+  background: white;
+  border: 1px solid var(--beige-300);
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.06);
   font-family: var(--font-ui);
   font-size: 12.5px;
   line-height: 16px;
   color: var(--brown-600);
   white-space: nowrap;
-  transition: opacity var(--transition-base);
+  pointer-events: none;
+  animation: autosaveIn 0.2s ease-out;
 }
 
-.tb-autosave > svg {
+.autosave-pill > svg {
   color: var(--sage-600);
 }
 
-.tb-autosave.is-saving {
-  opacity: 0.7;
+.autosave-pill.is-saving {
+  color: var(--brown-500);
 }
 
-@media (max-width: 1180px) {
-  .tb-autosave {
-    display: none;
+.autosave-pill.is-saving > svg {
+  color: var(--brown-400);
+}
+
+@keyframes autosaveIn {
+  from {
+    opacity: 0;
+    translate: -50% 6px;
+  }
+  to {
+    opacity: 1;
+    translate: -50% 0;
+  }
+}
+
+[data-theme="dark"] .autosave-pill {
+  background: var(--beige-50);
+}
+
+@media (max-width: 768px) {
+  .autosave-pill {
+    bottom: max(72px, calc(60px + env(safe-area-inset-bottom)));
   }
 }
