@@ -12,7 +12,9 @@
     "test": "vitest",
     "test:run": "vitest run",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "review:next": "tsx scripts/review-next.ts",
+    "graph:report": "tsx scripts/graph-report.ts"
   },
   "dependencies": {
     "@types/dagre": "^0.7.54",
@@ -37,6 +39,7 @@
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
     "jsdom": "^30.0.1",
+    "tsx": "^4.23.13",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4",
