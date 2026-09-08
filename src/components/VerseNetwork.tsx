@@ -935,6 +935,8 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         onConnect={onConnect}
         onNodesDelete={handleNodesDelete}
         onEdgesDelete={(deleted) => removeEdges(deleted.map((e) => e.id))}
+        // Clicking empty canvas closes the verse panel and lifts the spotlight.
+        onPaneClick={() => onVerseSelect('')}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         deleteKeyCode={isMobile ? null : ['Delete', 'Backspace']}
