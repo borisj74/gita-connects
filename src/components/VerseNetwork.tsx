@@ -21,6 +21,8 @@ import ConnectionEdge from './ConnectionEdge.js';
 import ConnectionDialog from './ConnectionDialog.js';
 import ZoomControls from './ZoomControls.js';
 import type { ConnectionTypeDef } from '../connectionTypes.js';
+import type { Verse } from '../types.js';
+import type { Concept } from '../concepts.js';
 import { getTypeColor, getTypeLabel, isDirectionalType } from '../connectionTypes.js';
 import { writeAutosave } from '../autosave.js';
 import './VerseNetwork.css';
@@ -28,6 +30,9 @@ import './VerseNetwork.css';
 interface VerseNetworkProps {
   onVerseSelect: (verseId: string) => void;
   selectedVerseId: string | null;
+  /** Concept chip acting as a filter (App 23): non-matching cards fade back. */
+  conceptFilter?: string | null;
+  onConceptSelect?: (concept: string) => void;
   activeFilters: Set<string>;
   onToggleFilter?: (type: string) => void;
   onNetworkVersesChange: (verses: Set<string>) => void;
@@ -137,6 +142,8 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     {
       onVerseSelect,
       selectedVerseId,
+      conceptFilter = null,
+      onConceptSelect,
       activeFilters,
       onNetworkVersesChange,
       onNetworkEdgesChange,
@@ -760,8 +767,10 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       return nds.map((node) => {
         const connectedCount = expandableNeighbors(node.id, networkVerses).length;
 
+        const concepts = (node.data?.verse as Verse | undefined)?.concepts ?? [];
+        const offConcept = !!conceptFilter && !concepts.includes(conceptFilter as Concept);
         const dimmed =
-          spotlight && node.id !== selectedVerseId && !neighbors.has(node.id);
+          offConcept || (spotlight && node.id !== selectedVerseId && !neighbors.has(node.id));
 
         return {
           ...node,
@@ -770,11 +779,13 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
             ...node.data,
             isSelected: node.id === selectedVerseId,
             connectedCount,
+            conceptFilter,
+            onConceptSelect,
           },
         };
       });
     });
-  }, [selectedVerseId, networkVerses, allEdges, setNodes]);
+  }, [selectedVerseId, networkVerses, allEdges, setNodes, conceptFilter, onConceptSelect]);
 
   const getNetworkState = useCallback(() => {
     return { nodes, edges: allEdges };

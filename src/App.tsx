@@ -25,11 +25,16 @@ import {
   saveActiveFilters,
   type ConnectionTypeDef,
 } from './connectionTypes.js';
+import { verses } from './data/index.js';
+import type { Concept } from './concepts.js';
 import './App.css';
 
 function App() {
   const isMobile = useMediaQuery(MOBILE_BREAKPOINT);
   const [selectedVerseId, setSelectedVerseId] = useState<string | null>(null);
+  // Concept chip acting as a filter (App 23): the sidebar narrows to verses
+  // that share it and unrelated cards on the canvas fade back.
+  const [conceptFilter, setConceptFilter] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(
     () => typeof window !== 'undefined' && window.innerWidth > 768,
   );
@@ -127,6 +132,8 @@ function App() {
           (e.target as HTMLElement).blur();
         } else if (selectedVerseId) {
           setSelectedVerseId(null);
+        } else if (conceptFilter) {
+          setConceptFilter(null);
         }
         return;
       }
@@ -169,7 +176,17 @@ function App() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selectedVerseId, searchOpen, shortcutsOpen]);
+  }, [selectedVerseId, searchOpen, shortcutsOpen, conceptFilter]);
+
+  // Clicking the active chip again clears the filter.
+  const handleConceptSelect = useCallback((concept: string) => {
+    setConceptFilter((prev) => (prev === concept ? null : concept));
+  }, []);
+
+  const conceptMatchCount = useMemo(
+    () => (conceptFilter ? verses.filter((v) => v.concepts.includes(conceptFilter as Concept)).length : 0),
+    [conceptFilter],
+  );
 
   const handleToggleFilter = useCallback((type: string) => {
     setActiveFilters((prev) => {
@@ -342,7 +359,11 @@ function App() {
             <div className="section-info">
               <h2 className="section-title">Chapters & Verses</h2>
               <p className="section-subtitle">
-                {isMobile ? 'Tap verses to read, or + to add to canvas' : 'Drag verses to explore connections'}
+                {conceptFilter
+                  ? `${conceptMatchCount} verse${conceptMatchCount === 1 ? '' : 's'} share this concept`
+                  : isMobile
+                    ? 'Tap verses to read, or + to add to canvas'
+                    : 'Drag verses to explore connections'}
               </p>
             </div>
             <button
@@ -356,6 +377,10 @@ function App() {
           </div>
           {sidebarOpen && (
             <ChapterSidebar
+              key={conceptFilter ?? 'all'}
+              conceptFilter={conceptFilter}
+              onConceptSelect={handleConceptSelect}
+              onClearConceptFilter={() => setConceptFilter(null)}
               onVerseSelect={handleVerseSelect}
               selectedVerseId={selectedVerseId}
               networkVerses={networkVerses}
@@ -536,6 +561,8 @@ function App() {
                 ref={verseNetworkRef}
                 onVerseSelect={handleVerseSelect}
                 selectedVerseId={selectedVerseId}
+                conceptFilter={conceptFilter}
+                onConceptSelect={handleConceptSelect}
                 activeFilters={activeFilters}
                 onToggleFilter={handleToggleFilter}
                 onNetworkVersesChange={handleNetworkVersesChange}

@@ -417,9 +417,9 @@
 
 .concept-badge {
   padding: 7px 12px;
-  border: 1px solid #e8c4b4;
+  border: 1px solid var(--chip-border);
   border-radius: 999px;
-  background: #f7e3da;
+  background: var(--chip-bg);
   font-family: var(--font-ui);
   font-size: 12px;
   font-weight: 500;

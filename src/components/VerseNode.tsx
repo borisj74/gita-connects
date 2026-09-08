@@ -13,11 +13,14 @@ interface VerseNodeProps {
     onExpand?: () => void;
     isSelected: boolean;
     connectedCount?: number;
+    /** Concept chip acting as a filter (App 23), if any. */
+    conceptFilter?: string | null;
+    onConceptSelect?: (concept: string) => void;
   };
 }
 
 function VerseNode({ data }: VerseNodeProps) {
-  const { verse, onSelect, onRemove, onExpand, isSelected, connectedCount = 0 } = data;
+  const { verse, onSelect, onRemove, onExpand, isSelected, connectedCount = 0, conceptFilter = null, onConceptSelect } = data;
 
   // Cards always lead with English. Curated verses carry a summary; the rest
   // show the first line of the translation, fetched on demand and cached for
@@ -69,9 +72,24 @@ function VerseNode({ data }: VerseNodeProps) {
       )}
 
       <div className="node-concepts">
-        {verse.concepts.map(concept => (
-          <span key={concept} className="node-concept">{concept}</span>
-        ))}
+        {verse.concepts.map(concept => {
+          const active = conceptFilter === concept;
+          return (
+            <button
+              key={concept}
+              type="button"
+              className={`node-concept nodrag ${active ? 'is-active' : conceptFilter ? 'is-muted' : ''}`}
+              data-tip={active ? 'Clear filter' : `Show all verses on ${concept}`}
+              aria-pressed={active}
+              onClick={(e) => {
+                e.stopPropagation();
+                onConceptSelect?.(concept);
+              }}
+            >
+              {concept}
+            </button>
+          );
+        })}
       </div>
 
       {connectedCount > 0 && (

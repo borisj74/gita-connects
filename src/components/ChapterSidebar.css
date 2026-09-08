@@ -250,21 +250,104 @@
   gap: 0.25rem;
   width: 100%;
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .concept-tag {
-  background: #F97316;
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.625rem;
+  background: var(--chip-bg);
+  color: var(--brown-900);
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-family: var(--font-ui);
+  font-size: 11px;
   font-weight: 500;
+  line-height: 14px;
   text-transform: lowercase;
-  border: none;
+  border: 1px solid var(--chip-border);
   flex: 0 0 auto;
   white-space: nowrap;
   box-sizing: border-box;
+  cursor: pointer;
+  transition: background var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.concept-tag:hover {
+  border-color: var(--terracotta-400);
+}
+
+.concept-tag:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(202 117 88 / 0.5);
+}
+
+/* While a concept filter is on, only the matching chip keeps its colour */
+.concept-tag.is-muted {
+  background: var(--beige-200);
+  border-color: var(--beige-200);
+  color: var(--brown-600);
+}
+
+.concept-tag.is-active {
+  box-shadow: 0 0 0 2px rgb(202 117 88 / 0.3);
+}
+
+/* Active concept filter bar (App 23) */
+.concept-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--terracotta-50);
+  border-bottom: 1px solid var(--beige-200);
+}
+
+.concept-filter-label {
+  flex-shrink: 0;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 14px;
+  text-transform: uppercase;
+  color: var(--brown-600);
+}
+
+.concept-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 4px 4px 10px;
+  border-radius: 999px;
+  background: var(--terracotta-500);
+  border: 1px solid var(--terracotta-600);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: white;
+}
+
+.concept-filter-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+}
+
+.concept-filter-clear:hover {
+  background: rgb(255 255 255 / 0.2);
+}
+
+.concept-filter-clear:focus-visible {
+  outline: 2px solid var(--brown-900);
+  outline-offset: 1px;
 }
 
 /* Drag and Drop States */

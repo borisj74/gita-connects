@@ -46,6 +46,10 @@
   --terracotta-800: #743d2f;
   --terracotta-900: #5f352a;
 
+  /* Concept chips */
+  --chip-bg: #f7e3da;
+  --chip-border: #e8c4b4;
+
   /* Typography */
   --font-display: 'Cormorant Garamond', serif;
   --font-ui: 'Inter', sans-serif;

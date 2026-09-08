@@ -145,22 +145,77 @@
   margin-bottom: 0.5rem;
   width: 100%;
   min-width: 0;
-  overflow: hidden;
+  /* Rings and tooltips on the chips must not be clipped */
+  overflow: visible;
 }
 
 .node-concept {
-  background: #F97316;
-  color: white;
-  padding: 0.375rem 0.625rem;
-  border-radius: 6px;
-  font-size: 0.75rem;
+  position: relative;
+  background: var(--chip-bg);
+  color: var(--brown-900);
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-family: var(--font-ui);
+  font-size: 12px;
   font-weight: 500;
+  line-height: 16px;
   text-transform: lowercase;
-  border: none;
+  border: 1px solid var(--chip-border);
   flex: 0 0 auto;
   white-space: nowrap;
-  line-height: 1;
   box-sizing: border-box;
+  cursor: pointer;
+  transition: background var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.node-concept:hover {
+  border-color: var(--terracotta-400);
+}
+
+.node-concept:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(202 117 88 / 0.5);
+}
+
+/* Concept filter on: the matching chip gets a ring, the rest go quiet */
+.node-concept.is-active {
+  box-shadow: 0 0 0 2px rgb(202 117 88 / 0.3);
+}
+
+.node-concept.is-muted {
+  background: var(--beige-200);
+  border-color: var(--beige-200);
+  color: var(--brown-600);
+}
+
+/* Dark tooltip on hover/focus: "Show all verses on <concept>" */
+.node-concept::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%) translateX(-4px);
+  padding: 7px 11px;
+  border-radius: 8px;
+  background: var(--brown-900);
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  text-transform: none;
+  white-space: nowrap;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.16);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 20;
+}
+
+.node-concept:hover::after,
+.node-concept:focus-visible::after {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+  transition-delay: 0.25s;
 }
 
 .node-handle {
