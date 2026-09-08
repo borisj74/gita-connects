@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 're
 import { Save, FolderOpen, X, Trash2, Check, AlertTriangle, ChevronDown, FilePlus, Download } from 'lucide-react';
 import type { Node, Edge } from 'reactflow';
 import SavedNetworksDialog, { type SavedNetwork } from './SavedNetworksDialog.js';
+import ScrimHint from './ScrimHint.js';
 import './SaveLoadControls.css';
 import './Toolbar.css';
 
@@ -349,6 +350,7 @@ const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(
       {/* Save as new */}
       {showSaveModal && (
         <div className="modal-overlay saved-dialog-overlay" onClick={handleCloseSaveModal}>
+          <ScrimHint />
           <div
             className="saved-dialog save-dialog"
             role="dialog"
@@ -454,6 +456,7 @@ const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(
       {/* Delete Confirmation Dialog */}
       {deleteConfirm && (
         <div className="modal-overlay" onClick={handleDeleteCancel}>
+          <ScrimHint />
           <div className="modal-content delete-modal" onClick={(e) => e.stopPropagation()} role="alertdialog" aria-labelledby="delete-title" aria-describedby="delete-desc">
             <div className="modal-header">
               <h3 id="delete-title">Delete Network</h3>

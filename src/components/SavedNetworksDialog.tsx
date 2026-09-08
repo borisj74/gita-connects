@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { X, Pencil, Copy, Trash2, Download, Upload, ChevronDown, Check } from 'lucide-react';
 import type { Node, Edge } from 'reactflow';
+import ScrimHint from './ScrimHint.js';
 import './SavedNetworksDialog.css';
 
 export interface SavedNetwork {
@@ -194,6 +195,7 @@ export default function SavedNetworksDialog({
 
   return (
     <div className="modal-overlay saved-dialog-overlay" onClick={onClose}>
+      <ScrimHint label="Click anywhere to close" />
       <div
         ref={dialogRef}
         className="saved-dialog"

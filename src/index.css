@@ -50,6 +50,10 @@
   --chip-bg: #f7e3da;
   --chip-border: #e8c4b4;
 
+  /* Overlays and keyboard focus */
+  --scrim: rgb(31 26 22 / 0.45);
+  --focus-ring: #3a3530;
+
   /* Typography */
   --font-display: 'Cormorant Garamond', serif;
   --font-ui: 'Inter', sans-serif;
@@ -407,4 +411,15 @@ p, li, dd {
 [data-theme="dark"] .type-chip.selected {
   background: rgba(202, 117, 88, 0.2);
   border-color: rgb(202, 117, 88);
+}
+
+/* Keyboard focus baseline (App 24–26): anything without its own ring gets
+   this one. Mouse clicks never show it. */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+[data-theme="dark"] {
+  --focus-ring: #ece6dd;
 }

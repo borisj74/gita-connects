@@ -1,6 +1,6 @@
 /* Saved networks library (App 32) */
 .saved-dialog-overlay {
-  background: rgb(31 26 22 / 0.45);
+  background: var(--scrim);
   z-index: var(--z-modal);
 }
 

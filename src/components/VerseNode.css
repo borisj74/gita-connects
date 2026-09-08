@@ -21,12 +21,13 @@
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  border: none;
-  background: rgba(177, 93, 67, 0.12);
-  color: rgb(177, 93, 67);
+  border: 1px solid var(--beige-300);
+  background: white;
+  color: var(--brown-700);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
   font-size: 1.25rem;
   line-height: 0;
   cursor: pointer;
@@ -40,9 +41,65 @@
   padding: 0;
 }
 
-.verse-node:hover .node-remove {
+.verse-node:hover .node-remove,
+.node-remove:focus-visible {
   opacity: 1;
   pointer-events: auto;
+}
+
+.node-remove:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(58 53 48 / 0.16), 0 2px 6px rgb(0 0 0 / 0.1);
+}
+
+/* Keyboard focus on the card (App 24): white gap then a dark ring */
+.react-flow__node:focus {
+  outline: none;
+}
+
+.react-flow__node:focus-visible .verse-node {
+  box-shadow: 0 0 0 3px white, 0 0 0 6px var(--focus-ring), 0 4px 14px rgb(0 0 0 / 0.08);
+}
+
+.node-key-hints {
+  display: none;
+  position: absolute;
+  top: calc(100% + 14px);
+  left: 50%;
+  transform: translateX(-50%);
+  align-items: center;
+  gap: 14px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  background: var(--brown-900);
+  color: white;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 16px;
+  white-space: nowrap;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.16);
+  pointer-events: none;
+  z-index: 20;
+}
+
+.node-key-hints span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.node-key-hints kbd {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgb(255 255 255 / 0.14);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 14px;
+}
+
+.react-flow__node:focus-visible .node-key-hints {
+  display: flex;
 }
 
 .node-remove:hover {

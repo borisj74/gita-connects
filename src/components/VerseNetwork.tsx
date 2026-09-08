@@ -772,9 +772,11 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         const dimmed =
           offConcept || (spotlight && node.id !== selectedVerseId && !neighbors.has(node.id));
 
+        const theme = (node.data?.verse as Verse | undefined)?.theme;
         return {
           ...node,
           className: dimmed ? 'node-dimmed' : '',
+          ariaLabel: theme ? `Verse ${node.id}, ${theme}` : `Verse ${node.id}`,
           data: {
             ...node.data,
             isSelected: node.id === selectedVerseId,
@@ -842,6 +844,57 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     [setCenter],
   );
 
+  // Keyboard on a focused card (App 24): Enter opens it, Delete removes it,
+  // arrows move focus to the linked card nearest in that direction. Capture
+  // phase so React Flow's own handlers (which would nudge the node) stay out.
+  const handleCanvasKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      const active = document.activeElement as HTMLElement | null;
+      if (!active || !active.classList.contains('react-flow__node')) return;
+      const id = active.dataset.id;
+      if (!id) return;
+
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+        onVerseSelect(id);
+        return;
+      }
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault();
+        e.stopPropagation();
+        handleRemoveNode(id);
+        return;
+      }
+      const axis = e.key === 'ArrowLeft' || e.key === 'ArrowRight' ? 'x' : e.key === 'ArrowUp' || e.key === 'ArrowDown' ? 'y' : null;
+      if (!axis) return;
+      e.preventDefault();
+      e.stopPropagation();
+
+      const current = nodesRef.current.find((n) => n.id === id);
+      if (!current) return;
+      const linkedIds = new Set<string>();
+      allEdgesRef.current.forEach((edge) => {
+        if (edge.source === id) linkedIds.add(edge.target);
+        if (edge.target === id) linkedIds.add(edge.source);
+      });
+      const linked = nodesRef.current.filter((n) => linkedIds.has(n.id));
+      if (linked.length === 0) return;
+
+      const forward = e.key === 'ArrowRight' || e.key === 'ArrowDown';
+      const pos = (n: Node) => n.position[axis];
+      const ahead = linked.filter((n) => (forward ? pos(n) > pos(current) : pos(n) < pos(current)));
+      // Nearest card in that direction; wrap to the far side when none lies ahead.
+      const pool = ahead.length > 0 ? ahead : linked;
+      const target = pool.reduce((best, n) =>
+        forward ? (pos(n) < pos(best) ? n : best) : (pos(n) > pos(best) ? n : best),
+      );
+      const el = document.querySelector<HTMLElement>(`.react-flow__node[data-id="${target.id}"]`);
+      el?.focus();
+    },
+    [onVerseSelect, handleRemoveNode],
+  );
+
   const removeEdgesByType = useCallback((typeId: string) => {
     commit();
     setAllEdges((eds) =>
@@ -872,6 +925,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       className={`verse-network ${showConnectHint ? 'connect-hint-active' : ''} ${isMobile ? 'is-mobile' : ''}`}
       onDragOver={isMobile ? undefined : handleDragOver}
       onDrop={isMobile ? undefined : handleDrop}
+      onKeyDownCapture={handleCanvasKeyDown}
     >
       <ReactFlow
         nodes={nodes}

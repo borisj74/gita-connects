@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { TriangleAlert } from 'lucide-react';
 import type { Edge } from 'reactflow';
 import type { ConnectionTypeDef } from '../connectionTypes.js';
+import ScrimHint from './ScrimHint.js';
 import './ClearCanvasDialog.css';
 
 interface DeleteLinkTypeDialogProps {
@@ -56,6 +57,7 @@ export default function DeleteLinkTypeDialog({ type, affected, onCancel, onConfi
 
   return (
     <div className="modal-overlay clear-dialog-overlay" onClick={onCancel}>
+      <ScrimHint />
       <div
         ref={dialogRef}
         className="clear-dialog"
@@ -110,6 +112,10 @@ export default function DeleteLinkTypeDialog({ type, affected, onCancel, onConfi
             </button>
           </div>
         </div>
+        <p className="clear-dialog-keynote">
+          <kbd>Esc</kbd>
+          <span>closes and returns focus to Link types. Tab cycles inside this dialog only.</span>
+        </p>
       </div>
     </div>
   );

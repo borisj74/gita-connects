@@ -100,6 +100,13 @@ function VerseNode({ data }: VerseNodeProps) {
       )}
 
       <Handle type="source" position={Position.Bottom} className="node-handle" />
+
+      {/* Shown only while the card itself has keyboard focus (App 24) */}
+      <div className="node-key-hints" aria-hidden="true">
+        <span><kbd>⏎</kbd>Open verse</span>
+        <span><kbd>← →</kbd>Move along links</span>
+        <span><kbd>Del</kbd>Remove</span>
+      </div>
     </div>
   );
 }

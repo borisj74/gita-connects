@@ -1,6 +1,6 @@
 /* Clear canvas confirm (App 14) */
 .clear-dialog-overlay {
-  background: rgb(58 53 48 / 0.35);
+  background: var(--scrim);
   z-index: var(--z-modal);
 }
 
@@ -132,8 +132,33 @@
 }
 
 .clear-dialog button:focus-visible {
-  outline: 2px solid var(--brown-900);
-  outline-offset: 2px;
+  outline: none;
+  box-shadow: 0 0 0 2px var(--beige-50), 0 0 0 5px var(--focus-ring);
+}
+
+/* Keyboard note under the actions (App 26) */
+.clear-dialog-keynote {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  padding: 10px 24px 16px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--brown-600);
+}
+
+.clear-dialog-keynote kbd {
+  flex-shrink: 0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--beige-200);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 14px;
+  color: var(--brown-700);
 }
 
 [data-theme="dark"] .clear-dialog-cancel {

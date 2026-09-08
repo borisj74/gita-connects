@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { TriangleAlert, Save } from 'lucide-react';
+import ScrimHint from './ScrimHint.js';
 import './ClearCanvasDialog.css';
 
 interface ClearCanvasDialogProps {
@@ -61,6 +62,7 @@ export default function ClearCanvasDialog({
 
   return (
     <div className="modal-overlay clear-dialog-overlay" onClick={onCancel}>
+      <ScrimHint />
       <div
         ref={dialogRef}
         className="clear-dialog"
@@ -97,6 +99,10 @@ export default function ClearCanvasDialog({
             </button>
           </div>
         </div>
+        <p className="clear-dialog-keynote">
+          <kbd>Esc</kbd>
+          <span>closes and returns focus to Clear canvas. Tab cycles inside this dialog only.</span>
+        </p>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
+import ScrimHint from './ScrimHint.js';
 import './ShortcutsOverlay.css';
 
 interface ShortcutsOverlayProps {
@@ -26,7 +27,9 @@ const CANVAS: Row[] = [
   { label: 'Redo', keys: [[`${mod}⇧Z`]] },
   { label: 'Save network', keys: [[`${mod}S`]] },
   { label: 'Fit all verses in view', keys: [[`${mod}0`]] },
-  { label: 'Remove selected verse or link', keys: [['Del']] },
+  { label: 'Open the focused verse', keys: [['⏎']] },
+  { label: 'Move focus along links', keys: [['←'], ['→']] },
+  { label: 'Remove focused verse or link', keys: [['Del']] },
   { label: 'Show this list', keys: [['?']] },
 ];
 
@@ -67,6 +70,7 @@ export default function ShortcutsOverlay({ onClose }: ShortcutsOverlayProps) {
 
   return (
     <div className="modal-overlay sc-overlay" onClick={onClose}>
+      <ScrimHint label="Click anywhere to close" />
       <div
         className="sc-dialog"
         role="dialog"
