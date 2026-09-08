@@ -3,6 +3,7 @@ import { Save, FolderOpen, X, Trash2, Check, AlertTriangle, ChevronDown, FilePlu
 import type { Node, Edge } from 'reactflow';
 import SavedNetworksDialog, { type SavedNetwork } from './SavedNetworksDialog.js';
 import ScrimHint from './ScrimHint.js';
+import DeleteNetworkDialog from './DeleteNetworkDialog.js';
 import './SaveLoadControls.css';
 import './Toolbar.css';
 
@@ -453,46 +454,19 @@ const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(
         />
       )}
 
-      {/* Delete Confirmation Dialog */}
-      {deleteConfirm && (
-        <div className="modal-overlay" onClick={handleDeleteCancel}>
-          <ScrimHint />
-          <div className="modal-content delete-modal" onClick={(e) => e.stopPropagation()} role="alertdialog" aria-labelledby="delete-title" aria-describedby="delete-desc">
-            <div className="modal-header">
-              <h3 id="delete-title">Delete Network</h3>
-              <button
-                className="modal-close"
-                onClick={handleDeleteCancel}
-                aria-label="Close"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <div className="modal-body">
-              <div className="delete-warning">
-                <AlertTriangle size={24} className="warning-icon" />
-                <p id="delete-desc">
-                  Are you sure you want to delete <strong>"{deleteConfirm.name}"</strong>? This action cannot be undone.
-                </p>
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button
-                className="modal-button cancel-button"
-                onClick={handleDeleteCancel}
-              >
-                Cancel
-              </button>
-              <button
-                className="modal-button delete-confirm-button"
-                onClick={handleDeleteConfirm}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Delete confirmation */}
+      {deleteConfirm && (() => {
+        const target = savedNetworks.find((n) => n.id === deleteConfirm.id);
+        return (
+          <DeleteNetworkDialog
+            name={deleteConfirm.name}
+            verseCount={target?.nodes.length ?? 0}
+            linkCount={target?.edges.length ?? 0}
+            onCancel={handleDeleteCancel}
+            onConfirm={handleDeleteConfirm}
+          />
+        );
+      })()}
     </>
   );
 });

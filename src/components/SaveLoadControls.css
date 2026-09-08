@@ -336,37 +336,6 @@
   font-size: 0.8125rem;
 }
 
-/* Delete Modal */
-.delete-modal {
-  max-width: 400px;
-}
-
-.delete-warning {
-  display: flex;
-  gap: 1rem;
-  align-items: flex-start;
-}
-
-.warning-icon {
-  color: var(--terracotta-500);
-  flex-shrink: 0;
-}
-
-.delete-warning p {
-  color: var(--brown-700);
-  line-height: 1.5;
-  margin: 0;
-}
-
-.delete-confirm-button {
-  background: var(--terracotta-500);
-  color: white;
-}
-
-.delete-confirm-button:hover {
-  background: var(--terracotta-600);
-}
-
 /* Animations */
 @keyframes fadeIn {
   from {
