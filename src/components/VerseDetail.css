@@ -392,6 +392,22 @@
   text-decoration: underline;
 }
 
+/* Source footer — link out + BBT credit, at the very bottom */
+.vd-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
+  padding-top: 18px;
+  border-top: 1px solid var(--beige-200);
+}
+
+.vd-footer .vedabase-attribution {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
 /* Concept chips — same tinted pill as cards and sidebar */
 .vd-chips {
   display: flex;

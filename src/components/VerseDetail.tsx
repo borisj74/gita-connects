@@ -269,10 +269,6 @@ export default function VerseDetail({
         {verseText.status === 'unavailable' && (
           <div className="vd-muted">Could not load the translation right now.</div>
         )}
-        <a className="vd-link" href={vedabaseUrl(verse)} target="_blank" rel="noopener noreferrer">
-          <ExternalLink size={13} />
-          Open {verse.id} on vedabase.io
-        </a>
       </Disclosure>
 
       {/* Commentary: Prabhupada's purport, fetched at view time from /api/verse
@@ -283,7 +279,6 @@ export default function VerseDetail({
           {purport.map((paragraph, i) => (
             <p key={i} className="vd-purport">{paragraph}</p>
           ))}
-          {live && <div className="vedabase-attribution">{live.attribution}</div>}
         </Disclosure>
       )}
 
@@ -405,6 +400,16 @@ export default function VerseDetail({
           </div>
         </section>
       )}
+
+      {/* Source: link out, plus the BBT credit their display-only permission
+          requires whenever their text is on screen. */}
+      <footer className="vd-footer">
+        <a className="vd-link" href={vedabaseUrl(verse)} target="_blank" rel="noopener noreferrer">
+          <ExternalLink size={13} />
+          Open {verse.id} on vedabase.io
+        </a>
+        {live && <div className="vedabase-attribution">{live.attribution}</div>}
+      </footer>
     </div>
   );
 
