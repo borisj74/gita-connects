@@ -151,6 +151,10 @@ function App() {
     });
   }, []);
 
+  const handleSetAllFilters = useCallback((active: boolean) => {
+    setActiveFilters(active ? new Set(connectionTypes.map((t) => t.id)) : new Set());
+  }, [connectionTypes]);
+
   const handleAddCustomType = useCallback((type: ConnectionTypeDef) => {
     setCustomTypes((prev) => {
       if (prev.some((t) => t.id === type.id)) return prev;
@@ -312,7 +316,9 @@ function App() {
                 connectionTypes={connectionTypes}
                 activeFilters={activeFilters}
                 onToggleFilter={handleToggleFilter}
+                onSetAllFilters={handleSetAllFilters}
                 onRemoveCustomType={handleRemoveCustomType}
+                onAddCustomType={handleAddCustomType}
                 networkEdges={networkEdges}
               />
             </div>
@@ -368,7 +374,9 @@ function App() {
                       connectionTypes={connectionTypes}
                       activeFilters={activeFilters}
                       onToggleFilter={handleToggleFilter}
+                      onSetAllFilters={handleSetAllFilters}
                       onRemoveCustomType={handleRemoveCustomType}
+                      onAddCustomType={handleAddCustomType}
                       networkEdges={networkEdges}
                     />
                   </div>
