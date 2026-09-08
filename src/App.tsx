@@ -313,6 +313,7 @@ function App() {
                 activeFilters={activeFilters}
                 onToggleFilter={handleToggleFilter}
                 onRemoveCustomType={handleRemoveCustomType}
+                networkEdges={networkEdges}
               />
             </div>
             <button
@@ -368,6 +369,7 @@ function App() {
                       activeFilters={activeFilters}
                       onToggleFilter={handleToggleFilter}
                       onRemoveCustomType={handleRemoveCustomType}
+                      networkEdges={networkEdges}
                     />
                   </div>
                   <button

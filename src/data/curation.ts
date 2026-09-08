@@ -33,12 +33,12 @@ export const verseCuration: Record<string, VerseCuration> = {
   '18.66': {
     theme: 'Complete Surrender',
     concepts: ['surrender', 'devotion', 'liberation', 'grace'],
-    summary: '*Sarva-dharman parityajya mam ekam sharanam vraja* — abandon all dharmas and take refuge in Me alone. I shall liberate you from all sins; do not grieve. The Gita\'s final, ultimate instruction: when all systems exhaust themselves, pure surrender remains.',
+    summary: 'Abandon all dharmas and take refuge in Me alone; I shall liberate you from all sins, do not grieve (*sarva-dharman parityajya mam ekam sharanam vraja*). The Gita\'s final, ultimate instruction: when all systems exhaust themselves, pure surrender remains.',
   },
   '4.7': {
     theme: 'Divine Intervention',
     concepts: ['dharma', 'supreme-person', 'grace'],
-    summary: '*Yada yada hi dharmasya glanir bhavati* — whenever righteousness declines and unrighteousness rises, the Divine manifests. This is not a one-time event but a cyclical principle: when the world loses its way, grace appears in a form suited to the age.',
+    summary: 'Whenever righteousness declines and unrighteousness rises, the Divine manifests (*yada yada hi dharmasya glanir bhavati*). This is not a one-time event but a cyclical principle: when the world loses its way, grace appears in a form suited to the age.',
   },
   '9.22': {
     theme: 'Divine Care',
@@ -143,7 +143,7 @@ export const verseCuration: Record<string, VerseCuration> = {
   '6.17': {
     theme: 'Balance in Life',
     concepts: ['equanimity', 'unity', 'discipline'],
-    summary: '*Yukta-ahara-vihara* — moderation in eating, recreation, action, sleep, and wakefulness — is the foundation of yoga. Extremes (excess or deprivation) both block realization. The middle path makes yoga the destroyer of suffering.',
+    summary: 'Moderation in eating, recreation, action, sleep, and wakefulness (*yukta-ahara-vihara*) is the foundation of yoga. Extremes (excess or deprivation) both block realization. The middle path makes yoga the destroyer of suffering.',
   },
   '7.7': {
     theme: 'Supreme Reality',

@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { Handle, Position } from 'reactflow';
 import { X, Plus } from 'lucide-react';
 import type { Verse } from '../types.js';
+import { useVerseText } from '../hooks/useVerseText.js';
 import './VerseNode.css';
 
 interface VerseNodeProps {
@@ -17,6 +18,16 @@ interface VerseNodeProps {
 
 function VerseNode({ data }: VerseNodeProps) {
   const { verse, onSelect, onRemove, onExpand, isSelected, connectedCount = 0 } = data;
+
+  // Cards always lead with English. Curated verses carry a summary; the rest
+  // show the first line of the translation, fetched on demand and cached for
+  // the session (see useVerseText for why it is never bundled).
+  const text = useVerseText(verse.summary ? null : verse.id);
+  // Summaries use *asterisks* for Sanskrit terms; cards render plain text.
+  const body = (
+    verse.summary ??
+    (text.status === 'ready' ? text.text.translation : null)
+  )?.replace(/\*/g, '');
 
   const handleRemove = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -46,9 +57,16 @@ function VerseNode({ data }: VerseNodeProps) {
         </div>
       </div>
 
-      {/* Uncurated verses have no summary of their own, so show the
-          transliteration — every verse has one. */}
-      <div className="node-translation">{verse.summary ?? verse.transliteration}</div>
+      {body ? (
+        <div className="node-translation">{body}</div>
+      ) : (
+        <div
+          className={`node-translation node-translation-fallback ${text.status === 'loading' ? 'is-loading' : ''}`}
+          aria-busy={text.status === 'loading'}
+        >
+          {text.status === 'loading' ? 'Loading translation…' : verse.transliteration}
+        </div>
+      )}
 
       <div className="node-concepts">
         {verse.concepts.map(concept => (
