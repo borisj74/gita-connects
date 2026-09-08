@@ -421,3 +421,31 @@
     display: none;
   }
 }
+
+/* Autosave status, sits between search and the tools group */
+.tb-autosave {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 10px;
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  line-height: 16px;
+  color: var(--brown-600);
+  white-space: nowrap;
+  transition: opacity var(--transition-base);
+}
+
+.tb-autosave > svg {
+  color: var(--sage-600);
+}
+
+.tb-autosave.is-saving {
+  opacity: 0.7;
+}
+
+@media (max-width: 1180px) {
+  .tb-autosave {
+    display: none;
+  }
+}

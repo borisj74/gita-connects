@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ReactFlowProvider } from 'reactflow';
 import type { Node, Edge } from 'reactflow';
-import { PanelRightOpen, Moon, Sun, Menu, Save, FolderOpen, LayoutGrid, Trash2, Search, BookOpen } from 'lucide-react';
+import { PanelRightOpen, Moon, Sun, Menu, Save, FolderOpen, LayoutGrid, Trash2, Search, BookOpen, Check } from 'lucide-react';
 import { useMediaQuery, MOBILE_BREAKPOINT } from './hooks/useMediaQuery.js';
 import ChapterSidebar from './components/ChapterSidebar.js';
 import VerseNetwork, { type VerseNetworkRef } from './components/VerseNetwork.js';
@@ -12,6 +12,9 @@ import SaveLoadControls, { type SaveLoadControlsRef } from './components/SaveLoa
 import OverflowMenu from './components/OverflowMenu.js';
 import ClearCanvasDialog from './components/ClearCanvasDialog.js';
 import UndoToast from './components/UndoToast.js';
+import RestoreSessionCard from './components/RestoreSessionCard.js';
+import DeleteLinkTypeDialog from './components/DeleteLinkTypeDialog.js';
+import { readAutosave, clearAutosave, type Autosave } from './autosave.js';
 import './components/Toolbar.css';
 import {
   PREDEFINED_CONNECTION_TYPES,
@@ -32,9 +35,17 @@ function App() {
   const [customTypes, setCustomTypes] = useState<ConnectionTypeDef[]>(() =>
     loadCustomConnectionTypes(),
   );
+  // Custom types the reader deleted this session. They stay resolvable (colour,
+  // label) so that undoing the deletion brings the links back intact, but
+  // they no longer appear in the Link types menu.
+  const [retiredTypes, setRetiredTypes] = useState<ConnectionTypeDef[]>([]);
   const connectionTypes = useMemo(
     () => [...PREDEFINED_CONNECTION_TYPES, ...customTypes],
     [customTypes],
+  );
+  const renderableTypes = useMemo(
+    () => [...connectionTypes, ...retiredTypes],
+    [connectionTypes, retiredTypes],
   );
   const [activeFilters, setActiveFilters] = useState<Set<string>>(() =>
     loadActiveFilters([...PREDEFINED_CONNECTION_TYPES, ...loadCustomConnectionTypes()].map((t) => t.id)),
@@ -48,6 +59,11 @@ function App() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
   const [clearedToast, setClearedToast] = useState<{ verses: number; links: number } | null>(null);
+  const [removedLinksToast, setRemovedLinksToast] = useState<string | null>(null);
+  // Pending autosave from a previous session, until the user restores or declines.
+  const [pendingRestore, setPendingRestore] = useState<Autosave | null>(() => readAutosave());
+  const [autosaveStatus, setAutosaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [typeToDelete, setTypeToDelete] = useState<ConnectionTypeDef | null>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const verseNetworkRef = useRef<VerseNetworkRef>(null);
   const saveLoadRef = useRef<SaveLoadControlsRef>(null);
@@ -168,15 +184,44 @@ function App() {
     });
   }, []);
 
-  const handleRemoveCustomType = useCallback((typeId: string) => {
-    setCustomTypes((prev) => prev.filter((t) => t.id !== typeId));
-    setActiveFilters((prev) => {
-      const updated = new Set(prev);
-      updated.delete(typeId);
-      return updated;
+  const removeCustomType = useCallback((typeId: string) => {
+    setCustomTypes((prev) => {
+      const type = prev.find((t) => t.id === typeId);
+      if (type) setRetiredTypes((r) => (r.some((t) => t.id === typeId) ? r : [...r, type]));
+      return prev.filter((t) => t.id !== typeId);
     });
+    // The filter stays on so that an undo shows the restored links.
     verseNetworkRef.current?.removeEdgesByType?.(typeId);
   }, []);
+
+  // Removing a type deletes every canvas edge of that type, so confirm first,
+  // naming the count. Nothing to lose → no dialog.
+  const edgesOfType = useCallback(
+    (typeId: string) => networkEdges.filter((e) => (e.data as { typeId?: string } | undefined)?.typeId === typeId),
+    [networkEdges],
+  );
+  const handleRemoveCustomType = useCallback((typeId: string) => {
+    const type = customTypes.find((t) => t.id === typeId);
+    if (!type) return;
+    if (edgesOfType(typeId).length === 0) {
+      removeCustomType(typeId);
+      return;
+    }
+    setTypeToDelete(type);
+  }, [customTypes, edgesOfType, removeCustomType]);
+
+  const handleRestoreSession = useCallback(() => {
+    if (!pendingRestore) return;
+    verseNetworkRef.current?.loadNetwork(pendingRestore.nodes, pendingRestore.edges);
+    setPendingRestore(null);
+  }, [pendingRestore]);
+
+  const handleStartFresh = useCallback(() => {
+    clearAutosave();
+    setPendingRestore(null);
+  }, []);
+
+  const handleAutosaveStatus = useCallback((status: 'saving' | 'saved') => setAutosaveStatus(status), []);
 
   const toggleTheme = useCallback(() => {
     setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
@@ -199,6 +244,7 @@ function App() {
     const verses = networkVerses.size;
     const links = networkEdges.length;
     verseNetworkRef.current?.handleClearAll?.();
+    setRemovedLinksToast(null);
     setClearedToast({ verses, links });
   };
 
@@ -208,6 +254,20 @@ function App() {
   }, []);
 
   const dismissClearedToast = useCallback(() => setClearedToast(null), []);
+
+  const handleEdgesRemoved = useCallback((removed: { source: string; target: string; label: string }[]) => {
+    setClearedToast(null);
+    setRemovedLinksToast(
+      removed.length === 1
+        ? `Link removed — ${removed[0].source} → ${removed[0].target} · ${removed[0].label}`
+        : `${removed.length} links removed`,
+    );
+  }, []);
+  const undoRemovedLinks = useCallback(() => {
+    setRemovedLinksToast(null);
+    verseNetworkRef.current?.undo?.();
+  }, []);
+  const dismissRemovedLinks = useCallback(() => setRemovedLinksToast(null), []);
 
   // The toast only makes sense while the canvas is still empty — if the user
   // undoes via ⌘Z or adds a verse, it has nothing left to offer.
@@ -311,6 +371,16 @@ function App() {
 
           {/* Canvas tools, top-right */}
           <div className="canvas-actions">
+            {autosaveStatus !== 'idle' && networkVerses.size > 0 && (
+              <span
+                className={`tb-autosave tb-desktop-only ${autosaveStatus === 'saving' ? 'is-saving' : ''}`}
+                role="status"
+                aria-live="polite"
+              >
+                <Check size={14} />
+                {autosaveStatus === 'saving' ? 'Saving…' : 'All changes saved'}
+              </span>
+            )}
             <div className="tb-desktop-only">
               <ConnectionFilters
                 connectionTypes={connectionTypes}
@@ -417,11 +487,22 @@ function App() {
           </div>
           </div>
 
+          {removedLinksToast && !clearedToast && (
+            <UndoToast message={removedLinksToast} onUndo={undoRemovedLinks} onDismiss={dismissRemovedLinks} />
+          )}
           {clearedToast && (
             <UndoToast
               message={`Canvas cleared — ${clearedToast.verses} ${clearedToast.verses === 1 ? 'verse' : 'verses'}, ${clearedToast.links} ${clearedToast.links === 1 ? 'link' : 'links'}`}
               onUndo={undoClear}
               onDismiss={dismissClearedToast}
+            />
+          )}
+
+          {pendingRestore && networkVerses.size === 0 && (
+            <RestoreSessionCard
+              autosave={pendingRestore}
+              onRestore={handleRestoreSession}
+              onStartFresh={handleStartFresh}
             />
           )}
 
@@ -435,8 +516,11 @@ function App() {
                 onToggleFilter={handleToggleFilter}
                 onNetworkVersesChange={handleNetworkVersesChange}
                 onNetworkEdgesChange={setNetworkEdges}
-                connectionTypes={connectionTypes}
+                connectionTypes={renderableTypes}
                 onAddCustomType={handleAddCustomType}
+                onAutosaveStatus={handleAutosaveStatus}
+                showEmptyState={!pendingRestore}
+                onEdgesRemoved={handleEdgesRemoved}
                 isMobile={isMobile}
                 theme={theme}
               />
@@ -478,6 +562,18 @@ function App() {
           onCancel={() => setClearDialogOpen(false)}
           onConfirm={confirmClearCanvas}
           onSaveFirst={saveBeforeClear}
+        />
+      )}
+
+      {typeToDelete && (
+        <DeleteLinkTypeDialog
+          type={typeToDelete}
+          affected={edgesOfType(typeToDelete.id)}
+          onCancel={() => setTypeToDelete(null)}
+          onConfirm={() => {
+            removeCustomType(typeToDelete.id);
+            setTypeToDelete(null);
+          }}
         />
       )}
 

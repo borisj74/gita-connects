@@ -22,6 +22,7 @@ import ConnectionDialog from './ConnectionDialog.js';
 import ZoomControls from './ZoomControls.js';
 import type { ConnectionTypeDef } from '../connectionTypes.js';
 import { getTypeColor, getTypeLabel, isDirectionalType } from '../connectionTypes.js';
+import { writeAutosave } from '../autosave.js';
 import './VerseNetwork.css';
 
 interface VerseNetworkProps {
@@ -34,6 +35,12 @@ interface VerseNetworkProps {
   connectionTypes: ConnectionTypeDef[];
   onAddCustomType: (type: ConnectionTypeDef) => void;
   onHistoryChange?: (canUndo: boolean, canRedo: boolean) => void;
+  /** Autosave lifecycle: 'saving' while a write is pending, 'saved' after. */
+  onAutosaveStatus?: (status: 'saving' | 'saved') => void;
+  /** Hide the empty-state card (e.g. while a restore prompt is showing). */
+  showEmptyState?: boolean;
+  /** Links the reader just removed (popover or Delete key), for an undo toast. */
+  onEdgesRemoved?: (removed: { source: string; target: string; label: string }[]) => void;
   isMobile?: boolean;
   theme?: 'light' | 'dark';
 }
@@ -131,6 +138,9 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       connectionTypes,
       onAddCustomType,
       onHistoryChange,
+      onAutosaveStatus,
+      showEmptyState = true,
+      onEdgesRemoved,
       isMobile = false,
       theme = 'light',
     },
@@ -222,6 +232,22 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     useEffect(() => {
       onHistoryChange?.(canUndo, canRedo);
     }, [canUndo, canRedo, onHistoryChange]);
+
+    // Autosave: write the canvas shortly after it settles. An empty canvas
+    // only clears the store once this session has actually held content —
+    // otherwise the initial mount (run twice under StrictMode) would wipe a
+    // restore that is still waiting for the user's answer.
+    const hadContent = useRef(false);
+    useEffect(() => {
+      if (nodes.length === 0 && !hadContent.current) return;
+      hadContent.current = true;
+      onAutosaveStatus?.('saving');
+      const t = setTimeout(() => {
+        writeAutosave(nodesRef.current, allEdgesRef.current);
+        onAutosaveStatus?.('saved');
+      }, 800);
+      return () => clearTimeout(t);
+    }, [nodes, allEdges, onAutosaveStatus]);
 
     useEffect(() => {
       const onKey = (e: KeyboardEvent) => {
@@ -637,10 +663,25 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
   // Re-apply current registry styling, filter, and parallel-edge offsets
   // entirely in derived state so labels never overlap and color tweaks
   // propagate immediately.
-  const handleDeleteEdge = useCallback((edgeId: string) => {
+  // Single removal path for links: popover "Remove connection" and the
+  // Delete/Backspace key both land here, so both are undoable and both
+  // raise the toast.
+  const removeEdges = useCallback((edgeIds: string[]) => {
+    const ids = new Set(edgeIds);
+    const removed = allEdgesRef.current.filter((e) => ids.has(e.id));
+    if (removed.length === 0) return;
     commit();
-    setAllEdges((eds) => eds.filter((e) => e.id !== edgeId));
-  }, [commit]);
+    setAllEdges((eds) => eds.filter((e) => !ids.has(e.id)));
+    onEdgesRemoved?.(
+      removed.map((e) => ({
+        source: e.source,
+        target: e.target,
+        label: getTypeLabel(connectionTypes, (e.data?.typeId as string | undefined) ?? (e.label as string) ?? ''),
+      })),
+    );
+  }, [commit, connectionTypes, onEdgesRemoved]);
+
+  const handleDeleteEdge = useCallback((edgeId: string) => removeEdges([edgeId]), [removeEdges]);
 
   const filteredEdges = useMemo(() => {
     const enabled = allEdges.filter((edge) => {
@@ -783,13 +824,14 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
   );
 
   const removeEdgesByType = useCallback((typeId: string) => {
+    commit();
     setAllEdges((eds) =>
       eds.filter((edge) => {
         const t = (edge.data?.typeId as string | undefined) ?? (edge.label as string);
         return t !== typeId;
       }),
     );
-  }, []);
+  }, [commit]);
 
   useImperativeHandle(ref, () => ({
     handleAutoArrange,
@@ -819,6 +861,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onNodesDelete={handleNodesDelete}
+        onEdgesDelete={(deleted) => removeEdges(deleted.map((e) => e.id))}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         deleteKeyCode={isMobile ? null : ['Delete', 'Backspace']}
@@ -882,7 +925,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         </div>
       )}
 
-      {nodes.length === 0 && (
+      {nodes.length === 0 && showEmptyState && (
         <div className="network-empty-state">
           <h2 className="network-empty-state-title">Start Your Journey</h2>
           <p className="network-empty-state-description">
