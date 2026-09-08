@@ -161,3 +161,9 @@
     padding: 0.625rem 0.875rem;
   }
 }
+
+/* Directional arrowheads: open chevron, rounded like the edge stroke */
+.react-flow__arrowhead polyline {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

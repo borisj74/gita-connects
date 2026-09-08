@@ -104,7 +104,7 @@ function buildEdge(
     // Directional relations (sequential, progression, goal) point from the
     // earlier or more basic verse to the later or resolving one.
     markerEnd: isDirectionalType(connectionTypes, conn.type)
-      ? { type: MarkerType.ArrowClosed, color, width: 18, height: 18 }
+      ? { type: MarkerType.Arrow, color, width: 16, height: 16, strokeWidth: 1.6 }
       : undefined,
     label,
     style: {
@@ -677,7 +677,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         // Only directional relations get an arrowhead; this pass rebuilds
         // every edge, so it must decide again rather than inherit.
         markerEnd: isDirectionalType(connectionTypes, typeId)
-          ? { type: MarkerType.ArrowClosed, color, width: 18, height: 18 }
+          ? { type: MarkerType.Arrow, color, width: 16, height: 16, strokeWidth: 1.6 }
           : undefined,
         data: {
           ...edge.data,

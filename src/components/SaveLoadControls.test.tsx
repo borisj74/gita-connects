@@ -30,7 +30,7 @@ describe('SaveLoadControls — saving', () => {
     await user.click(screen.getByRole('button', { name: 'Networks' }));
     await user.click(screen.getByRole('menuitem', { name: 'Save as new…' }));
     await user.type(screen.getByPlaceholderText('e.g., Karma Yoga Study'), 'Karma study');
-    await user.click(screen.getByRole('button', { name: 'Save Network' }));
+    await user.click(screen.getByRole('button', { name: 'Save network' }));
 
     const saved = stored();
     expect(saved).toHaveLength(1);
@@ -47,7 +47,7 @@ describe('SaveLoadControls — saving', () => {
     await user.click(screen.getByRole('button', { name: 'Networks' }));
     await user.click(screen.getByRole('menuitem', { name: 'Save as new…' }));
     await user.type(screen.getByPlaceholderText('e.g., Karma Yoga Study'), '   Padded   ');
-    await user.click(screen.getByRole('button', { name: 'Save Network' }));
+    await user.click(screen.getByRole('button', { name: 'Save network' }));
     expect(stored()[0].name).toBe('Padded');
   });
 
@@ -56,7 +56,7 @@ describe('SaveLoadControls — saving', () => {
     await user.click(screen.getByRole('button', { name: 'Networks' }));
     await user.click(screen.getByRole('menuitem', { name: 'Save as new…' }));
     await user.type(screen.getByPlaceholderText('e.g., Karma Yoga Study'), 'Mine');
-    await user.click(screen.getByRole('button', { name: 'Save Network' }));
+    await user.click(screen.getByRole('button', { name: 'Save network' }));
     expect(screen.getByText('Network "Mine" saved!')).toBeInTheDocument();
   });
 
@@ -64,10 +64,10 @@ describe('SaveLoadControls — saving', () => {
     const { user } = setup();
     await user.click(screen.getByRole('button', { name: 'Networks' }));
     await user.click(screen.getByRole('menuitem', { name: 'Save as new…' }));
-    expect(screen.getByRole('button', { name: 'Save Network' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Save network' })).toBeDisabled();
 
     await user.type(screen.getByPlaceholderText('e.g., Karma Yoga Study'), 'X');
-    expect(screen.getByRole('button', { name: 'Save Network' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Save network' })).toBeEnabled();
   });
 
   it('refuses to save an empty network', async () => {
@@ -96,7 +96,7 @@ describe('SaveLoadControls — saving', () => {
     await user.click(screen.getByRole('button', { name: 'Networks' }));
     await user.click(screen.getByRole('menuitem', { name: 'Save as new…' }));
     await user.type(screen.getByPlaceholderText('e.g., Karma Yoga Study'), 'Too big');
-    await user.click(screen.getByRole('button', { name: 'Save Network' }));
+    await user.click(screen.getByRole('button', { name: 'Save network' }));
 
     expect(
       screen.getByText(/browser storage is full/i),
@@ -107,8 +107,7 @@ describe('SaveLoadControls — saving', () => {
     const { user } = setup();
     await user.click(screen.getByRole('button', { name: 'Networks' }));
     await user.click(screen.getByRole('menuitem', { name: 'Save as new…' }));
-    expect(screen.getByText('1 verses')).toBeInTheDocument();
-    expect(screen.getByText('1 connections')).toBeInTheDocument();
+    expect(screen.getByText('1 verse · 1 link on the canvas')).toBeInTheDocument();
   });
 });
 
