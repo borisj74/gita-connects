@@ -14,11 +14,11 @@ export default function ZoomControls() {
   const minZoom = useStore((s) => s.minZoom);
   const maxZoom = useStore((s) => s.maxZoom);
 
-  const fitAll = () => fitView({ duration: 400, padding: 0.2 });
+  const fitAll = () => fitView({ duration: 400, padding: 0.2, maxZoom: 1 });
   const fitSelection = () => {
     const selected = getNodes().filter((n) => n.selected);
     if (selected.length === 0) return;
-    fitView({ duration: 400, padding: 0.4, nodes: selected });
+    fitView({ duration: 400, padding: 0.4, nodes: selected, maxZoom: 1 });
   };
 
   useEffect(() => {

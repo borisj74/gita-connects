@@ -441,7 +441,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     });
 
     setTimeout(() => {
-      fitView({ duration: 400, padding: 0.2 });
+      fitView({ duration: 400, padding: 0.2, maxZoom: 1 });
     }, 50);
   }, [setNodes, fitView, commit]);
 
@@ -488,7 +488,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     setNetworkVerses(prev => new Set([...prev, ...connectedVerseIds]));
 
     setTimeout(() => {
-      fitView({ duration: 400, padding: 0.2 });
+      fitView({ duration: 400, padding: 0.2, maxZoom: 1 });
     }, 100);
   }, [networkVerses, selectedVerseId, onVerseSelect, handleRemoveNode, setNodes, setAllEdges, fitView, connectionTypes, commit]);
 
@@ -587,7 +587,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       if (newEdges.length > 0) setAllEdges((eds) => [...eds, ...newEdges]);
 
       setNetworkVerses(finalSet);
-      setTimeout(() => fitView({ duration: 400, padding: 0.2 }), 100);
+      setTimeout(() => fitView({ duration: 400, padding: 0.2, maxZoom: 1 }), 100);
     },
     [onVerseSelect, handleRemoveNode, selectedVerseId, connectionTypes, setNodes, setAllEdges, fitView, commit],
   );
@@ -647,7 +647,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       });
 
       setNetworkVerses(finalSet);
-      setTimeout(() => fitView({ duration: 400, padding: 0.2 }), 120);
+      setTimeout(() => fitView({ duration: 400, padding: 0.2, maxZoom: 1 }), 120);
     },
     [commit, onVerseSelect, handleRemoveNode, selectedVerseId, connectionTypes, setNodes, setAllEdges, fitView],
   );
@@ -831,7 +831,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       setNetworkVerses(verseIds);
 
       setTimeout(() => {
-        fitView({ duration: 400, padding: 0.2 });
+        fitView({ duration: 400, padding: 0.2, maxZoom: 1 });
       }, 100);
     }, 50);
   }, [setNodes, setAllEdges, onVerseSelect, handleRemoveNode, fitView]);
@@ -954,6 +954,8 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         edgeTypes={edgeTypes}
         deleteKeyCode={isMobile ? null : ['Delete', 'Backspace']}
         fitView
+        // Never zoom past 100% just to fill the view with one card.
+        fitViewOptions={{ padding: 0.2, maxZoom: 1 }}
         minZoom={0.2}
         maxZoom={1.5}
         defaultViewport={{ x: 0, y: 0, zoom: isMobile ? 0.65 : 0.8 }}
