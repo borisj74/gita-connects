@@ -26,6 +26,7 @@ import {
   type ConnectionTypeDef,
 } from './connectionTypes.js';
 import { verses } from './data/index.js';
+import { useNotes } from './notes.js';
 import type { Concept } from './concepts.js';
 import './App.css';
 
@@ -35,6 +36,11 @@ function App() {
   // Concept chip acting as a filter (App 23): the sidebar narrows to verses
   // that share it and unrelated cards on the canvas fade back.
   const [conceptFilter, setConceptFilter] = useState<string | null>(null);
+  // Personal notes (App 29–31). `noteEdit` bumps to open the panel's editor.
+  const notes = useNotes();
+  const noteVerseIds = useMemo(() => new Set(Object.keys(notes)), [notes]);
+  const [noteEdit, setNoteEdit] = useState<{ verseId: string; seq: number } | null>(null);
+  const [noteToast, setNoteToast] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(
     () => typeof window !== 'undefined' && window.innerWidth > 768,
   );
@@ -102,6 +108,21 @@ function App() {
     document.addEventListener('mousedown', onDown);
     return () => document.removeEventListener('mousedown', onDown);
   }, [mobileMenuOpen]);
+
+  const handleOpenNote = useCallback((verseId: string) => {
+    setSelectedVerseId(verseId);
+    setNoteEdit((prev) => ({ verseId, seq: (prev?.seq ?? 0) + 1 }));
+  }, []);
+
+  const handleNoteSaved = useCallback((verseId: string) => {
+    setNoteToast(`Note saved to ${verseId}`);
+  }, []);
+
+  useEffect(() => {
+    if (!noteToast) return;
+    const t = setTimeout(() => setNoteToast(null), 2500);
+    return () => clearTimeout(t);
+  }, [noteToast]);
 
   const handleVerseSelect = useCallback((verseId: string) => {
     setSelectedVerseId(verseId);
@@ -172,11 +193,18 @@ function App() {
       if (e.key.toLowerCase() === 'b' && !e.metaKey && !e.ctrlKey && !e.altKey) {
         e.preventDefault();
         setSidebarOpen((v) => !v);
+        return;
+      }
+
+      // "N" — note on the open verse (a focused card handles its own N)
+      if (e.key.toLowerCase() === 'n' && !e.metaKey && !e.ctrlKey && !e.altKey && selectedVerseId) {
+        e.preventDefault();
+        handleOpenNote(selectedVerseId);
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selectedVerseId, searchOpen, shortcutsOpen, conceptFilter]);
+  }, [selectedVerseId, searchOpen, shortcutsOpen, conceptFilter, handleOpenNote]);
 
   // Clicking the active chip again clears the filter.
   const handleConceptSelect = useCallback((concept: string) => {
@@ -536,6 +564,12 @@ function App() {
               {autosaveStatus === 'saving' ? 'Saving…' : 'All changes saved'}
             </div>
           )}
+          {noteToast && (
+            <div className="note-toast" role="status" aria-live="polite">
+              <Check size={15} strokeWidth={2.6} />
+              {noteToast}
+            </div>
+          )}
           {removedLinksToast && !clearedToast && (
             <UndoToast message={removedLinksToast} onUndo={undoRemovedLinks} onDismiss={dismissRemovedLinks} />
           )}
@@ -563,6 +597,8 @@ function App() {
                 selectedVerseId={selectedVerseId}
                 conceptFilter={conceptFilter}
                 onConceptSelect={handleConceptSelect}
+                noteVerseIds={noteVerseIds}
+                onOpenNote={handleOpenNote}
                 activeFilters={activeFilters}
                 onToggleFilter={handleToggleFilter}
                 onNetworkVersesChange={handleNetworkVersesChange}
@@ -584,7 +620,9 @@ function App() {
 
         {selectedVerseId && (
           <VerseDetail
-            key={selectedVerseId}
+            key={`${selectedVerseId}:${noteEdit?.verseId === selectedVerseId ? noteEdit.seq : 0}`}
+            startEditingNote={noteEdit?.verseId === selectedVerseId}
+            onNoteSaved={handleNoteSaved}
             verseId={selectedVerseId}
             onClose={handleCloseDetail}
             networkVerses={networkVerses}

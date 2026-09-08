@@ -19,8 +19,8 @@
 
 .node-remove {
   position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
+  top: -12px;
+  right: -12px;
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -124,9 +124,71 @@
   align-items: center;
   justify-content: center;
   margin-bottom: 0.75rem;
-  padding-right: 1.75rem;
+  padding-right: 2.25rem;
   min-width: 0;
   min-height: 2.5rem;
+}
+
+/* Note button (App 29): filled when a note exists, quiet add otherwise */
+.node-note {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: var(--sage-100);
+  color: var(--sage-600);
+  cursor: pointer;
+  transition: background var(--transition-base), color var(--transition-base);
+}
+
+.node-note:hover {
+  background: var(--sage-300);
+}
+
+.node-note.has-note {
+  background: var(--sage-500);
+  color: white;
+}
+
+.node-note.has-note:hover {
+  background: var(--sage-600);
+}
+
+.node-note::after {
+  content: attr(data-tip) '  N';
+  position: absolute;
+  right: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%) translateX(4px);
+  padding: 7px 11px;
+  border-radius: 8px;
+  background: var(--brown-900);
+  color: white;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  white-space: pre;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.16);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 20;
+}
+
+.node-note:hover::after,
+.node-note:focus-visible::after {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+  transition-delay: 0.25s;
 }
 
 .node-verse-id {

@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { Handle, Position } from 'reactflow';
-import { X, Plus } from 'lucide-react';
+import { X, Plus, AlignLeft, FilePlus2 } from 'lucide-react';
 import type { Verse } from '../types.js';
 import { useVerseText } from '../hooks/useVerseText.js';
 import './VerseNode.css';
@@ -16,11 +16,17 @@ interface VerseNodeProps {
     /** Concept chip acting as a filter (App 23), if any. */
     conceptFilter?: string | null;
     onConceptSelect?: (concept: string) => void;
+    /** Personal note (App 29): badge when present, add button otherwise. */
+    hasNote?: boolean;
+    onOpenNote?: () => void;
   };
 }
 
 function VerseNode({ data }: VerseNodeProps) {
-  const { verse, onSelect, onRemove, onExpand, isSelected, connectedCount = 0, conceptFilter = null, onConceptSelect } = data;
+  const {
+    verse, onSelect, onRemove, onExpand, isSelected, connectedCount = 0,
+    conceptFilter = null, onConceptSelect, hasNote = false, onOpenNote,
+  } = data;
 
   // Cards always lead with English. Curated verses carry a summary; the rest
   // show the first line of the translation, fetched on demand and cached for
@@ -58,6 +64,20 @@ function VerseNode({ data }: VerseNodeProps) {
         <div className={`node-theme ${verse.curated && !verse.reviewed ? 'unreviewed' : ''}`}>
           {verse.theme ?? 'Uncurated'}
         </div>
+        {onOpenNote && (
+          <button
+            type="button"
+            className={`node-note nodrag ${hasNote ? 'has-note' : ''}`}
+            data-tip={hasNote ? 'Read your note' : 'Add a note'}
+            aria-label={hasNote ? `Read your note on ${verse.id}` : `Add a note to ${verse.id}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenNote();
+            }}
+          >
+            {hasNote ? <AlignLeft size={15} strokeWidth={2.2} /> : <FilePlus2 size={15} strokeWidth={2.2} />}
+          </button>
+        )}
       </div>
 
       {body ? (

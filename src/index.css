@@ -52,6 +52,7 @@
 
   /* Overlays and keyboard focus */
   --scrim: rgb(31 26 22 / 0.45);
+  --note-bg: #f3f5ef;
   --focus-ring: #3a3530;
 
   /* Typography */

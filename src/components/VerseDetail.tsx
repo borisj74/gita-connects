@@ -9,6 +9,7 @@ import { clusterLabel } from '../clusters.js';
 import { suggestSimilar, suggestionConnection } from '../suggestions.js';
 import { useBottomSheet } from '../hooks/useBottomSheet.js';
 import { PREDEFINED_CONNECTION_TYPES, getTypeLabel } from '../connectionTypes.js';
+import NoteSection from './NoteSection.js';
 import './VerseDetail.css';
 
 interface VerseDetailProps {
@@ -20,6 +21,9 @@ interface VerseDetailProps {
   connectedNeighbors: Set<string>;
   /** Move to another verse (prev/next in the chapter). */
   onNavigate?: (verseId: string) => void;
+  /** Open the panel with the note editor already active. */
+  startEditingNote?: boolean;
+  onNoteSaved?: (verseId: string) => void;
   isMobile?: boolean;
 }
 
@@ -95,6 +99,8 @@ export default function VerseDetail({
   onAddSuggestion,
   connectedNeighbors,
   onNavigate,
+  startEditingNote = false,
+  onNoteSaved,
   isMobile = false,
 }: VerseDetailProps) {
   const { sheetClassName, sheetStyle, grabberProps } = useBottomSheet({
@@ -281,6 +287,8 @@ export default function VerseDetail({
           ))}
         </Disclosure>
       )}
+
+      <NoteSection verseId={verse.id} startEditing={startEditingNote} onSaved={onNoteSaved} />
 
       {/* Key concepts */}
       {verse.concepts.length > 0 && (

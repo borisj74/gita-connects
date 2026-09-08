@@ -33,6 +33,9 @@ interface VerseNetworkProps {
   /** Concept chip acting as a filter (App 23): non-matching cards fade back. */
   conceptFilter?: string | null;
   onConceptSelect?: (concept: string) => void;
+  /** Verses with a personal note (App 29) and the way to open one. */
+  noteVerseIds?: ReadonlySet<string>;
+  onOpenNote?: (verseId: string) => void;
   activeFilters: Set<string>;
   onToggleFilter?: (type: string) => void;
   onNetworkVersesChange: (verses: Set<string>) => void;
@@ -144,6 +147,8 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       selectedVerseId,
       conceptFilter = null,
       onConceptSelect,
+      noteVerseIds,
+      onOpenNote,
       activeFilters,
       onNetworkVersesChange,
       onNetworkEdgesChange,
@@ -783,11 +788,13 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
             connectedCount,
             conceptFilter,
             onConceptSelect,
+            hasNote: noteVerseIds?.has(node.id) ?? false,
+            onOpenNote: onOpenNote ? () => onOpenNote(node.id) : undefined,
           },
         };
       });
     });
-  }, [selectedVerseId, networkVerses, allEdges, setNodes, conceptFilter, onConceptSelect]);
+  }, [selectedVerseId, networkVerses, allEdges, setNodes, conceptFilter, onConceptSelect, noteVerseIds, onOpenNote]);
 
   const getNetworkState = useCallback(() => {
     return { nodes, edges: allEdges };
@@ -866,6 +873,12 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         handleRemoveNode(id);
         return;
       }
+      if (e.key.toLowerCase() === 'n' && !e.metaKey && !e.ctrlKey && !e.altKey && onOpenNote) {
+        e.preventDefault();
+        e.stopPropagation();
+        onOpenNote(id);
+        return;
+      }
       const axis = e.key === 'ArrowLeft' || e.key === 'ArrowRight' ? 'x' : e.key === 'ArrowUp' || e.key === 'ArrowDown' ? 'y' : null;
       if (!axis) return;
       e.preventDefault();
@@ -892,7 +905,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       const el = document.querySelector<HTMLElement>(`.react-flow__node[data-id="${target.id}"]`);
       el?.focus();
     },
-    [onVerseSelect, handleRemoveNode],
+    [onVerseSelect, handleRemoveNode, onOpenNote],
   );
 
   const removeEdgesByType = useCallback((typeId: string) => {

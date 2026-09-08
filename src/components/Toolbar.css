@@ -458,6 +458,32 @@
   color: var(--brown-400);
 }
 
+/* "Note saved to 2.47" (Note flow 4): dark pill, same spot as the autosave pill */
+.note-toast {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  translate: -50%;
+  z-index: var(--z-popover);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 16px;
+  border-radius: 10px;
+  background: var(--brown-900);
+  color: white;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 16px;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+  animation: autosaveIn 0.2s ease-out;
+}
+
+.note-toast > svg {
+  color: var(--sage-400);
+}
+
 @keyframes autosaveIn {
   from {
     opacity: 0;

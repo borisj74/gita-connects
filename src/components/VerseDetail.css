@@ -880,3 +880,198 @@
   color: rgb(224, 160, 135);
   border-color: rgba(202, 117, 88, 0.4);
 }
+
+/* My note (App 30/31) */
+.vd-note-label {
+  color: var(--sage-600);
+}
+
+.vd-note-empty {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.vd-note-empty .vd-note-label {
+  color: var(--brown-400);
+}
+
+.vd-note-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 11px;
+  border: 1px dashed var(--sage-500);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--sage-600);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  cursor: pointer;
+}
+
+.vd-note-add:hover {
+  background: var(--sage-100);
+  border-style: solid;
+}
+
+.vd-note-header {
+  color: var(--sage-600);
+}
+
+.vd-note-header:hover .vd-label {
+  color: var(--sage-700);
+}
+
+.vd-note-edited {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--brown-400);
+}
+
+.vd-note-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border-left: 3px solid var(--sage-500);
+  border-radius: 4px;
+  background: var(--note-bg);
+}
+
+.vd-note-text {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 23px;
+  color: var(--brown-800);
+  white-space: pre-wrap;
+}
+
+.vd-note-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--brown-600);
+}
+
+.vd-note-sep {
+  width: 1px;
+  height: 11px;
+  background: var(--beige-300);
+}
+
+.vd-note-edit {
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--sage-600);
+  cursor: pointer;
+}
+
+.vd-note-edit:hover {
+  text-decoration: underline;
+}
+
+.vd-note-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--sage-500);
+  border-radius: 4px;
+  background: var(--note-bg);
+  box-shadow: 0 0 0 3px rgb(125 138 110 / 0.18);
+}
+
+.vd-note-textarea {
+  width: 100%;
+  min-height: 23px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  resize: none;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 23px;
+  color: var(--brown-800);
+  overflow: hidden;
+}
+
+.vd-note-textarea::placeholder {
+  color: var(--brown-400);
+}
+
+.vd-note-textarea:focus {
+  outline: none;
+}
+
+.vd-note-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.vd-note-hint {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--brown-400);
+}
+
+.vd-note-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vd-note-cancel,
+.vd-note-save {
+  height: 30px;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 16px;
+  cursor: pointer;
+}
+
+.vd-note-cancel {
+  padding: 0 12px;
+  background: transparent;
+  color: var(--brown-600);
+  font-weight: 500;
+}
+
+.vd-note-cancel:hover {
+  background: var(--beige-200);
+}
+
+.vd-note-save {
+  padding: 0 14px;
+  background: var(--sage-500);
+  color: white;
+  font-weight: 600;
+}
+
+.vd-note-save:hover:not(:disabled) {
+  background: var(--sage-600);
+}
+
+.vd-note-save:disabled {
+  background: var(--beige-200);
+  color: var(--brown-400);
+  cursor: default;
+}
