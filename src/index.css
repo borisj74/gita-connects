@@ -77,6 +77,8 @@
   /* For sage text sitting on a sage tint, where the normal pair is too close */
   --accent-sage-strong: var(--sage-800);
   --accent-terracotta-text: var(--terracotta-600);
+  /* For terracotta text small enough that -600 misses 4.5:1. */
+  --accent-terracotta-strong: var(--terracotta-700);
   --ink-soft: var(--brown-500);
   --note-bg: #f3f5ef;
   --note-border: var(--sage-500);
@@ -466,6 +468,7 @@ p, li, dd {
   --accent-sage-text: #a9bb96;
   --accent-sage-strong: #c6d4b4;
   --accent-terracotta-text: #e6a184;
+  --accent-terracotta-strong: #f0b79f;
   --ink-soft: #b3a591;
 
   /* Pale tints used as backgrounds — hover states, the selected verse row,

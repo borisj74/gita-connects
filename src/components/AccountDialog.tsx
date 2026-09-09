@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { X, Mail, LogOut, Check } from 'lucide-react';
 import type { Session } from '@supabase/supabase-js';
-import { supabase, friendlyError } from '../cloud/supabase.js';
+import { supabase } from '../cloud/supabase.js';
+import { useMagicLink, EMAIL } from '../cloud/useMagicLink.js';
 import { accountLabel } from '../cloud/useSession.js';
 import { useSyncStatus } from '../cloud/sync.js';
 import ScrimHint from './ScrimHint.js';
@@ -11,8 +12,6 @@ interface AccountDialogProps {
   session: Session | null;
   onClose: () => void;
 }
-
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
  * Sign in, or see who is signed in and sign out.
@@ -30,9 +29,7 @@ const syncWording: Record<string, string> = {
 
 export default function AccountDialog({ session, onClose }: AccountDialogProps) {
   const sync = useSyncStatus();
-  const [email, setEmail] = useState('');
-  const [status, setStatus] = useState<'idle' | 'sending' | 'sent'>('idle');
-  const [error, setError] = useState<string | null>(null);
+  const { email, setEmail, status, error, send } = useMagicLink();
   const dialogRef = useRef<HTMLDivElement>(null);
   const firstRef = useRef<HTMLElement>(null);
 
@@ -67,24 +64,9 @@ export default function AccountDialog({ session, onClose }: AccountDialogProps) 
     };
   }, [onClose]);
 
-  const sendLink = async (e: React.FormEvent) => {
+  const sendLink = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!supabase || !EMAIL.test(email)) return;
-    setStatus('sending');
-    setError(null);
-    const { error: err } = await supabase.auth.signInWithOtp({
-      email,
-      // The allow-list patterns end in /**, which a bare origin does not
-      // match; without the slash a preview or localhost link lands on
-      // production instead of back where the reader started.
-      options: { emailRedirectTo: `${window.location.origin}/` },
-    });
-    if (err) {
-      setError(friendlyError(err));
-      setStatus('idle');
-    } else {
-      setStatus('sent');
-    }
+    void send();
   };
 
   const signOut = async () => {
