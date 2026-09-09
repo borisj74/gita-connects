@@ -3,6 +3,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { Node, Edge } from 'reactflow';
 import SaveLoadControls from './SaveLoadControls.js';
+import { _reloadNetworksForTests } from '../networksStore.js';
 
 const STORAGE_KEY = 'gita-connects-saved-networks';
 
@@ -23,6 +24,7 @@ function setup(state: { nodes: Node[]; edges: Edge[] } = { nodes, edges }) {
 }
 
 const stored = () => JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]');
+
 
 describe('SaveLoadControls — saving', () => {
   it('writes the network to localStorage under the given name', async () => {
@@ -112,7 +114,7 @@ describe('SaveLoadControls — saving', () => {
 });
 
 describe('SaveLoadControls — loading', () => {
-  const seed = (over: Record<string, unknown> = {}) =>
+  const seed = (over: Record<string, unknown> = {}) => {
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify([
@@ -127,6 +129,8 @@ describe('SaveLoadControls — loading', () => {
         },
       ]),
     );
+    _reloadNetworksForTests();
+  };
 
   it('shows an empty state when nothing is saved', async () => {
     const { user } = setup();
@@ -159,6 +163,7 @@ describe('SaveLoadControls — loading', () => {
 
   it('survives a corrupt storage payload', async () => {
     localStorage.setItem(STORAGE_KEY, '{not json');
+    _reloadNetworksForTests();
     const { user } = setup();
     await user.click(screen.getByRole('button', { name: 'Networks' }));
     await user.click(screen.getByRole('menuitem', { name: 'All networks…' }));
@@ -167,6 +172,7 @@ describe('SaveLoadControls — loading', () => {
 
   it('survives a non-array storage payload', async () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ id: 'nope' }));
+    _reloadNetworksForTests();
     const { user } = setup();
     await user.click(screen.getByRole('button', { name: 'Networks' }));
     await user.click(screen.getByRole('menuitem', { name: 'All networks…' }));
@@ -175,13 +181,15 @@ describe('SaveLoadControls — loading', () => {
 });
 
 describe('SaveLoadControls — deleting', () => {
-  const seed = () =>
+  const seed = () => {
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify([
         { id: '1', name: 'Doomed', timestamp: 1, nodes, edges, selectedVerseId: null },
       ]),
     );
+    _reloadNetworksForTests();
+  };
 
   it('asks for confirmation before deleting', async () => {
     seed();

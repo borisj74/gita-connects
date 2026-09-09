@@ -128,3 +128,12 @@
 [data-theme="dark"] .account-input {
   background: var(--beige-100);
 }
+
+/* Sync line under the email: only an actual failure earns a warning colour */
+.account-sync.is-error {
+  color: #b3354a;
+}
+
+.account-sync.is-synced {
+  color: var(--sage-600);
+}

@@ -53,6 +53,14 @@ function persist(next: Notes) {
 }
 
 export const getNotes = (): Notes => notes;
+
+/**
+ * Replace every note at once. Used by cloud sync after merging this device's
+ * notes with another device's; ordinary editing goes through saveNote.
+ */
+export function replaceNotes(next: Notes): void {
+  persist(next);
+}
 export const getNote = (verseId: string): Note | undefined => notes[verseId];
 
 /** Save a note; an empty (whitespace-only) text deletes it. */
@@ -72,7 +80,7 @@ export function deleteNote(verseId: string): void {
   persist(next);
 }
 
-function subscribe(listener: () => void) {
+export function subscribeNotes(listener: () => void): () => void {
   listeners.add(listener);
   return () => {
     listeners.delete(listener);
@@ -80,11 +88,11 @@ function subscribe(listener: () => void) {
 }
 
 /** All notes, re-rendering the caller whenever any note changes. */
-export const useNotes = (): Notes => useSyncExternalStore(subscribe, getNotes, getNotes);
+export const useNotes = (): Notes => useSyncExternalStore(subscribeNotes, getNotes, getNotes);
 
 /** One verse's note, or undefined. */
 export const useNote = (verseId: string | null): Note | undefined =>
-  useSyncExternalStore(subscribe, () => (verseId ? notes[verseId] : undefined), () => undefined);
+  useSyncExternalStore(subscribeNotes, () => (verseId ? notes[verseId] : undefined), () => undefined);
 
 /** "today", "yesterday", "12 Mar", or "12 Mar 2024" for another year. */
 export function editedLabel(updatedAt: number, now = Date.now()): string {

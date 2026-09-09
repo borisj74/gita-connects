@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 're
 import { Save, FolderOpen, X, Trash2, Check, AlertTriangle, ChevronDown, FilePlus, Download } from 'lucide-react';
 import type { Node, Edge } from 'reactflow';
 import SavedNetworksDialog, { type SavedNetwork } from './SavedNetworksDialog.js';
+import { useNetworks, setNetworks, newNetworkId } from '../networksStore.js';
 import ScrimHint from './ScrimHint.js';
 import DeleteNetworkDialog from './DeleteNetworkDialog.js';
 import './SaveLoadControls.css';
@@ -28,7 +29,6 @@ interface SaveLoadControlsProps {
   onLoadNetwork: (nodes: Node[], edges: Edge[], selectedVerseId: string | null) => void;
 }
 
-const STORAGE_KEY = 'gita-connects-saved-networks';
 
 export interface SaveLoadControlsRef {
   openSave: () => void;
@@ -49,15 +49,8 @@ const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
   const [currentNetworkState, setCurrentNetworkState] = useState<{ nodes: Node[]; edges: Edge[] }>({ nodes: [], edges: [] });
-  const [savedNetworks, setSavedNetworks] = useState<SavedNetwork[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      const parsed = saved ? JSON.parse(saved) : [];
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
-  });
+  // Owned by networksStore so cloud sync can write the same list.
+  const savedNetworks = useNetworks();
 
   // Identity of the network currently on the canvas (set on save/load) so
   // "Save changes" can overwrite in place instead of always creating a copy.
@@ -96,14 +89,6 @@ const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(
     setShowSaveModal(true);
   };
 
-  const persist = (list: SavedNetwork[]): boolean => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-      return true;
-    } catch {
-      return false;
-    }
-  };
 
   const handleSaveChanges = () => {
     const current = currentId ? savedNetworks.find((n) => n.id === currentId) : undefined;
@@ -121,8 +106,7 @@ const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(
         ? { ...n, timestamp: Date.now(), nodes: state.nodes, edges: state.edges, selectedVerseId }
         : n,
     );
-    if (persist(updated)) {
-      setSavedNetworks(updated);
+    if (setNetworks(updated)) {
       setCurrentNetworkState(state);
       setJustSaved(true);
     }
@@ -138,7 +122,7 @@ const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(
 
   const handleRename = (id: string, name: string) => {
     const updated = savedNetworks.map((n) => (n.id === id ? { ...n, name } : n));
-    if (persist(updated)) setSavedNetworks(updated);
+    setNetworks(updated);
   };
 
   const handleDuplicate = (id: string) => {
@@ -146,19 +130,19 @@ const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(
     if (!source) return;
     const copy: SavedNetwork = {
       ...source,
-      id: Date.now().toString(),
+      id: newNetworkId(),
       name: `${source.name} (copy)`,
       timestamp: Date.now(),
     };
     const updated = [...savedNetworks, copy];
-    if (persist(updated)) setSavedNetworks(updated);
+    setNetworks(updated);
   };
 
   const handleImport = (incoming: SavedNetwork[]) => {
     // Imported networks get fresh ids so they never collide with existing ones.
     const base = Date.now();
-    const stamped = incoming.map((n, i) => ({
-      id: `${base + i}`,
+    const stamped = incoming.map((n) => ({
+      id: newNetworkId(),
       name: n.name,
       timestamp: typeof n.timestamp === 'number' ? n.timestamp : base,
       nodes: n.nodes,
@@ -166,7 +150,7 @@ const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(
       selectedVerseId: n.selectedVerseId ?? null,
     }));
     const updated = [...savedNetworks, ...stamped];
-    if (persist(updated)) setSavedNetworks(updated);
+    setNetworks(updated);
   };
 
   useImperativeHandle(ref, () => ({
@@ -190,7 +174,7 @@ const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(
     }
 
     const newNetwork: SavedNetwork = {
-      id: Date.now().toString(),
+      id: newNetworkId(),
       name: networkName.trim(),
       timestamp: Date.now(),
       nodes: currentNetworkState.nodes,
@@ -199,11 +183,11 @@ const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(
     };
 
     const updated = [...savedNetworks, newNetwork];
-    if (!persist(updated)) {
+    if (!setNetworks(updated)) {
       setSaveError('Could not save: browser storage is full. Delete old networks and try again.');
       return;
     }
-    setSavedNetworks(updated);
+    setNetworks(updated);
     setCurrentId(newNetwork.id);
 
     setSaveSuccess(`Network "${newNetwork.name}" saved!`);
@@ -227,9 +211,8 @@ const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(
     if (!deleteConfirm) return;
 
     const updated = savedNetworks.filter(n => n.id !== deleteConfirm.id);
-    setSavedNetworks(updated);
     // Removing data only shrinks the payload; ignore storage errors here.
-    persist(updated);
+    setNetworks(updated);
     if (currentId === deleteConfirm.id) setCurrentId(null);
     setDeleteConfirm(null);
   };

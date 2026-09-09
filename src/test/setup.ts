@@ -1,6 +1,8 @@
 import '@testing-library/jest-dom/vitest';
 import { afterEach, beforeEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
+import { _reloadNotesForTests } from '../notes.js';
+import { _reloadNetworksForTests } from '../networksStore.js';
 
 // jsdom implements neither matchMedia nor ResizeObserver; useMediaQuery and
 // React Flow need both. Individual tests override matchMedia when they care
@@ -32,6 +34,10 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   localStorage.clear();
+  // Module-level stores cache their own copy, so clearing storage is not
+  // enough — without this a test inherits the previous test's networks.
+  _reloadNotesForTests();
+  _reloadNetworksForTests();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });

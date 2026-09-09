@@ -33,6 +33,7 @@ import ExportDialog, { type ExportFormat } from './components/ExportDialog.js';
 import AccountDialog from './components/AccountDialog.js';
 import { cloudEnabled } from './cloud/supabase.js';
 import { useSession, accountLabel } from './cloud/useSession.js';
+import { startSync, stopSync } from './cloud/sync.js';
 import type { Concept } from './concepts.js';
 import './App.css';
 
@@ -50,6 +51,18 @@ function App() {
   const [exportOpen, setExportOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const { session } = useSession();
+
+  // Mirror this device's work to the account while one is signed in. Signing
+  // out stops the mirror and leaves the local copy untouched.
+  const userId = session?.user.id ?? null;
+  useEffect(() => {
+    if (!userId) {
+      stopSync();
+      return;
+    }
+    void startSync(userId);
+    return () => stopSync();
+  }, [userId]);
   const [sidebarOpen, setSidebarOpen] = useState(
     () => typeof window !== 'undefined' && window.innerWidth > 768,
   );

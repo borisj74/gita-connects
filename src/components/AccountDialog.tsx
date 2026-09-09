@@ -3,6 +3,7 @@ import { X, Mail, LogOut, Check } from 'lucide-react';
 import type { Session } from '@supabase/supabase-js';
 import { supabase, friendlyError } from '../cloud/supabase.js';
 import { accountLabel } from '../cloud/useSession.js';
+import { useSyncStatus } from '../cloud/sync.js';
 import ScrimHint from './ScrimHint.js';
 import './AccountDialog.css';
 
@@ -20,7 +21,15 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  * signed in. No password to choose, store or reset. An account is optional —
  * the copy says so, because the app works fully without one.
  */
+const syncWording: Record<string, string> = {
+  off: 'Not syncing',
+  syncing: 'Syncing…',
+  synced: 'Everything is up to date',
+  error: 'Could not sync',
+};
+
 export default function AccountDialog({ session, onClose }: AccountDialogProps) {
+  const sync = useSyncStatus();
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent'>('idle');
   const [error, setError] = useState<string | null>(null);
@@ -121,7 +130,9 @@ export default function AccountDialog({ session, onClose }: AccountDialogProps) 
               </span>
               <span>
                 <span className="account-email">{accountLabel(session)}</span>
-                <span className="account-note">Signed in on this device</span>
+                <span className={`account-note account-sync is-${sync.status}`}>
+                  {sync.status === 'error' && sync.message ? sync.message : syncWording[sync.status]}
+                </span>
               </span>
             </p>
           </div>
