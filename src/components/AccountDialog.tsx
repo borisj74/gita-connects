@@ -74,7 +74,10 @@ export default function AccountDialog({ session, onClose }: AccountDialogProps) 
     setError(null);
     const { error: err } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: window.location.origin },
+      // The allow-list patterns end in /**, which a bare origin does not
+      // match; without the slash a preview or localhost link lands on
+      // production instead of back where the reader started.
+      options: { emailRedirectTo: `${window.location.origin}/` },
     });
     if (err) {
       setError(friendlyError(err));
