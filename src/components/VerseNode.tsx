@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { Handle, Position } from 'reactflow';
 import { X, Plus, AlignLeft, FilePlus2 } from 'lucide-react';
 import type { Verse } from '../types.js';
+import { vedabaseUrl } from '../data/index.js';
 import { useVerseText } from '../hooks/useVerseText.js';
 import './VerseNode.css';
 
@@ -89,6 +90,24 @@ function VerseNode({ data }: VerseNodeProps) {
         >
           {text.status === 'loading' ? 'Loading translation…' : verse.transliteration}
         </div>
+      )}
+
+      {/* Standing in the transliteration without saying so reads as though it
+          were the translation. Name what is missing, and hand over a way to
+          read it anyway. */}
+      {text.status === 'unavailable' && (
+        <p className="node-translation-missing">
+          Translation unavailable.{' '}
+          <a
+            className="nodrag"
+            href={vedabaseUrl(verse)}
+            target="_blank"
+            rel="noreferrer noopener"
+            onClick={(e) => e.stopPropagation()}
+          >
+            Read {verse.id} on Vedabase
+          </a>
+        </p>
       )}
 
       <div className="node-concepts">

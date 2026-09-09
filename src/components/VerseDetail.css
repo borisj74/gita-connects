@@ -1075,3 +1075,9 @@
   color: var(--brown-400);
   cursor: default;
 }
+
+/* Links inside a muted "unavailable" note: the way out has to be findable. */
+.vd-muted a {
+  color: var(--accent-terracotta-strong);
+  font-weight: 500;
+}
