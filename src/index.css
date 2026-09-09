@@ -74,6 +74,8 @@
      backgrounds with white text, so they cannot simply be lightened for dark
      mode without wrecking those; text gets its own pair instead. */
   --accent-sage-text: var(--sage-600);
+  /* For sage text sitting on a sage tint, where the normal pair is too close */
+  --accent-sage-strong: var(--sage-800);
   --accent-terracotta-text: var(--terracotta-600);
   --ink-soft: var(--brown-500);
   --note-bg: #f3f5ef;
@@ -462,6 +464,15 @@ p, li, dd {
   --ink-body: #d8cfc3;
   --ink-muted: #a99e8f;
   --accent-sage-text: #a9bb96;
+  --accent-sage-strong: #c6d4b4;
   --accent-terracotta-text: #e6a184;
   --ink-soft: #b3a591;
+
+  /* Pale tints used as backgrounds — hover states, the selected verse row,
+     the concept filter bar, text selection. Without these they stay pale and
+     the light text on them disappears. */
+  --sage-300: #3d4634;
+  --terracotta-50: #2b201b;
+  --terracotta-100: #35251f;
+  --terracotta-200: #452f26;
 }

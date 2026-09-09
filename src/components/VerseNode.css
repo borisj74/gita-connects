@@ -151,6 +151,8 @@
 
 .node-note:hover {
   background: var(--sage-300);
+  /* The default sage sits too close to the sage tint to read on hover */
+  color: var(--accent-sage-strong);
 }
 
 .node-note.has-note {
