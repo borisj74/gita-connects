@@ -79,8 +79,21 @@ const SearchField = forwardRef<SearchFieldRef, SearchFieldProps>(
           if (!query) setExpanded(false);
         }
       };
-      document.addEventListener('mousedown', onDown);
-      return () => document.removeEventListener('mousedown', onDown);
+      // Capture, not bubble: React Flow's drag handling stops mousedown from
+      // propagating, so a listener on the way up never hears a click that
+      // landed on the canvas — the largest target in the app.
+      const onEsc = (e: KeyboardEvent) => {
+        if (e.key !== 'Escape' || !open) return;
+        // The canvas listens for Escape too; while the panel is up it is ours.
+        e.stopPropagation();
+        setOpen(false);
+      };
+      document.addEventListener('mousedown', onDown, true);
+      document.addEventListener('keydown', onEsc, true);
+      return () => {
+        document.removeEventListener('mousedown', onDown, true);
+        document.removeEventListener('keydown', onEsc, true);
+      };
     }, [open, expanded, query]);
 
     const results = useMemo(() => {
@@ -115,6 +128,9 @@ const SearchField = forwardRef<SearchFieldRef, SearchFieldProps>(
     const onKeyDown = (e: React.KeyboardEvent) => {
       // The canvas listens for these too; while typing here they are ours.
       if (e.key === 'Escape') {
+        // An open panel is dismissed by the document listener above, which
+        // leaves the query alone so it can be resumed. Escape again, with the
+        // panel already down, is the one that clears and steps out.
         e.stopPropagation();
         if (query) clear();
         else {
