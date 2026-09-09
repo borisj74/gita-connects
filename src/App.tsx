@@ -34,6 +34,9 @@ import AccountDialog from './components/AccountDialog.js';
 import { cloudEnabled } from './cloud/supabase.js';
 import { useSession, accountLabel } from './cloud/useSession.js';
 import { startSync, stopSync } from './cloud/sync.js';
+import {
+  persistWithSignal, useRemoteSettingsVersion, readPreferences, readCustomTypes,
+} from './settingsStore.js';
 import type { Concept } from './concepts.js';
 import './App.css';
 
@@ -103,21 +106,39 @@ function App() {
   const verseNetworkRef = useRef<VerseNetworkRef>(null);
   const saveLoadRef = useRef<SaveLoadControlsRef>(null);
 
+  // Each of these runs on mount too, where nothing has really changed.
+  // persistWithSignal stamps the settings only when the stored value actually
+  // differs, so a mount never registers as an edit and this device does not
+  // win every merge just by having loaded last.
+
   // Persist custom types whenever they change.
   useEffect(() => {
-    saveCustomConnectionTypes(customTypes);
+    persistWithSignal(() => saveCustomConnectionTypes(customTypes));
   }, [customTypes]);
 
   // Persist active filters so they survive reloads.
   useEffect(() => {
-    saveActiveFilters(activeFilters, connectionTypes.map((t) => t.id));
+    persistWithSignal(() => saveActiveFilters(activeFilters, connectionTypes.map((t) => t.id)));
   }, [activeFilters, connectionTypes]);
 
   // Apply + persist theme.
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    localStorage.setItem('gita-connects-theme', theme);
+    persistWithSignal(() => localStorage.setItem('gita-connects-theme', theme));
   }, [theme]);
+
+  // Settings pulled from another device: adopt them without re-persisting,
+  // which would look like a fresh local edit and bounce back to the server.
+  const remoteSettings = useRemoteSettingsVersion();
+  useEffect(() => {
+    if (remoteSettings === 0) return;
+    const prefs = readPreferences();
+    setCustomTypes(readCustomTypes());
+    setTheme(prefs.theme);
+    setActiveFilters(
+      loadActiveFilters([...PREDEFINED_CONNECTION_TYPES, ...readCustomTypes()].map((t) => t.id)),
+    );
+  }, [remoteSettings]);
 
   // Close mobile menu on outside click.
   useEffect(() => {

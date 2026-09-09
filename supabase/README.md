@@ -38,6 +38,12 @@ localStorage, so the app stays fast and works offline.
   elsewhere, so the server triggers that would have stamped `now()` on every
   upsert were removed (migration 0003).
 - **Signing out** stops the mirror and leaves this device's copy untouched.
+- **Custom link types** merge per type, like notes. **Preferences** are a
+  single row, so theme, hidden filters and open panel sections win or lose
+  together rather than being merged field by field.
+- **A mount is not an edit.** Persisting settings on load would stamp them and
+  make whichever device opened last win every merge, so writes are stamped
+  only when the stored value actually changes.
 
 Last-write-wins is the right model for one person on two devices, which is
 what this is for. It is not enough for two people editing at once.

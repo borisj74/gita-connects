@@ -18,10 +18,16 @@ import { mergeNewest, changesSince } from './merge.js';
 import {
   networkToRow, rowToNetwork, noteToRow, rowsToNotes,
   notesToEntries, entriesToNotes,
+  typeToRow, rowToType, prefsToRow, rowToPrefs,
   type NetworkRow, type NoteRow, type NoteEntry,
+  type LinkTypeRow, type PreferencesRow, type TypeEntry,
 } from './rows.js';
 import { getNetworks, setNetworks, subscribeNetworks } from '../networksStore.js';
 import { getNotes, replaceNotes, subscribeNotes } from '../notes.js';
+import {
+  readPreferences, readCustomTypes, applyRemoteSettings, subscribeSettings,
+  type Preferences, type StoredType,
+} from '../settingsStore.js';
 import type { SavedNetwork } from '../components/SavedNetworksDialog.js';
 
 export type SyncStatus = 'off' | 'syncing' | 'synced' | 'error';
@@ -63,10 +69,34 @@ let pushTimer: ReturnType<typeof setTimeout> | null = null;
 /** What the cloud held at the end of the last successful sync. */
 let syncedNetworks: SavedNetwork[] = [];
 let syncedNotes: NoteEntry[] = [];
+let syncedTypes: TypeEntry[] = [];
+let syncedPrefsAt = 0;
 
 const sameNetwork = (a: SavedNetwork, b: SavedNetwork) =>
   a.timestamp === b.timestamp && a.name === b.name;
 const sameNote = (a: NoteEntry, b: NoteEntry) => a.updatedAt === b.updatedAt && a.text === b.text;
+const sameType = (a: TypeEntry, b: TypeEntry) =>
+  a.updatedAt === b.updatedAt && a.label === b.label && a.color === b.color && a.directional === b.directional;
+
+/** Custom link types as the merger wants them, from what is on this device. */
+const localTypeEntries = (): TypeEntry[] =>
+  readCustomTypes().map((t) => ({
+    typeId: t.id,
+    label: t.label,
+    color: t.color,
+    directional: t.directional ?? false,
+    updatedAt: t.updatedAt ?? 0,
+  }));
+
+const entriesToStoredTypes = (entries: readonly TypeEntry[]): StoredType[] =>
+  entries.map((t) => ({
+    id: t.typeId,
+    label: t.label,
+    color: t.color,
+    directional: t.directional,
+    isCustom: true,
+    updatedAt: t.updatedAt,
+  }));
 
 /** Pull, merge, write both sides, and remember the result as the baseline. */
 async function fullSync(): Promise<void> {
@@ -74,12 +104,16 @@ async function fullSync(): Promise<void> {
   const id = userId;
   setState({ status: 'syncing', message: null });
 
-  const [networkRes, noteRes] = await Promise.all([
+  const [networkRes, noteRes, typeRes, prefRes] = await Promise.all([
     supabase.from('networks').select('*'),
     supabase.from('notes').select('*'),
+    supabase.from('link_types').select('*'),
+    supabase.from('preferences').select('*').maybeSingle(),
   ]);
   if (networkRes.error) throw networkRes.error;
   if (noteRes.error) throw noteRes.error;
+  if (typeRes.error) throw typeRes.error;
+  if (prefRes.error) throw prefRes.error;
 
   const remoteNetworks = (networkRes.data as NetworkRow[]).map(rowToNetwork);
   const remoteNotes = notesToEntries(rowsToNotes(noteRes.data as NoteRow[]));
@@ -94,8 +128,18 @@ async function fullSync(): Promise<void> {
 
   const mergedNotes = mergeNewest(notesToEntries(getNotes()), remoteNotes, (n) => n.verseId);
 
+  const remoteTypes = (typeRes.data as LinkTypeRow[]).map(rowToType);
+  const mergedTypes = mergeNewest(localTypeEntries(), remoteTypes, (t) => t.typeId);
+
+  // Preferences are a single row, so the whole bundle wins or loses together.
+  const localPrefs = readPreferences();
+  const remotePrefs = prefRes.data ? rowToPrefs(prefRes.data as PreferencesRow) : null;
+  const mergedPrefs: Preferences =
+    remotePrefs && remotePrefs.updatedAt > localPrefs.updatedAt ? remotePrefs : localPrefs;
+
   setNetworks(mergedNetworks);
   replaceNotes(entriesToNotes(mergedNotes));
+  applyRemoteSettings(mergedPrefs, entriesToStoredTypes(mergedTypes));
 
   // Push the merge back so the other device converges too. Upserting the whole
   // set is fine at this size and makes a re-sync idempotent.
@@ -112,8 +156,19 @@ async function fullSync(): Promise<void> {
     if (error) throw error;
   }
 
+  if (mergedTypes.length > 0) {
+    const { error } = await supabase.from('link_types').upsert(mergedTypes.map((t) => typeToRow(t, id)));
+    if (error) throw error;
+  }
+  if (mergedPrefs.updatedAt > 0) {
+    const { error } = await supabase.from('preferences').upsert(prefsToRow(mergedPrefs, id));
+    if (error) throw error;
+  }
+
   syncedNetworks = mergedNetworks;
   syncedNotes = mergedNotes;
+  syncedTypes = mergedTypes;
+  syncedPrefsAt = mergedPrefs.updatedAt;
   setState({ status: 'synced', at: Date.now(), message: null });
 }
 
@@ -123,11 +178,17 @@ async function pushChanges(): Promise<void> {
   const localNetworks = getNetworks();
   const localNotes = notesToEntries(getNotes());
 
+  const localTypes = localTypeEntries();
+  const localPrefs = readPreferences();
+
   const netChanges = changesSince(syncedNetworks, localNetworks, (n) => n.id, sameNetwork);
   const noteChanges = changesSince(syncedNotes, localNotes, (n) => n.verseId, sameNote);
+  const typeChanges = changesSince(syncedTypes, localTypes, (t) => t.typeId, sameType);
+  const prefsChanged = localPrefs.updatedAt > syncedPrefsAt;
   if (
     netChanges.upserts.length + netChanges.deletes.length +
-    noteChanges.upserts.length + noteChanges.deletes.length === 0
+    noteChanges.upserts.length + noteChanges.deletes.length +
+    typeChanges.upserts.length + typeChanges.deletes.length === 0 && !prefsChanged
   ) {
     return;
   }
@@ -154,9 +215,25 @@ async function pushChanges(): Promise<void> {
     const { error } = await supabase.from('notes').delete().in('verse_id', noteChanges.deletes);
     if (error) throw error;
   }
+  if (typeChanges.upserts.length) {
+    const { error } = await supabase
+      .from('link_types')
+      .upsert(typeChanges.upserts.map((t) => typeToRow(t, userId!)));
+    if (error) throw error;
+  }
+  if (typeChanges.deletes.length) {
+    const { error } = await supabase.from('link_types').delete().in('type_id', typeChanges.deletes);
+    if (error) throw error;
+  }
+  if (prefsChanged) {
+    const { error } = await supabase.from('preferences').upsert(prefsToRow(localPrefs, userId));
+    if (error) throw error;
+  }
 
   syncedNetworks = localNetworks;
   syncedNotes = localNotes;
+  syncedTypes = localTypes;
+  syncedPrefsAt = localPrefs.updatedAt;
   setState({ status: 'synced', at: Date.now(), message: null });
 }
 
@@ -193,7 +270,11 @@ export async function startSync(id: string): Promise<void> {
   }
 
   // React to local edits from anywhere in the app.
-  unsubscribers = [subscribeNetworks(schedulePush), subscribeNotes(schedulePush)];
+  unsubscribers = [
+    subscribeNetworks(schedulePush),
+    subscribeNotes(schedulePush),
+    subscribeSettings(schedulePush),
+  ];
 }
 
 /** Stop mirroring. The local copy is left exactly as it is. */
@@ -207,5 +288,7 @@ export function stopSync(): void {
   userId = null;
   syncedNetworks = [];
   syncedNotes = [];
+  syncedTypes = [];
+  syncedPrefsAt = 0;
   setState({ status: 'off', message: null, at: null });
 }

@@ -10,6 +10,7 @@ import { suggestSimilar, suggestionConnection } from '../suggestions.js';
 import { useBottomSheet } from '../hooks/useBottomSheet.js';
 import { PREDEFINED_CONNECTION_TYPES, getTypeLabel } from '../connectionTypes.js';
 import NoteSection from './NoteSection.js';
+import { persistWithSignal } from '../settingsStore.js';
 import './VerseDetail.css';
 
 interface VerseDetailProps {
@@ -119,7 +120,7 @@ export default function VerseDetail({
     setOpenSections((prev) => {
       const next = { ...prev, [id]: !prev[id] };
       try {
-        localStorage.setItem(SECTIONS_KEY, JSON.stringify(next));
+        persistWithSignal(() => localStorage.setItem(SECTIONS_KEY, JSON.stringify(next)));
       } catch {
         // Preference only; losing it is harmless.
       }

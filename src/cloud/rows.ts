@@ -8,6 +8,7 @@
  */
 import type { SavedNetwork } from '../components/SavedNetworksDialog.js';
 import type { Note, Notes } from '../notes.js';
+import type { Preferences } from '../settingsStore.js';
 
 export interface NetworkRow {
   id: string;
@@ -70,3 +71,64 @@ export const notesToEntries = (notes: Notes): NoteEntry[] =>
 
 export const entriesToNotes = (entries: readonly NoteEntry[]): Notes =>
   Object.fromEntries(entries.map((e) => [e.verseId, { text: e.text, updatedAt: e.updatedAt }]));
+
+export interface LinkTypeRow {
+  user_id: string;
+  type_id: string;
+  label: string;
+  color: string;
+  directional: boolean;
+  updated_at: string;
+}
+
+export interface PreferencesRow {
+  user_id: string;
+  theme: string | null;
+  hidden_filters: unknown;
+  detail_sections: unknown;
+  updated_at: string;
+}
+
+/** A custom link type in the shape the merger wants: an id plus updatedAt. */
+export interface TypeEntry {
+  typeId: string;
+  label: string;
+  color: string;
+  directional: boolean;
+  updatedAt: number;
+}
+
+export const typeToRow = (t: TypeEntry, userId: string): LinkTypeRow => ({
+  user_id: userId,
+  type_id: t.typeId,
+  label: t.label,
+  color: t.color,
+  directional: t.directional,
+  updated_at: iso(t.updatedAt),
+});
+
+export const rowToType = (r: LinkTypeRow): TypeEntry => ({
+  typeId: r.type_id,
+  label: r.label,
+  color: r.color,
+  directional: r.directional,
+  updatedAt: ms(r.updated_at),
+});
+
+export const prefsToRow = (p: Preferences, userId: string): PreferencesRow => ({
+  user_id: userId,
+  theme: p.theme,
+  hidden_filters: p.hiddenFilters,
+  detail_sections: p.detailSections,
+  updated_at: iso(p.updatedAt),
+});
+
+export const rowToPrefs = (r: PreferencesRow): Preferences => ({
+  theme: r.theme === 'dark' ? 'dark' : 'light',
+  hiddenFilters: Array.isArray(r.hidden_filters) ? (r.hidden_filters as string[]) : [],
+  detailSections:
+    r.detail_sections && typeof r.detail_sections === 'object'
+      ? (r.detail_sections as Record<string, boolean>)
+      : {},
+  updatedAt: ms(r.updated_at),
+});
