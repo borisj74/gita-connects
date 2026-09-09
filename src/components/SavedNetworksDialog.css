@@ -10,7 +10,7 @@
   display: flex;
   flex-direction: column;
   overflow: clip;
-  background: white;
+  background: var(--surface);
   border-radius: 16px;
   box-shadow: 0 24px 64px rgb(31 26 22 / 0.22);
   animation: slideUp 0.2s ease-out;
@@ -102,7 +102,7 @@
   font-size: 11px;
   font-weight: 400;
   line-height: 14px;
-  color: var(--terracotta-600);
+  color: var(--accent-terracotta-text);
 }
 
 .saved-current-clean {
@@ -112,7 +112,7 @@
   font-size: 11px;
   font-weight: 400;
   line-height: 14px;
-  color: var(--sage-600);
+  color: var(--accent-sage-text);
 }
 
 .saved-current-meta {
@@ -136,7 +136,7 @@
 
 .saved-btn-secondary {
   border: 1px solid var(--beige-300);
-  background: white;
+  background: var(--surface);
   color: var(--brown-800);
 }
 
@@ -277,7 +277,7 @@
   font-size: 11px;
   font-weight: 500;
   line-height: 14px;
-  color: var(--sage-600);
+  color: var(--accent-sage-text);
 }
 
 .saved-row-meta {
@@ -295,7 +295,7 @@
   padding: 6px 10px;
   border: 1px solid var(--sage-500);
   border-radius: 6px;
-  background: white;
+  background: var(--surface);
   font-family: var(--font-ui);
   font-size: 14px;
   font-weight: 600;
@@ -396,7 +396,7 @@
   padding: 0 14px;
   border: 1px solid var(--beige-300);
   border-radius: 999px;
-  background: white;
+  background: var(--surface);
   font-family: var(--font-ui);
   font-size: 13px;
   font-weight: 500;
@@ -448,7 +448,7 @@
   padding: 10px 12px;
   border: 1px solid var(--beige-300);
   border-radius: 8px;
-  background: white;
+  background: var(--surface);
   font-family: var(--font-ui);
   font-size: 15px;
   line-height: 20px;
@@ -480,7 +480,7 @@
 }
 
 .save-dialog-success {
-  color: var(--sage-600);
+  color: var(--accent-sage-text);
 }
 
 [data-theme="dark"] .save-dialog-input {

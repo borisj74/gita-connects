@@ -27,7 +27,7 @@
   font-weight: 500;
   text-transform: capitalize;
   fill: var(--brown-900);
-  background: white;
+  background: var(--surface);
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
 }
@@ -42,7 +42,7 @@
 
 /* Custom Controls */
 .controls {
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--beige-300);
   border-radius: 8px;
   padding: 0.5rem;
@@ -82,7 +82,7 @@
   position: absolute;
   bottom: 1.5rem;
   left: 1.5rem;
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--beige-300);
   border-radius: 8px;
   padding: 1rem;
@@ -309,7 +309,7 @@
   align-items: center;
   width: min(396px, calc(100% - 48px));
   padding: 32px 36px 36px;
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--beige-200);
   border-radius: 16px;
   box-shadow: 0 8px 24px rgb(0 0 0 / 0.06);
@@ -348,7 +348,7 @@
   gap: 12px;
   width: min(376px, calc(100% - 64px));
   padding: 14px 16px;
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--beige-300);
   border-radius: 10px;
   box-shadow: 0 4px 16px rgb(0 0 0 / 0.08);
@@ -364,7 +364,7 @@
 .connect-hint-icon {
   flex-shrink: 0;
   margin-top: 1px;
-  color: var(--terracotta-600);
+  color: var(--accent-terracotta-text);
 }
 
 .connect-hint-text {
@@ -464,7 +464,7 @@
   height: 36px;
   border-radius: 8px;
   border: 1px solid var(--beige-300);
-  background: white;
+  background: var(--surface);
   color: var(--brown-700);
   cursor: pointer;
   display: flex;
@@ -525,7 +525,7 @@
   height: 44px;
   border: 1px solid var(--beige-300);
   border-radius: 999px;
-  background: white;
+  background: var(--surface);
   color: var(--brown-700);
   /* The same lift as the Chapters button and the other floating controls */
   box-shadow: var(--shadow);

@@ -18,7 +18,7 @@
   padding: 0 10px 0 12px;
   border: 1px solid var(--beige-300);
   border-radius: 8px;
-  background: white;
+  background: var(--surface);
   box-shadow: var(--shadow);
   transition: border-color var(--transition-base), box-shadow var(--transition-base);
   /* Nothing may spill past the rounded edge if the field is squeezed further */
@@ -96,7 +96,7 @@
   scrollbar-color: var(--brown-400) transparent;
   border: 1px solid var(--beige-300);
   border-radius: 10px;
-  background: white;
+  background: var(--surface);
   box-shadow: 0 16px 40px rgb(31 26 22 / 0.16);
   z-index: var(--z-popover);
 }
@@ -136,7 +136,7 @@
 .sf-result-id {
   font-size: 13px;
   font-weight: 600;
-  color: var(--terracotta-600);
+  color: var(--accent-terracotta-text);
 }
 
 .sf-result-chapter {
@@ -196,7 +196,7 @@
 .sf-result-add:hover:not(:disabled) {
   border-color: var(--sage-500);
   background: var(--sage-100);
-  color: var(--sage-600);
+  color: var(--accent-sage-text);
 }
 
 .sf-result-add.is-in-network {
@@ -265,7 +265,7 @@
   padding: 0;
   border: 1px solid var(--beige-300);
   border-radius: 8px;
-  background: white;
+  background: var(--surface);
   color: var(--brown-700);
   box-shadow: var(--shadow);
   cursor: pointer;

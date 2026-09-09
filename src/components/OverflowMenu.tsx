@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { MoreHorizontal, Download, FileJson, Moon, Sun, CircleHelp, Trash2, UserRound } from 'lucide-react';
+import { MoreHorizontal, Moon, Sun, CircleHelp, Trash2, UserRound } from 'lucide-react';
 import './Toolbar.css';
 
 interface OverflowMenuProps {
@@ -7,11 +7,6 @@ interface OverflowMenuProps {
   onToggleTheme: () => void;
   onClearCanvas: () => void;
   canClear: boolean;
-  onExport?: () => void;
-  /** False when the canvas is empty. */
-  canExport?: boolean;
-  /** Download per-verse usage counts from this device (feeds the review queue). */
-  onExportUsage?: () => void;
   /** Open the sign-in / account dialog. Absent when the build has no cloud keys. */
   onOpenAccount?: () => void;
   /** Email of the signed-in reader, if any. */
@@ -28,9 +23,6 @@ export default function OverflowMenu({
   onToggleTheme,
   onClearCanvas,
   canClear,
-  onExport,
-  canExport = true,
-  onExportUsage,
   onOpenAccount,
   accountEmail,
   onShowShortcuts,
@@ -80,25 +72,6 @@ export default function OverflowMenu({
 
       {open && (
         <div className="tb-menu tb-overflow-menu" role="menu">
-          <button
-            type="button"
-            role="menuitem"
-            className="tb-menu-item"
-            onClick={run(onExport)}
-            disabled={!onExport || !canExport}
-            title={!onExport ? 'Coming soon' : !canExport ? 'Add a verse first' : undefined}
-          >
-            <Download size={16} />
-            <span className="tb-menu-item-label">Export as PNG or PDF…</span>
-            {!onExport && <span className="tb-menu-item-hint">Soon</span>}
-          </button>
-          {onExportUsage && (
-            <button type="button" role="menuitem" className="tb-menu-item" onClick={run(onExportUsage)}>
-              <FileJson size={16} />
-              <span className="tb-menu-item-label">Export usage data</span>
-              <span className="tb-menu-item-hint">JSON</span>
-            </button>
-          )}
           <button type="button" role="menuitem" className="tb-menu-item" onClick={run(onToggleTheme)}>
             {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
             <span className="tb-menu-item-label">{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>

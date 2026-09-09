@@ -23,7 +23,7 @@
   padding: 0 14px;
   border: 1px solid var(--beige-300);
   border-radius: 8px;
-  background: white;
+  background: var(--surface);
   font-family: var(--font-ui);
   font-size: 14px;
   color: var(--brown-900);
@@ -71,7 +71,7 @@
 .account-sent > svg {
   flex-shrink: 0;
   margin-top: 2px;
-  color: var(--sage-600);
+  color: var(--accent-sage-text);
 }
 
 .account-who {
@@ -135,5 +135,5 @@
 }
 
 .account-sync.is-synced {
-  color: var(--sage-600);
+  color: var(--accent-sage-text);
 }

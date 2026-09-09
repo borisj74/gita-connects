@@ -8,10 +8,10 @@
   display: flex;
   flex-direction: column;
   overflow: clip;
-  background: #3a3530;
+  background: var(--overlay-bg);
   border-radius: 10px;
   box-shadow: 0 12px 32px rgb(0 0 0 / 0.24);
-  color: #ece6dd;
+  color: var(--overlay-text);
   z-index: var(--z-popover);
   animation: undoToastIn 0.2s ease-out;
 }
@@ -52,7 +52,7 @@
   border: 1px solid rgb(236 230 221 / 0.35);
   border-radius: 7px;
   background: transparent;
-  color: #ece6dd;
+  color: var(--overlay-text);
   font-family: var(--font-ui);
   font-size: 13px;
   font-weight: 600;
@@ -80,7 +80,7 @@
 }
 
 .undo-toast-close:hover {
-  color: #ece6dd;
+  color: var(--overlay-text);
   background: rgb(236 230 221 / 0.12);
 }
 

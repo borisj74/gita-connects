@@ -535,6 +535,9 @@ function App() {
                 getNetworkState={getNetworkState}
                 selectedVerseId={selectedVerseId}
                 onLoadNetwork={handleLoadNetwork}
+                onExport={() => setExportOpen(true)}
+                canExport={networkVerses.size > 0}
+                onExportUsage={() => downloadJson(`gita-usage-${new Date().toISOString().slice(0, 10)}.json`, collectUsage())}
               />
             </div>
             <div className="tb-desktop-only">
@@ -543,9 +546,6 @@ function App() {
                 onToggleTheme={toggleTheme}
                 onClearCanvas={handleClearAll}
                 canClear={networkVerses.size > 0}
-                onExport={() => setExportOpen(true)}
-                canExport={networkVerses.size > 0}
-                onExportUsage={() => downloadJson(`gita-usage-${new Date().toISOString().slice(0, 10)}.json`, collectUsage())}
                 onOpenAccount={cloudEnabled ? () => setAccountOpen(true) : undefined}
                 accountEmail={session ? accountLabel(session) : null}
                 onShowShortcuts={() => setShortcutsOpen(true)}

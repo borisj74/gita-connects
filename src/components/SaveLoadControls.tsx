@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
-import { Save, FolderOpen, X, Trash2, Check, AlertTriangle, ChevronDown, FilePlus, Download } from 'lucide-react';
+import { Save, FolderOpen, X, Trash2, Check, AlertTriangle, ChevronDown, FilePlus, Download, FileJson } from 'lucide-react';
 import type { Node, Edge } from 'reactflow';
 import SavedNetworksDialog, { type SavedNetwork } from './SavedNetworksDialog.js';
 import { useNetworks, setNetworks, newNetworkId } from '../networksStore.js';
@@ -27,6 +27,12 @@ interface SaveLoadControlsProps {
   getNetworkState: () => { nodes: Node[]; edges: Edge[] };
   selectedVerseId: string | null;
   onLoadNetwork: (nodes: Node[], edges: Edge[], selectedVerseId: string | null) => void;
+  /** Export the canvas as a picture or a document. */
+  onExport?: () => void;
+  /** False when there is nothing on the canvas to export. */
+  canExport?: boolean;
+  /** Download per-verse attention counts from this device. */
+  onExportUsage?: () => void;
 }
 
 
@@ -41,6 +47,9 @@ const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(
   getNetworkState,
   selectedVerseId,
   onLoadNetwork,
+  onExport,
+  canExport = true,
+  onExportUsage,
 }: SaveLoadControlsProps, ref) {
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [showLoadModal, setShowLoadModal] = useState(false);
@@ -316,17 +325,32 @@ const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(
               <FolderOpen size={16} />
               <span className="tb-menu-item-label">All networks…</span>
             </button>
-            <button
-              type="button"
-              role="menuitem"
-              className="tb-menu-item"
-              disabled
-              title="Coming soon"
-            >
-              <Download size={16} />
-              <span className="tb-menu-item-label">Export as PNG or PDF…</span>
-              <span className="tb-menu-item-hint">Soon</span>
-            </button>
+            {(onExport || onExportUsage) && <div className="tb-menu-divider" role="separator" />}
+            {onExport && (
+              <button
+                type="button"
+                role="menuitem"
+                className="tb-menu-item"
+                onClick={() => { setMenuOpen(false); triggerRef.current?.focus(); onExport(); }}
+                disabled={!canExport}
+                title={canExport ? undefined : 'Add a verse first'}
+              >
+                <Download size={16} />
+                <span className="tb-menu-item-label">Export as PNG or PDF…</span>
+              </button>
+            )}
+            {onExportUsage && (
+              <button
+                type="button"
+                role="menuitem"
+                className="tb-menu-item"
+                onClick={() => { setMenuOpen(false); triggerRef.current?.focus(); onExportUsage(); }}
+              >
+                <FileJson size={16} />
+                <span className="tb-menu-item-label">Export usage data</span>
+                <span className="tb-menu-item-hint">JSON</span>
+              </button>
+            )}
           </div>
         )}
       </div>

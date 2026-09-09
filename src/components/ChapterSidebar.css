@@ -14,7 +14,7 @@
   padding-right: calc(1rem + 2px);
   position: relative;
   z-index: 1;
-  background: white;
+  background: var(--surface);
   scrollbar-width: thin;
   scrollbar-color: var(--brown-400) var(--beige-200);
 }
@@ -86,7 +86,7 @@
 
 .chapter-number {
   font-size: 0.6875rem;
-  color: #DC2626;
+  color: var(--verse-id);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -123,8 +123,8 @@
 }
 
 .verse-item {
-  background: #FAFAF9;
-  border: 1px solid #E7E5E4;
+  background: var(--surface-sunken);
+  border: 1px solid var(--surface-border);
   border-radius: 6px;
   padding: 0.75rem;
   padding-left: 2rem;
@@ -165,7 +165,7 @@
   border-radius: 8px;
   border: 1px solid var(--sage-500, #7d8a6e);
   background: transparent;
-  color: var(--sage-600, #69765a);
+  color: var(--accent-sage-text);
   cursor: pointer;
   transition: all var(--transition-base);
 }
@@ -192,7 +192,7 @@
 
 /* Verses already on the canvas */
 .chapter-count-active {
-  color: var(--sage-600, #69765a);
+  color: var(--accent-sage-text);
   font-weight: 600;
 }
 
@@ -203,7 +203,7 @@
 
 .verse-in-network-icon {
   opacity: 1;
-  color: var(--sage-600, #69765a);
+  color: var(--accent-sage-text);
 }
 
 .verse-item.in-network:hover .verse-in-network-icon {
@@ -230,7 +230,7 @@
 
 .verse-number {
   font-size: 0.75rem;
-  color: #DC2626;
+  color: var(--verse-id);
   font-weight: 600;
   margin-bottom: 0.375rem;
   font-family: var(--font-ui);
@@ -238,7 +238,7 @@
 
 .verse-theme {
   font-size: 0.875rem;
-  color: #292524;
+  color: var(--ink-strong);
   font-weight: 500;
   margin-bottom: 0.5rem;
   line-height: 1.3;

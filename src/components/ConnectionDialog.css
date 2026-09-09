@@ -21,7 +21,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.4rem 0.75rem;
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--beige-300);
   border-radius: 999px;
   cursor: pointer;
@@ -59,7 +59,7 @@
   border-radius: 6px;
   font-size: 0.875rem;
   font-family: inherit;
-  background: white;
+  background: var(--surface);
   color: var(--brown-900);
   transition: border-color var(--transition-base);
 }

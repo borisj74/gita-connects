@@ -52,7 +52,32 @@
 
   /* Overlays and keyboard focus */
   --scrim: rgb(31 26 22 / 0.45);
+  /* Tooltips, toasts and hint bars read as a layer above the page, so they
+     stay dark in both themes. Building them from --brown-900 looked right in
+     light mode and inverted to near-white text on near-white in dark. */
+  --overlay-bg: #3a3530;
+  --overlay-text: #ece6dd;
+  --overlay-text-muted: #b6ada1;
+
+  /* Surfaces. Cards, buttons and menus were hardcoded white, which held in
+     light mode but left light panels under light text once the text tokens
+     flipped for dark. */
+  --surface: #ffffff;
+  --surface-sunken: #fafaf9;
+  --surface-border: #e7e5e4;
+  /* Verse numbers: a red that stays legible on either ground. */
+  --verse-id: #dc2626;
+  --ink-strong: #292524;
+  --ink-body: #374151;
+  --ink-muted: #6b7280;
+  /* Accents as *text*. The same sage and terracotta also serve as button
+     backgrounds with white text, so they cannot simply be lightened for dark
+     mode without wrecking those; text gets its own pair instead. */
+  --accent-sage-text: var(--sage-600);
+  --accent-terracotta-text: var(--terracotta-600);
+  --ink-soft: var(--brown-500);
   --note-bg: #f3f5ef;
+  --note-border: var(--sage-500);
   --focus-ring: #3a3530;
 
   /* Typography */
@@ -423,4 +448,20 @@ p, li, dd {
 
 [data-theme="dark"] {
   --focus-ring: #ece6dd;
+  /* Chips and the note surface are tinted paper in light mode; in dark they
+     have to be tinted ink, or they punch a white hole in the page. */
+  --chip-bg: #3a2c25;
+  --chip-border: #5c453a;
+  --note-bg: #232a20;
+
+  --surface: #211d19;
+  --surface-sunken: #1c1913;
+  --surface-border: #3a342d;
+  --verse-id: #f2867a;
+  --ink-strong: #ece6dd;
+  --ink-body: #d8cfc3;
+  --ink-muted: #a99e8f;
+  --accent-sage-text: #a9bb96;
+  --accent-terracotta-text: #e6a184;
+  --ink-soft: #b3a591;
 }

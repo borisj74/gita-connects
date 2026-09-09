@@ -11,7 +11,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  background: white;
+  background: var(--surface);
   padding: 0.3rem 0.65rem;
   border-radius: 999px;
   font-size: 0.75rem;
@@ -53,7 +53,7 @@
   bottom: calc(100% + 0.625rem);
   left: 50%;
   transform: translateX(-50%);
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--beige-300);
   border-radius: 12px;
   padding: 0.875rem 1rem;

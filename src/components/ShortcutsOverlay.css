@@ -76,7 +76,7 @@
   letter-spacing: 0.08em;
   line-height: 14px;
   text-transform: uppercase;
-  color: var(--terracotta-600);
+  color: var(--accent-terracotta-text);
 }
 
 .sc-row {
@@ -102,7 +102,7 @@
   padding: 3px 8px;
   border: 1px solid var(--beige-300);
   border-radius: 5px;
-  background: white;
+  background: var(--surface);
   font-family: var(--font-ui);
   font-size: 12px;
   font-weight: 500;

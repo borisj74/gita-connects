@@ -11,7 +11,7 @@
   padding: 0 14px;
   border: 1px solid var(--beige-300);
   border-radius: 8px;
-  background: white;
+  background: var(--surface);
   color: var(--brown-700);
   font-family: var(--font-ui);
   font-size: 14px;
@@ -161,7 +161,7 @@
   display: flex;
   flex-direction: column;
   padding: 6px;
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--beige-300);
   border-radius: 8px;
   box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
@@ -331,7 +331,7 @@
   align-items: center;
   gap: 6px;
   padding: 5px;
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--beige-300);
   border-radius: 10px;
   box-shadow: var(--shadow);
@@ -423,7 +423,7 @@
   align-items: center;
   gap: 6px;
   padding: 7px 12px;
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--beige-300);
   border-radius: 999px;
   box-shadow: 0 2px 8px rgb(0 0 0 / 0.06);
@@ -437,11 +437,11 @@
 }
 
 .autosave-pill > svg {
-  color: var(--sage-600);
+  color: var(--accent-sage-text);
 }
 
 .autosave-pill.is-saving {
-  color: var(--brown-500);
+  color: var(--ink-soft);
 }
 
 .autosave-pill.is-saving > svg {
@@ -460,8 +460,8 @@
   gap: 10px;
   padding: 11px 16px;
   border-radius: 10px;
-  background: var(--brown-900);
-  color: white;
+  background: var(--overlay-bg);
+  color: var(--overlay-text);
   font-family: var(--font-ui);
   font-size: 13px;
   font-weight: 500;

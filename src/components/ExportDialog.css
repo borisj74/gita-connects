@@ -17,7 +17,7 @@
   padding: 14px 16px;
   border: 1px solid var(--beige-300);
   border-radius: 10px;
-  background: white;
+  background: var(--surface);
   color: var(--brown-700);
   cursor: pointer;
   transition: border-color var(--transition-base), background var(--transition-base);
@@ -30,11 +30,11 @@
 .export-option.is-selected {
   border-color: var(--sage-500);
   background: var(--sage-100);
-  color: var(--sage-600);
+  color: var(--accent-sage-text);
 }
 
 .export-option input {
-  accent-color: var(--sage-600);
+  accent-color: var(--accent-sage-text);
   margin: 0;
 }
 
@@ -75,7 +75,7 @@
 }
 
 .export-check input {
-  accent-color: var(--sage-600);
+  accent-color: var(--accent-sage-text);
   width: 16px;
   height: 16px;
   margin: 0;

@@ -18,7 +18,7 @@
   display: flex;
   flex-direction: column;
   border-right: 1px solid var(--beige-300);
-  background: white;
+  background: var(--surface);
 }
 
 .sidebar-wrapper.collapsed {
@@ -50,7 +50,7 @@
   height: 40px;
   border-radius: 8px;
   border: 1px solid var(--beige-300);
-  background: white;
+  background: var(--surface);
   color: var(--brown-700);
   cursor: pointer;
   display: flex;
@@ -109,7 +109,7 @@
 }
 
 .app-header {
-  background: white;
+  background: var(--surface);
   border-bottom: 1px solid var(--beige-300);
   padding: 1.5rem 50px;
   position: sticky;
@@ -163,7 +163,7 @@
 .section-header {
   padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--beige-200);
-  background: white;
+  background: var(--surface);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -324,7 +324,7 @@
   height: 40px;
   border-radius: 8px;
   border: 1px solid var(--beige-300);
-  background: white;
+  background: var(--surface);
   color: var(--brown-700);
   cursor: pointer;
   display: flex;
@@ -361,7 +361,7 @@
   height: 44px;
   border-radius: 8px;
   border: 1px solid var(--beige-300);
-  background: white;
+  background: var(--surface);
   color: var(--brown-700);
   box-shadow: var(--shadow);
   cursor: pointer;
@@ -380,7 +380,7 @@
   top: calc(100% + 8px);
   right: 0;
   min-width: 200px;
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--beige-300);
   border-radius: 10px;
   box-shadow: var(--shadow-lg);
@@ -423,7 +423,7 @@
 }
 
 .mobile-menu-item.danger {
-  color: var(--terracotta-600);
+  color: var(--accent-terracotta-text);
 }
 
 .mobile-menu-filters {

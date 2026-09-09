@@ -8,8 +8,8 @@
   transform: translate(16px, -50%);
   border: 1px solid rgb(255 255 255 / 0.18);
   border-radius: 999px;
-  background: rgb(31 26 22 / 0.92);
-  color: white;
+  background: var(--overlay-bg);
+  color: var(--overlay-text);
   font-family: var(--font-ui);
   font-size: 12px;
   font-weight: 500;

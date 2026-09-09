@@ -15,7 +15,7 @@
   display: flex;
   flex-direction: column;
   overflow: clip;
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--beige-300);
   border-radius: 10px;
   box-shadow: 0 12px 32px rgb(0 0 0 / 0.14);
@@ -79,7 +79,7 @@
 
 /* The state you are already in reads as the accent, not as a control */
 .filters-bulk-btn.is-current {
-  color: var(--terracotta-600);
+  color: var(--accent-terracotta-text);
   cursor: default;
 }
 
@@ -134,14 +134,14 @@
   height: 16px;
   border: 1px solid var(--beige-400);
   border-radius: 4px;
-  background: white;
+  background: var(--surface);
   color: white;
   transition: background var(--transition-fast), border-color var(--transition-fast);
 }
 
 .filter-checkbox.is-checked {
   background: var(--terracotta-600);
-  border-color: var(--terracotta-600);
+  border-color: var(--accent-terracotta-text);
 }
 
 .filter-checkbox-input:focus-visible + .filter-checkbox {
@@ -235,7 +235,7 @@
   font-size: 13.5px;
   font-weight: 500;
   line-height: 18px;
-  color: var(--sage-600);
+  color: var(--accent-sage-text);
   cursor: pointer;
 }
 
@@ -259,7 +259,7 @@
   padding: 7px 10px;
   border: 1px solid var(--beige-300);
   border-radius: 6px;
-  background: white;
+  background: var(--surface);
   font-family: var(--font-ui);
   font-size: 13.5px;
   line-height: 18px;
@@ -327,7 +327,7 @@
 
 .filters-new-cancel {
   border: 1px solid var(--beige-300);
-  background: white;
+  background: var(--surface);
   color: var(--brown-700);
 }
 
@@ -361,7 +361,7 @@
   display: flex;
   align-items: flex-start;
   gap: 6px;
-  color: var(--brown-500);
+  color: var(--ink-soft);
 }
 
 .filters-legend > svg {

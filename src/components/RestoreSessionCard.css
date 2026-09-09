@@ -7,7 +7,7 @@
   z-index: 6;
   width: min(540px, calc(100% - 48px));
   padding: 28px 28px 24px;
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--beige-200);
   border-radius: 16px;
   box-shadow: 0 12px 32px rgb(0 0 0 / 0.08);
