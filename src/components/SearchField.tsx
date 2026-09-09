@@ -51,7 +51,7 @@ const SearchField = forwardRef<SearchFieldRef, SearchFieldProps>(
     const isMobile = useMediaQuery(MOBILE_BREAKPOINT);
     const [query, setQuery] = useState('');
     const [open, setOpen] = useState(false);
-    const [expanded, setExpanded] = useState(false);
+    const [wantsExpanded, setExpanded] = useState(false);
     const [activeIndex, setActiveIndex] = useState(0);
     const rootRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -67,11 +67,9 @@ const SearchField = forwardRef<SearchFieldRef, SearchFieldProps>(
       },
     }));
 
-    // Collapsing on a wider screen would strand the field closed; opening it
-    // there is meaningless. Keep the two in step.
-    useEffect(() => {
-      if (!isMobile) setExpanded(false);
-    }, [isMobile]);
+    // Expanding is only meaningful on mobile, where the field starts as an
+    // icon. Deriving it means a widening screen collapses it for free.
+    const expanded = isMobile && wantsExpanded;
 
     useEffect(() => {
       if (!open && !expanded) return;

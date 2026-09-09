@@ -133,11 +133,16 @@ function App() {
   useEffect(() => {
     if (remoteSettings === 0) return;
     const prefs = readPreferences();
+    // Adopting a pull is exactly the "external system changed" case the rule
+    // exempts; the version counter is only how the store announces it, so the
+    // reads have to happen here rather than in the subscribe callback.
+    /* eslint-disable react-hooks/set-state-in-effect */
     setCustomTypes(readCustomTypes());
     setTheme(prefs.theme);
     setActiveFilters(
       loadActiveFilters([...PREDEFINED_CONNECTION_TYPES, ...readCustomTypes()].map((t) => t.id)),
     );
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [remoteSettings]);
 
   // Close mobile menu on outside click.

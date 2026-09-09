@@ -33,7 +33,7 @@ interface SavedNetworksDialogProps {
 
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
-export function savedAgo(timestamp: number): string {
+function savedAgo(timestamp: number): string {
   const diff = Date.now() - timestamp;
   const min = Math.round(diff / 60_000);
   if (min < 1) return 'saved just now';
