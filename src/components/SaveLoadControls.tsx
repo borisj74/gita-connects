@@ -1,34 +1,55 @@
-import { useState, forwardRef, useImperativeHandle } from 'react';
-import { Save, FolderOpen, X, Trash2, Check, AlertTriangle } from 'lucide-react';
+import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { Save, FolderOpen, X, Trash2, Check, AlertTriangle, ChevronDown, FilePlus, Download, FileJson } from 'lucide-react';
 import type { Node, Edge } from 'reactflow';
+import SavedNetworksDialog, { type SavedNetwork } from './SavedNetworksDialog.js';
+import { useNetworks, setNetworks, newNetworkId } from '../networksStore.js';
+import ScrimHint from './ScrimHint.js';
+import DeleteNetworkDialog from './DeleteNetworkDialog.js';
 import './SaveLoadControls.css';
+import './Toolbar.css';
 
-interface SavedNetwork {
-  id: string;
-  name: string;
-  timestamp: number;
-  nodes: Node[];
-  edges: Edge[];
-  selectedVerseId: string | null;
+function relativeTime(timestamp: number): string {
+  const diff = Date.now() - timestamp;
+  const min = Math.round(diff / 60_000);
+  if (min < 1) return 'just now';
+  if (min < 60) return `${min} min ago`;
+  const hr = Math.round(min / 60);
+  if (hr < 24) return hr === 1 ? '1 hour ago' : `${hr} hours ago`;
+  const day = Math.round(hr / 24);
+  if (day === 1) return 'yesterday';
+  if (day < 7) return `${day} days ago`;
+  const wk = Math.round(day / 7);
+  if (wk < 5) return wk === 1 ? 'last week' : `${wk} weeks ago`;
+  return new Date(timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 interface SaveLoadControlsProps {
   getNetworkState: () => { nodes: Node[]; edges: Edge[] };
   selectedVerseId: string | null;
   onLoadNetwork: (nodes: Node[], edges: Edge[], selectedVerseId: string | null) => void;
+  /** Export the canvas as a picture or a document. */
+  onExport?: () => void;
+  /** False when there is nothing on the canvas to export. */
+  canExport?: boolean;
+  /** Download per-verse attention counts from this device. */
+  onExportUsage?: () => void;
 }
 
-const STORAGE_KEY = 'gita-connects-saved-networks';
 
 export interface SaveLoadControlsRef {
   openSave: () => void;
   openLoad: () => void;
+  /** Overwrite the currently loaded network, or open the save dialog if none is loaded. */
+  saveChanges: () => void;
 }
 
 const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(function SaveLoadControls({
   getNetworkState,
   selectedVerseId,
   onLoadNetwork,
+  onExport,
+  canExport = true,
+  onExportUsage,
 }: SaveLoadControlsProps, ref) {
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [showLoadModal, setShowLoadModal] = useState(false);
@@ -37,15 +58,38 @@ const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
   const [currentNetworkState, setCurrentNetworkState] = useState<{ nodes: Node[]; edges: Edge[] }>({ nodes: [], edges: [] });
-  const [savedNetworks, setSavedNetworks] = useState<SavedNetwork[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      const parsed = saved ? JSON.parse(saved) : [];
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
-  });
+  // Owned by networksStore so cloud sync can write the same list.
+  const savedNetworks = useNetworks();
+
+  // Identity of the network currently on the canvas (set on save/load) so
+  // "Save changes" can overwrite in place instead of always creating a copy.
+  const [currentId, setCurrentId] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as globalThis.Node)) setMenuOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuOpen(false);
+    };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [menuOpen]);
+
+  useEffect(() => {
+    if (!justSaved) return;
+    const t = setTimeout(() => setJustSaved(false), 1500);
+    return () => clearTimeout(t);
+  }, [justSaved]);
 
   const handleOpenSaveModal = () => {
     // Get the network state when opening the modal (in event handler, not during render)
@@ -54,9 +98,74 @@ const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(
     setShowSaveModal(true);
   };
 
+
+  const handleSaveChanges = () => {
+    const current = currentId ? savedNetworks.find((n) => n.id === currentId) : undefined;
+    if (!current) {
+      handleOpenSaveModal();
+      return;
+    }
+    const state = getNetworkState();
+    if (state.nodes.length === 0) {
+      handleOpenSaveModal();
+      return;
+    }
+    const updated = savedNetworks.map((n) =>
+      n.id === current.id
+        ? { ...n, timestamp: Date.now(), nodes: state.nodes, edges: state.edges, selectedVerseId }
+        : n,
+    );
+    if (setNetworks(updated)) {
+      setCurrentNetworkState(state);
+      setJustSaved(true);
+    }
+  };
+
+  const handleOpenLibrary = () => {
+    // Menu items unmount when the menu closes, so park focus on the trigger
+    // first; the dialog returns focus there when it closes.
+    triggerRef.current?.focus();
+    setCurrentNetworkState(getNetworkState());
+    setShowLoadModal(true);
+  };
+
+  const handleRename = (id: string, name: string) => {
+    const updated = savedNetworks.map((n) => (n.id === id ? { ...n, name } : n));
+    setNetworks(updated);
+  };
+
+  const handleDuplicate = (id: string) => {
+    const source = savedNetworks.find((n) => n.id === id);
+    if (!source) return;
+    const copy: SavedNetwork = {
+      ...source,
+      id: newNetworkId(),
+      name: `${source.name} (copy)`,
+      timestamp: Date.now(),
+    };
+    const updated = [...savedNetworks, copy];
+    setNetworks(updated);
+  };
+
+  const handleImport = (incoming: SavedNetwork[]) => {
+    // Imported networks get fresh ids so they never collide with existing ones.
+    const base = Date.now();
+    const stamped = incoming.map((n) => ({
+      id: newNetworkId(),
+      name: n.name,
+      timestamp: typeof n.timestamp === 'number' ? n.timestamp : base,
+      nodes: n.nodes,
+      edges: n.edges,
+      selectedVerseId: n.selectedVerseId ?? null,
+    }));
+    const updated = [...savedNetworks, ...stamped];
+    setNetworks(updated);
+  };
+
   useImperativeHandle(ref, () => ({
     openSave: handleOpenSaveModal,
-    openLoad: () => setShowLoadModal(true),
+    openLoad: handleOpenLibrary,
+    saveChanges: handleSaveChanges,
   }));
 
   const handleSave = () => {
@@ -74,7 +183,7 @@ const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(
     }
 
     const newNetwork: SavedNetwork = {
-      id: Date.now().toString(),
+      id: newNetworkId(),
       name: networkName.trim(),
       timestamp: Date.now(),
       nodes: currentNetworkState.nodes,
@@ -83,13 +192,12 @@ const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(
     };
 
     const updated = [...savedNetworks, newNetwork];
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    } catch {
+    if (!setNetworks(updated)) {
       setSaveError('Could not save: browser storage is full. Delete old networks and try again.');
       return;
     }
-    setSavedNetworks(updated);
+    setNetworks(updated);
+    setCurrentId(newNetwork.id);
 
     setSaveSuccess(`Network "${newNetwork.name}" saved!`);
     setNetworkName('');
@@ -103,24 +211,18 @@ const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(
 
   const handleLoad = (network: SavedNetwork) => {
     onLoadNetwork(network.nodes, network.edges, network.selectedVerseId);
+    setCurrentId(network.id);
     setShowLoadModal(false);
-  };
-
-  const handleDeleteClick = (id: string, name: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setDeleteConfirm({ id, name });
+    setMenuOpen(false);
   };
 
   const handleDeleteConfirm = () => {
     if (!deleteConfirm) return;
 
     const updated = savedNetworks.filter(n => n.id !== deleteConfirm.id);
-    setSavedNetworks(updated);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    } catch {
-      // Removing data only shrinks the payload; ignore storage errors here.
-    }
+    // Removing data only shrinks the payload; ignore storage errors here.
+    setNetworks(updated);
+    if (currentId === deleteConfirm.id) setCurrentId(null);
     setDeleteConfirm(null);
   };
 
@@ -135,218 +237,243 @@ const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(
     setNetworkName('');
   };
 
-  const formatDate = (timestamp: number) => {
-    const date = new Date(timestamp);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+  const recent = [...savedNetworks].sort((a, b) => b.timestamp - a.timestamp).slice(0, 3);
 
   return (
     <>
-      <div className="save-load-controls">
+      <div className="tb-menu-anchor save-load-controls" ref={menuRef}>
         <button
-          className="control-button icon-only save-button"
-          onClick={handleOpenSaveModal}
-          title="Save network"
-          aria-label="Save network"
+          ref={triggerRef}
+          type="button"
+          className="tb-button"
+          onClick={() => setMenuOpen((v) => !v)}
+          aria-haspopup="menu"
+          aria-expanded={menuOpen}
+          aria-label="Networks"
         >
-          <Save size={16} />
+          {justSaved ? (
+            <>
+              <Check size={16} /> Saved
+            </>
+          ) : (
+            'Networks'
+          )}
+          <ChevronDown size={16} className="tb-chevron" />
         </button>
-        <button
-          className="control-button icon-only load-button"
-          onClick={() => setShowLoadModal(true)}
-          title="Load network"
-          aria-label="Load network"
-        >
-          <FolderOpen size={16} />
-        </button>
+
+        {menuOpen && (
+          <div className="tb-menu tb-networks-menu" role="menu">
+            <button
+              type="button"
+              role="menuitem"
+              className="tb-menu-item"
+              onClick={() => { setMenuOpen(false); handleSaveChanges(); }}
+            >
+              <Save size={16} />
+              <span className="tb-menu-item-label">Save changes</span>
+              <span className="tb-menu-item-hint">⌘S</span>
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              className="tb-menu-item"
+              onClick={() => { setMenuOpen(false); handleOpenSaveModal(); }}
+            >
+              <FilePlus size={16} />
+              <span className="tb-menu-item-label">Save as new…</span>
+            </button>
+
+            <div className="tb-menu-divider" role="separator" />
+            <div className="tb-menu-heading">Recent</div>
+            {recent.length === 0 ? (
+              <div className="tb-recent-empty">No saved networks yet.</div>
+            ) : (
+              recent.map((network) => (
+                <div key={network.id} className="tb-recent-row">
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="tb-recent-open"
+                    onClick={() => handleLoad(network)}
+                    title={`Open ${network.name}`}
+                  >
+                    <span className="tb-recent-name">{network.name}</span>
+                    <span className="tb-recent-meta">
+                      {network.nodes.length} verses · {network.edges.length} links · {relativeTime(network.timestamp)}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    className="tb-recent-delete"
+                    onClick={(e) => { e.stopPropagation(); setDeleteConfirm({ id: network.id, name: network.name }); }}
+                    aria-label={`Delete ${network.name}`}
+                    title="Delete network"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))
+            )}
+
+            <div className="tb-menu-divider" role="separator" />
+            <button
+              type="button"
+              role="menuitem"
+              className="tb-menu-item"
+              onClick={() => { setMenuOpen(false); handleOpenLibrary(); }}
+            >
+              <FolderOpen size={16} />
+              <span className="tb-menu-item-label">All networks…</span>
+            </button>
+            {(onExport || onExportUsage) && <div className="tb-menu-divider" role="separator" />}
+            {onExport && (
+              <button
+                type="button"
+                role="menuitem"
+                className="tb-menu-item"
+                onClick={() => { setMenuOpen(false); triggerRef.current?.focus(); onExport(); }}
+                disabled={!canExport}
+                title={canExport ? undefined : 'Add a verse first'}
+              >
+                <Download size={16} />
+                <span className="tb-menu-item-label">Export as PNG or PDF…</span>
+              </button>
+            )}
+            {onExportUsage && (
+              <button
+                type="button"
+                role="menuitem"
+                className="tb-menu-item"
+                onClick={() => { setMenuOpen(false); triggerRef.current?.focus(); onExportUsage(); }}
+              >
+                <FileJson size={16} />
+                <span className="tb-menu-item-label">Export usage data</span>
+                <span className="tb-menu-item-hint">JSON</span>
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Save Modal */}
+      {/* Save as new */}
       {showSaveModal && (
-        <div className="modal-overlay" onClick={handleCloseSaveModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Save Network</h3>
+        <div className="modal-overlay saved-dialog-overlay" onClick={handleCloseSaveModal}>
+          <ScrimHint />
+          <div
+            className="saved-dialog save-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="save-dialog-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="saved-dialog-header">
+              <div>
+                <h2 id="save-dialog-title" className="saved-dialog-title">Save network</h2>
+                <p className="saved-dialog-subtitle">
+                  {currentNetworkState.nodes.length === 0
+                    ? 'Nothing on the canvas yet'
+                    : `${currentNetworkState.nodes.length} ${currentNetworkState.nodes.length === 1 ? 'verse' : 'verses'} · ${currentNetworkState.edges.length} ${currentNetworkState.edges.length === 1 ? 'link' : 'links'} on the canvas`}
+                </p>
+              </div>
               <button
-                className="modal-close"
+                type="button"
+                className="saved-dialog-close"
                 onClick={handleCloseSaveModal}
                 aria-label="Close"
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
-            <div className="modal-body">
+
+            <div className="save-dialog-body">
               {currentNetworkState.nodes.length === 0 ? (
-                <div className="empty-networks">
-                  <Save size={48} className="empty-icon" />
+                <div className="saved-empty">
                   <p>No verses in network</p>
-                  <p className="empty-hint">
-                    Drag some verses into the network before saving.
-                  </p>
+                  <p className="saved-empty-hint">Drag some verses into the network before saving.</p>
                 </div>
               ) : (
                 <>
-                  <p className="modal-description">
-                    Give your network a name to save it for later.
-                  </p>
-                  <div className="input-wrapper">
-                    <input
-                      type="text"
-                      className={`network-name-input ${saveError ? 'has-error' : ''}`}
-                      placeholder="e.g., Karma Yoga Study"
-                      value={networkName}
-                      onChange={(e) => {
-                        setNetworkName(e.target.value);
-                        setSaveError(null);
-                      }}
-                      onKeyDown={(e) => e.key === 'Enter' && handleSave()}
-                      autoFocus
-                      maxLength={50}
-                    />
-                    {saveError && (
-                      <div className="input-error">
-                        <AlertTriangle size={14} />
-                        {saveError}
-                      </div>
-                    )}
-                    {saveSuccess && (
-                      <div className="input-success">
-                        <Check size={14} />
-                        {saveSuccess}
-                      </div>
-                    )}
-                  </div>
-                  <div className="network-info">
-                    <span>{currentNetworkState.nodes.length} verses</span>
-                    <span>•</span>
-                    <span>{currentNetworkState.edges.length} connections</span>
-                  </div>
+                  <label className="save-dialog-label" htmlFor="save-dialog-name">Name</label>
+                  <input
+                    id="save-dialog-name"
+                    type="text"
+                    className={`save-dialog-input ${saveError ? 'has-error' : ''}`}
+                    placeholder="e.g., Karma Yoga Study"
+                    value={networkName}
+                    onChange={(e) => {
+                      setNetworkName(e.target.value);
+                      setSaveError(null);
+                    }}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+                    autoFocus
+                    maxLength={50}
+                  />
+                  {saveError && (
+                    <div className="save-dialog-error">
+                      <AlertTriangle size={14} />
+                      {saveError}
+                    </div>
+                  )}
+                  {saveSuccess && (
+                    <div className="save-dialog-success">
+                      <Check size={14} />
+                      {saveSuccess}
+                    </div>
+                  )}
                 </>
               )}
             </div>
-            <div className="modal-footer">
-              <button
-                className="modal-button cancel-button"
-                onClick={handleCloseSaveModal}
-              >
-                Cancel
-              </button>
-              <button
-                className="modal-button save-modal-button"
-                onClick={handleSave}
-                disabled={!networkName.trim() || !!saveSuccess || currentNetworkState.nodes.length === 0}
-              >
-                Save Network
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Load Modal */}
-      {showLoadModal && (
-        <div className="modal-overlay" onClick={() => setShowLoadModal(false)}>
-          <div className="modal-content load-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Load Network</h3>
-              <button
-                className="modal-close"
-                onClick={() => setShowLoadModal(false)}
-                aria-label="Close"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <div className="modal-body">
-              {savedNetworks.length === 0 ? (
-                <div className="empty-networks">
-                  <FolderOpen size={48} className="empty-icon" />
-                  <p>No saved networks yet</p>
-                  <p className="empty-hint">
-                    Create a network and click Save to save it for later.
-                  </p>
-                </div>
-              ) : (
-                <div className="networks-list">
-                  {savedNetworks
-                    .sort((a, b) => b.timestamp - a.timestamp)
-                    .map((network) => (
-                      <div
-                        key={network.id}
-                        className="network-item"
-                        onClick={() => handleLoad(network)}
-                      >
-                        <div className="network-item-header">
-                          <h4 className="network-name">{network.name}</h4>
-                          <button
-                            className="delete-button"
-                            onClick={(e) => handleDeleteClick(network.id, network.name, e)}
-                            aria-label="Delete network"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                        <div className="network-meta">
-                          <span>{network.nodes.length} verses</span>
-                          <span>•</span>
-                          <span>{network.edges.length} connections</span>
-                          <span>•</span>
-                          <span className="network-date">{formatDate(network.timestamp)}</span>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Confirmation Dialog */}
-      {deleteConfirm && (
-        <div className="modal-overlay" onClick={handleDeleteCancel}>
-          <div className="modal-content delete-modal" onClick={(e) => e.stopPropagation()} role="alertdialog" aria-labelledby="delete-title" aria-describedby="delete-desc">
-            <div className="modal-header">
-              <h3 id="delete-title">Delete Network</h3>
-              <button
-                className="modal-close"
-                onClick={handleDeleteCancel}
-                aria-label="Close"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <div className="modal-body">
-              <div className="delete-warning">
-                <AlertTriangle size={24} className="warning-icon" />
-                <p id="delete-desc">
-                  Are you sure you want to delete <strong>"{deleteConfirm.name}"</strong>? This action cannot be undone.
-                </p>
+            <div className="saved-dialog-footer">
+              <p className="saved-dialog-note">Saved to this browser. You can rename or export it later from Networks.</p>
+              <div className="saved-footer-actions">
+                <button type="button" className="saved-btn-secondary" onClick={handleCloseSaveModal}>
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="saved-btn-primary"
+                  onClick={handleSave}
+                  disabled={!networkName.trim() || !!saveSuccess || currentNetworkState.nodes.length === 0}
+                >
+                  Save network
+                </button>
               </div>
             </div>
-            <div className="modal-footer">
-              <button
-                className="modal-button cancel-button"
-                onClick={handleDeleteCancel}
-              >
-                Cancel
-              </button>
-              <button
-                className="modal-button delete-confirm-button"
-                onClick={handleDeleteConfirm}
-              >
-                Delete
-              </button>
-            </div>
           </div>
         </div>
       )}
+
+      {/* Saved networks library */}
+      {showLoadModal && (
+        <SavedNetworksDialog
+          networks={savedNetworks}
+          currentId={currentId}
+          canvas={currentNetworkState}
+          onOpen={handleLoad}
+          onSaveChanges={handleSaveChanges}
+          onSaveAsNew={() => { setShowLoadModal(false); handleOpenSaveModal(); }}
+          onRename={handleRename}
+          onDuplicate={handleDuplicate}
+          onDelete={(id, name) => setDeleteConfirm({ id, name })}
+          onImport={handleImport}
+          onClose={() => setShowLoadModal(false)}
+        />
+      )}
+
+      {/* Delete confirmation */}
+      {deleteConfirm && (() => {
+        const target = savedNetworks.find((n) => n.id === deleteConfirm.id);
+        return (
+          <DeleteNetworkDialog
+            name={deleteConfirm.name}
+            verseCount={target?.nodes.length ?? 0}
+            linkCount={target?.edges.length ?? 0}
+            onCancel={handleDeleteCancel}
+            onConfirm={handleDeleteConfirm}
+          />
+        );
+      })()}
     </>
   );
 });

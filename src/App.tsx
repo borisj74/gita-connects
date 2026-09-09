@@ -1,14 +1,22 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ReactFlowProvider } from 'reactflow';
 import type { Node, Edge } from 'reactflow';
-import { PanelRightOpen, Moon, Sun, Menu, Save, FolderOpen, LayoutGrid, Trash2, Search, BookOpen } from 'lucide-react';
+import { PanelRightOpen, Moon, Sun, Menu, Save, FolderOpen, LayoutGrid, Trash2, BookOpen, Check } from 'lucide-react';
 import { useMediaQuery, MOBILE_BREAKPOINT } from './hooks/useMediaQuery.js';
 import ChapterSidebar from './components/ChapterSidebar.js';
 import VerseNetwork, { type VerseNetworkRef } from './components/VerseNetwork.js';
 import VerseDetail from './components/VerseDetail.js';
-import SearchPalette from './components/SearchPalette.js';
+import SearchField, { type SearchFieldRef } from './components/SearchField.js';
 import ConnectionFilters from './components/ConnectionFilters.js';
 import SaveLoadControls, { type SaveLoadControlsRef } from './components/SaveLoadControls.js';
+import OverflowMenu from './components/OverflowMenu.js';
+import ClearCanvasDialog from './components/ClearCanvasDialog.js';
+import UndoToast from './components/UndoToast.js';
+import RestoreSessionCard from './components/RestoreSessionCard.js';
+import ShortcutsOverlay from './components/ShortcutsOverlay.js';
+import DeleteLinkTypeDialog from './components/DeleteLinkTypeDialog.js';
+import { readAutosave, clearAutosave, type Autosave } from './autosave.js';
+import './components/Toolbar.css';
 import {
   PREDEFINED_CONNECTION_TYPES,
   loadCustomConnectionTypes,
@@ -17,20 +25,64 @@ import {
   saveActiveFilters,
   type ConnectionTypeDef,
 } from './connectionTypes.js';
+import { verses } from './data/index.js';
+import { useNotes } from './notes.js';
+import { collectUsage, downloadJson } from './usage.js';
+import { buildPdf, downloadBlob, downloadDataUrl } from './exportNetwork.js';
+import ExportDialog, { type ExportFormat } from './components/ExportDialog.js';
+import AccountDialog from './components/AccountDialog.js';
+import { cloudEnabled } from './cloud/supabase.js';
+import { useSession, accountLabel } from './cloud/useSession.js';
+import { startSync, stopSync } from './cloud/sync.js';
+import {
+  persistWithSignal, useRemoteSettingsVersion, readPreferences, readCustomTypes,
+} from './settingsStore.js';
+import type { Concept } from './concepts.js';
 import './App.css';
 
 function App() {
   const isMobile = useMediaQuery(MOBILE_BREAKPOINT);
   const [selectedVerseId, setSelectedVerseId] = useState<string | null>(null);
+  // Concept chip acting as a filter (App 23): the sidebar narrows to verses
+  // that share it and unrelated cards on the canvas fade back.
+  const [conceptFilter, setConceptFilter] = useState<string | null>(null);
+  // Personal notes (App 29–31). `noteEdit` bumps to open the panel's editor.
+  const notes = useNotes();
+  const noteVerseIds = useMemo(() => new Set(Object.keys(notes)), [notes]);
+  const [noteEdit, setNoteEdit] = useState<{ verseId: string; seq: number } | null>(null);
+  const [noteToast, setNoteToast] = useState<string | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const { session } = useSession();
+
+  // Mirror this device's work to the account while one is signed in. Signing
+  // out stops the mirror and leaves the local copy untouched.
+  const userId = session?.user.id ?? null;
+  useEffect(() => {
+    if (!userId) {
+      stopSync();
+      return;
+    }
+    void startSync(userId);
+    return () => stopSync();
+  }, [userId]);
   const [sidebarOpen, setSidebarOpen] = useState(
     () => typeof window !== 'undefined' && window.innerWidth > 768,
   );
   const [customTypes, setCustomTypes] = useState<ConnectionTypeDef[]>(() =>
     loadCustomConnectionTypes(),
   );
+  // Custom types the reader deleted this session. They stay resolvable (colour,
+  // label) so that undoing the deletion brings the links back intact, but
+  // they no longer appear in the Link types menu.
+  const [retiredTypes, setRetiredTypes] = useState<ConnectionTypeDef[]>([]);
   const connectionTypes = useMemo(
     () => [...PREDEFINED_CONNECTION_TYPES, ...customTypes],
     [customTypes],
+  );
+  const renderableTypes = useMemo(
+    () => [...connectionTypes, ...retiredTypes],
+    [connectionTypes, retiredTypes],
   );
   const [activeFilters, setActiveFilters] = useState<Set<string>>(() =>
     loadActiveFilters([...PREDEFINED_CONNECTION_TYPES, ...loadCustomConnectionTypes()].map((t) => t.id)),
@@ -41,26 +93,57 @@ function App() {
     () => (localStorage.getItem('gita-connects-theme') as 'light' | 'dark') || 'light',
   );
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
+  const searchRef = useRef<SearchFieldRef>(null);
+  const [clearDialogOpen, setClearDialogOpen] = useState(false);
+  const [clearedToast, setClearedToast] = useState<{ verses: number; links: number } | null>(null);
+  const [removedLinksToast, setRemovedLinksToast] = useState<string | null>(null);
+  // Pending autosave from a previous session, until the user restores or declines.
+  const [pendingRestore, setPendingRestore] = useState<Autosave | null>(() => readAutosave());
+  const [autosaveStatus, setAutosaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [typeToDelete, setTypeToDelete] = useState<ConnectionTypeDef | null>(null);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const verseNetworkRef = useRef<VerseNetworkRef>(null);
   const saveLoadRef = useRef<SaveLoadControlsRef>(null);
 
+  // Each of these runs on mount too, where nothing has really changed.
+  // persistWithSignal stamps the settings only when the stored value actually
+  // differs, so a mount never registers as an edit and this device does not
+  // win every merge just by having loaded last.
+
   // Persist custom types whenever they change.
   useEffect(() => {
-    saveCustomConnectionTypes(customTypes);
+    persistWithSignal(() => saveCustomConnectionTypes(customTypes));
   }, [customTypes]);
 
   // Persist active filters so they survive reloads.
   useEffect(() => {
-    saveActiveFilters(activeFilters, connectionTypes.map((t) => t.id));
+    persistWithSignal(() => saveActiveFilters(activeFilters, connectionTypes.map((t) => t.id)));
   }, [activeFilters, connectionTypes]);
 
   // Apply + persist theme.
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    localStorage.setItem('gita-connects-theme', theme);
+    persistWithSignal(() => localStorage.setItem('gita-connects-theme', theme));
   }, [theme]);
+
+  // Settings pulled from another device: adopt them without re-persisting,
+  // which would look like a fresh local edit and bounce back to the server.
+  const remoteSettings = useRemoteSettingsVersion();
+  useEffect(() => {
+    if (remoteSettings === 0) return;
+    const prefs = readPreferences();
+    // Adopting a pull is exactly the "external system changed" case the rule
+    // exempts; the version counter is only how the store announces it, so the
+    // reads have to happen here rather than in the subscribe callback.
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setCustomTypes(readCustomTypes());
+    setTheme(prefs.theme);
+    setActiveFilters(
+      loadActiveFilters([...PREDEFINED_CONNECTION_TYPES, ...readCustomTypes()].map((t) => t.id)),
+    );
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [remoteSettings]);
 
   // Close mobile menu on outside click.
   useEffect(() => {
@@ -73,6 +156,44 @@ function App() {
     document.addEventListener('mousedown', onDown);
     return () => document.removeEventListener('mousedown', onDown);
   }, [mobileMenuOpen]);
+
+  const handleExport = useCallback(async (format: ExportFormat, includeNotes: boolean) => {
+    const net = verseNetworkRef.current;
+    if (!net?.captureImage) throw new Error('Canvas is not ready.');
+    const image = await net.captureImage();
+    const stamp = new Date().toISOString().slice(0, 10);
+    if (format === 'png') {
+      downloadDataUrl(`gita-network-${stamp}.png`, image.dataUrl);
+    } else {
+      const { nodes, edges } = net.getNetworkState();
+      const blob = await buildPdf({
+        title: 'Gita Connects network',
+        image,
+        nodes,
+        edges,
+        connectionTypes: renderableTypes,
+        includeNotes,
+      });
+      downloadBlob(`gita-network-${stamp}.pdf`, blob);
+    }
+    setExportOpen(false);
+    setNoteToast(`Exported ${format.toUpperCase()}`);
+  }, [renderableTypes]);
+
+  const handleOpenNote = useCallback((verseId: string) => {
+    setSelectedVerseId(verseId);
+    setNoteEdit((prev) => ({ verseId, seq: (prev?.seq ?? 0) + 1 }));
+  }, []);
+
+  const handleNoteSaved = useCallback((verseId: string) => {
+    setNoteToast(`Note saved to ${verseId}`);
+  }, []);
+
+  useEffect(() => {
+    if (!noteToast) return;
+    const t = setTimeout(() => setNoteToast(null), 2500);
+    return () => clearTimeout(t);
+  }, [noteToast]);
 
   const handleVerseSelect = useCallback((verseId: string) => {
     setSelectedVerseId(verseId);
@@ -97,41 +218,72 @@ function App() {
       const typing = tag === 'INPUT' || tag === 'TEXTAREA';
 
       if (e.key === 'Escape') {
-        if (searchOpen) {
-          setSearchOpen(false);
-        } else if (typing) {
+        if (typing) {
           (e.target as HTMLElement).blur();
         } else if (selectedVerseId) {
           setSelectedVerseId(null);
+        } else if (conceptFilter) {
+          setConceptFilter(null);
         }
         return;
       }
 
-      // Cmd/Ctrl+K — open search palette (works anywhere)
+      // Cmd/Ctrl+K — jump to the search field (works anywhere)
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        setSearchOpen(true);
+        searchRef.current?.focus();
         return;
       }
 
       // Cmd/Ctrl+S — save (works anywhere)
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
         e.preventDefault();
-        saveLoadRef.current?.openSave();
+        saveLoadRef.current?.saveChanges();
         return;
       }
 
       if (typing) return;
 
-      // "/" — open search palette
+      // "/" — jump to the search field
       if (e.key === '/') {
         e.preventDefault();
-        setSearchOpen(true);
+        searchRef.current?.focus();
+        return;
+      }
+
+      // "?" — keyboard shortcuts overlay (the overlay closes itself)
+      if (e.key === '?' && !shortcutsOpen) {
+        e.preventDefault();
+        setShortcutsOpen(true);
+        return;
+      }
+
+      // "B" — browse chapters
+      if (e.key.toLowerCase() === 'b' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        setSidebarOpen((v) => !v);
+        return;
+      }
+
+      // "N" — note on the open verse (a focused card handles its own N)
+      if (e.key.toLowerCase() === 'n' && !e.metaKey && !e.ctrlKey && !e.altKey && selectedVerseId) {
+        e.preventDefault();
+        handleOpenNote(selectedVerseId);
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selectedVerseId, searchOpen]);
+  }, [selectedVerseId, shortcutsOpen, conceptFilter, handleOpenNote]);
+
+  // Clicking the active chip again clears the filter.
+  const handleConceptSelect = useCallback((concept: string) => {
+    setConceptFilter((prev) => (prev === concept ? null : concept));
+  }, []);
+
+  const conceptMatchCount = useMemo(
+    () => (conceptFilter ? verses.filter((v) => v.concepts.includes(conceptFilter as Concept)).length : 0),
+    [conceptFilter],
+  );
 
   const handleToggleFilter = useCallback((type: string) => {
     setActiveFilters((prev) => {
@@ -144,6 +296,10 @@ function App() {
       return updated;
     });
   }, []);
+
+  const handleSetAllFilters = useCallback((active: boolean) => {
+    setActiveFilters(active ? new Set(connectionTypes.map((t) => t.id)) : new Set());
+  }, [connectionTypes]);
 
   const handleAddCustomType = useCallback((type: ConnectionTypeDef) => {
     setCustomTypes((prev) => {
@@ -158,14 +314,54 @@ function App() {
     });
   }, []);
 
-  const handleRemoveCustomType = useCallback((typeId: string) => {
-    setCustomTypes((prev) => prev.filter((t) => t.id !== typeId));
-    setActiveFilters((prev) => {
-      const updated = new Set(prev);
-      updated.delete(typeId);
-      return updated;
+  const removeCustomType = useCallback((typeId: string) => {
+    setCustomTypes((prev) => {
+      const type = prev.find((t) => t.id === typeId);
+      if (type) setRetiredTypes((r) => (r.some((t) => t.id === typeId) ? r : [...r, type]));
+      return prev.filter((t) => t.id !== typeId);
     });
+    // The filter stays on so that an undo shows the restored links.
     verseNetworkRef.current?.removeEdgesByType?.(typeId);
+  }, []);
+
+  // Removing a type deletes every canvas edge of that type, so confirm first,
+  // naming the count. Nothing to lose → no dialog.
+  const edgesOfType = useCallback(
+    (typeId: string) => networkEdges.filter((e) => (e.data as { typeId?: string } | undefined)?.typeId === typeId),
+    [networkEdges],
+  );
+  const handleRemoveCustomType = useCallback((typeId: string) => {
+    const type = customTypes.find((t) => t.id === typeId);
+    if (!type) return;
+    if (edgesOfType(typeId).length === 0) {
+      removeCustomType(typeId);
+      return;
+    }
+    setTypeToDelete(type);
+  }, [customTypes, edgesOfType, removeCustomType]);
+
+  const handleRestoreSession = useCallback(() => {
+    if (!pendingRestore) return;
+    verseNetworkRef.current?.loadNetwork(pendingRestore.nodes, pendingRestore.edges);
+    setPendingRestore(null);
+  }, [pendingRestore]);
+
+  const handleStartFresh = useCallback(() => {
+    clearAutosave();
+    setPendingRestore(null);
+  }, []);
+
+  const handleAutosaveStatus = useCallback((status: 'saving' | 'saved') => setAutosaveStatus(status), []);
+
+  // "All changes saved" lingers briefly, then gets out of the way.
+  useEffect(() => {
+    if (autosaveStatus !== 'saved') return;
+    const t = setTimeout(() => setAutosaveStatus('idle'), 2500);
+    return () => clearTimeout(t);
+  }, [autosaveStatus]);
+
+  const toggleTheme = useCallback(() => {
+    setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
   }, []);
 
   const handleAutoArrange = () => {
@@ -174,10 +370,52 @@ function App() {
     }
   };
 
+  // "Clear canvas…" opens a confirm; the actual clear happens on confirm.
   const handleClearAll = () => {
-    if (verseNetworkRef.current?.handleClearAll) {
-      verseNetworkRef.current.handleClearAll();
-    }
+    if (networkVerses.size === 0) return;
+    setClearDialogOpen(true);
+  };
+
+  const confirmClearCanvas = () => {
+    setClearDialogOpen(false);
+    const verses = networkVerses.size;
+    const links = networkEdges.length;
+    verseNetworkRef.current?.handleClearAll?.();
+    setRemovedLinksToast(null);
+    setClearedToast({ verses, links });
+  };
+
+  const undoClear = useCallback(() => {
+    setClearedToast(null);
+    verseNetworkRef.current?.undo?.();
+  }, []);
+
+  const dismissClearedToast = useCallback(() => setClearedToast(null), []);
+
+  const handleEdgesRemoved = useCallback((removed: { source: string; target: string; label: string }[]) => {
+    setClearedToast(null);
+    setRemovedLinksToast(
+      removed.length === 1
+        ? `Link removed — ${removed[0].source} → ${removed[0].target} · ${removed[0].label}`
+        : `${removed.length} links removed`,
+    );
+  }, []);
+  const undoRemovedLinks = useCallback(() => {
+    setRemovedLinksToast(null);
+    verseNetworkRef.current?.undo?.();
+  }, []);
+  const dismissRemovedLinks = useCallback(() => setRemovedLinksToast(null), []);
+
+  // The toast only makes sense while the canvas is still empty — if the user
+  // undoes via ⌘Z or adds a verse, it has nothing left to offer.
+  const handleNetworkVersesChange = useCallback((verses: Set<string>) => {
+    setNetworkVerses(verses);
+    if (verses.size > 0) setClearedToast(null);
+  }, []);
+
+  const saveBeforeClear = () => {
+    setClearDialogOpen(false);
+    saveLoadRef.current?.openSave();
   };
 
 
@@ -218,7 +456,11 @@ function App() {
             <div className="section-info">
               <h2 className="section-title">Chapters & Verses</h2>
               <p className="section-subtitle">
-                {isMobile ? 'Tap verses to read, or + to add to canvas' : 'Drag verses to explore connections'}
+                {conceptFilter
+                  ? `${conceptMatchCount} verse${conceptMatchCount === 1 ? '' : 's'} share this concept`
+                  : isMobile
+                    ? 'Tap verses to read, or + to add to canvas'
+                    : 'Drag verses to explore connections'}
               </p>
             </div>
             <button
@@ -232,6 +474,10 @@ function App() {
           </div>
           {sidebarOpen && (
             <ChapterSidebar
+              key={conceptFilter ?? 'all'}
+              conceptFilter={conceptFilter}
+              onConceptSelect={handleConceptSelect}
+              onClearConceptFilter={() => setConceptFilter(null)}
               onVerseSelect={handleVerseSelect}
               selectedVerseId={selectedVerseId}
               networkVerses={networkVerses}
@@ -254,36 +500,64 @@ function App() {
         )}
 
         <div className="main-content">
-          {/* Floating actions, top-right over the canvas */}
+          {/* Toolbar row: search centred, canvas tools to its right */}
+          <div className={`canvas-toolbar ${!sidebarOpen ? 'sidebar-collapsed' : ''}`}>
+          <div className="tb-search-slot">
+            <SearchField
+              ref={searchRef}
+              onVerseSelect={handleVerseSelect}
+              onAddVerse={(id) => verseNetworkRef.current?.addVerse(id)}
+              networkVerses={networkVerses}
+            />
+          </div>
+
+          {/* Canvas tools, top-right */}
           <div className="canvas-actions">
+            <div className="tb-desktop-only">
+              <ConnectionFilters
+                connectionTypes={connectionTypes}
+                activeFilters={activeFilters}
+                onToggleFilter={handleToggleFilter}
+                onSetAllFilters={handleSetAllFilters}
+                onRemoveCustomType={handleRemoveCustomType}
+                onAddCustomType={handleAddCustomType}
+                networkEdges={networkEdges}
+              />
+            </div>
             <button
-              className="control-button icon-only"
-              onClick={() => setSearchOpen(true)}
-              title="Search verses (⌘K)"
-              aria-label="Search verses"
+              type="button"
+              className="tb-button tb-desktop-only"
+              onClick={handleAutoArrange}
+              disabled={networkVerses.size === 0}
+              title="Arrange verses automatically"
             >
-              <Search size={16} />
-            </button>
-            <SaveLoadControls
-              ref={saveLoadRef}
-              getNetworkState={getNetworkState}
-              selectedVerseId={selectedVerseId}
-              onLoadNetwork={handleLoadNetwork}
-            />
-            <ConnectionFilters
-              connectionTypes={connectionTypes}
-              activeFilters={activeFilters}
-              onToggleFilter={handleToggleFilter}
-              onRemoveCustomType={handleRemoveCustomType}
-            />
-            <button className="action-button arrange-button" onClick={handleAutoArrange}>
+              <LayoutGrid size={15} />
               Auto Arrange
             </button>
-            <button className="action-button clear-button" onClick={handleClearAll}>
-              Clear All
-            </button>
+            <div className="tb-desktop-only">
+              <SaveLoadControls
+                ref={saveLoadRef}
+                getNetworkState={getNetworkState}
+                selectedVerseId={selectedVerseId}
+                onLoadNetwork={handleLoadNetwork}
+                onExport={() => setExportOpen(true)}
+                canExport={networkVerses.size > 0}
+                onExportUsage={() => downloadJson(`gita-usage-${new Date().toISOString().slice(0, 10)}.json`, collectUsage())}
+              />
+            </div>
+            <div className="tb-desktop-only">
+              <OverflowMenu
+                theme={theme}
+                onToggleTheme={toggleTheme}
+                onClearCanvas={handleClearAll}
+                canClear={networkVerses.size > 0}
+                onOpenAccount={cloudEnabled ? () => setAccountOpen(true) : undefined}
+                accountEmail={session ? accountLabel(session) : null}
+                onShowShortcuts={() => setShortcutsOpen(true)}
+              />
+            </div>
 
-            {/* Mobile: collapse all actions into a hamburger menu */}
+            {/* Mobile: everything but search lives in a hamburger menu */}
             <div className="mobile-actions" ref={mobileMenuRef}>
               <button
                 className="hamburger-button"
@@ -300,7 +574,10 @@ function App() {
                       connectionTypes={connectionTypes}
                       activeFilters={activeFilters}
                       onToggleFilter={handleToggleFilter}
+                      onSetAllFilters={handleSetAllFilters}
                       onRemoveCustomType={handleRemoveCustomType}
+                      onAddCustomType={handleAddCustomType}
+                      networkEdges={networkEdges}
                     />
                   </div>
                   <button
@@ -322,25 +599,58 @@ function App() {
                     <LayoutGrid size={16} /> Auto Arrange
                   </button>
                   <button
+                    className="mobile-menu-item"
+                    onClick={() => { toggleTheme(); setMobileMenuOpen(false); }}
+                  >
+                    {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+                    {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+                  </button>
+                  <button
                     className="mobile-menu-item danger"
                     onClick={() => { handleClearAll(); setMobileMenuOpen(false); }}
                   >
-                    <Trash2 size={16} /> Clear All
+                    <Trash2 size={16} /> Clear canvas
                   </button>
                 </div>
               )}
             </div>
           </div>
+          </div>
 
-          {/* Theme toggle, bottom-right corner */}
-          <button
-            className="control-button icon-only theme-toggle-btn"
-            onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
-            title="Toggle dark mode"
-            aria-label="Toggle dark mode"
-          >
-            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-          </button>
+          {autosaveStatus !== 'idle' && networkVerses.size > 0 && !removedLinksToast && !clearedToast && (
+            <div
+              className={`autosave-pill ${autosaveStatus === 'saving' ? 'is-saving' : ''}`}
+              role="status"
+              aria-live="polite"
+            >
+              <Check size={14} />
+              {autosaveStatus === 'saving' ? 'Saving…' : 'All changes saved'}
+            </div>
+          )}
+          {noteToast && (
+            <div className="note-toast" role="status" aria-live="polite">
+              <Check size={15} strokeWidth={2.6} />
+              {noteToast}
+            </div>
+          )}
+          {removedLinksToast && !clearedToast && (
+            <UndoToast message={removedLinksToast} onUndo={undoRemovedLinks} onDismiss={dismissRemovedLinks} />
+          )}
+          {clearedToast && (
+            <UndoToast
+              message={`Canvas cleared — ${clearedToast.verses} ${clearedToast.verses === 1 ? 'verse' : 'verses'}, ${clearedToast.links} ${clearedToast.links === 1 ? 'link' : 'links'}`}
+              onUndo={undoClear}
+              onDismiss={dismissClearedToast}
+            />
+          )}
+
+          {pendingRestore && networkVerses.size === 0 && (
+            <RestoreSessionCard
+              autosave={pendingRestore}
+              onRestore={handleRestoreSession}
+              onStartFresh={handleStartFresh}
+            />
+          )}
 
           <div className="network-container">
             <ReactFlowProvider>
@@ -348,12 +658,22 @@ function App() {
                 ref={verseNetworkRef}
                 onVerseSelect={handleVerseSelect}
                 selectedVerseId={selectedVerseId}
+                conceptFilter={conceptFilter}
+                onConceptSelect={handleConceptSelect}
+                noteVerseIds={noteVerseIds}
+                onOpenNote={handleOpenNote}
                 activeFilters={activeFilters}
                 onToggleFilter={handleToggleFilter}
-                onNetworkVersesChange={setNetworkVerses}
+                onNetworkVersesChange={handleNetworkVersesChange}
                 onNetworkEdgesChange={setNetworkEdges}
-                connectionTypes={connectionTypes}
+                connectionTypes={renderableTypes}
                 onAddCustomType={handleAddCustomType}
+                onAutosaveStatus={handleAutosaveStatus}
+                showEmptyState={!pendingRestore}
+                onEdgesRemoved={handleEdgesRemoved}
+                sidebarOpen={sidebarOpen}
+                onOpenChapters={() => setSidebarOpen(true)}
+                onShowHelp={() => setShortcutsOpen(true)}
                 isMobile={isMobile}
                 theme={theme}
               />
@@ -363,13 +683,16 @@ function App() {
 
         {selectedVerseId && (
           <VerseDetail
-            key={selectedVerseId}
+            key={`${selectedVerseId}:${noteEdit?.verseId === selectedVerseId ? noteEdit.seq : 0}`}
+            startEditingNote={noteEdit?.verseId === selectedVerseId}
+            onNoteSaved={handleNoteSaved}
             verseId={selectedVerseId}
             onClose={handleCloseDetail}
             networkVerses={networkVerses}
             onAddToNetwork={handleAddVerseToNetwork}
             onAddSuggestion={(fromId, toId, conn) => verseNetworkRef.current?.addConnection(fromId, toId, conn)}
             connectedNeighbors={connectedNeighbors}
+            onNavigate={handleVerseSelect}
             isMobile={isMobile}
           />
         )}
@@ -387,14 +710,40 @@ function App() {
         />
       )}
 
-      {searchOpen && (
-        <SearchPalette
-          onVerseSelect={handleVerseSelect}
-          onAddVerse={(id) => verseNetworkRef.current?.addVerse(id)}
-          networkVerses={networkVerses}
-          onClose={() => setSearchOpen(false)}
+      {accountOpen && <AccountDialog session={session} onClose={() => setAccountOpen(false)} />}
+      {exportOpen && (
+        <ExportDialog
+          verseCount={networkVerses.size}
+          linkCount={networkEdges.length}
+          noteCount={[...networkVerses].filter((id) => noteVerseIds.has(id)).length}
+          onCancel={() => setExportOpen(false)}
+          onExport={handleExport}
         />
       )}
+      {clearDialogOpen && (
+        <ClearCanvasDialog
+          verseCount={networkVerses.size}
+          linkCount={networkEdges.length}
+          onCancel={() => setClearDialogOpen(false)}
+          onConfirm={confirmClearCanvas}
+          onSaveFirst={saveBeforeClear}
+        />
+      )}
+
+      {typeToDelete && (
+        <DeleteLinkTypeDialog
+          type={typeToDelete}
+          affected={edgesOfType(typeToDelete.id)}
+          onCancel={() => setTypeToDelete(null)}
+          onConfirm={() => {
+            removeCustomType(typeToDelete.id);
+            setTypeToDelete(null);
+          }}
+        />
+      )}
+
+      {shortcutsOpen && <ShortcutsOverlay onClose={() => setShortcutsOpen(false)} />}
+
     </div>
   );
 }

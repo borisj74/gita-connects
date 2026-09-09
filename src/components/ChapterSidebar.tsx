@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, GripVertical, Check, Plus } from 'lucide-react';
+import { ChevronDown, ChevronRight, GripVertical, Check, Plus, X } from 'lucide-react';
+import type { Concept } from '../concepts.js';
 import { chapters, verses } from '../data/index.js';
 import './ChapterSidebar.css';
 
@@ -9,6 +10,10 @@ interface ChapterSidebarProps {
   networkVerses: Set<string>;
   isMobile?: boolean;
   onAddToNetwork?: (verseId: string) => void;
+  /** Active concept filter (App 23): only verses tagged with it are listed. */
+  conceptFilter?: string | null;
+  onConceptSelect?: (concept: string) => void;
+  onClearConceptFilter?: () => void;
 }
 
 export default function ChapterSidebar({
@@ -17,8 +22,18 @@ export default function ChapterSidebar({
   networkVerses,
   isMobile = false,
   onAddToNetwork,
+  conceptFilter = null,
+  onConceptSelect,
+  onClearConceptFilter,
 }: ChapterSidebarProps) {
-  const [expandedChapters, setExpandedChapters] = useState<Set<number>>(new Set([2, 3, 6]));
+  // Under a concept filter every matching chapter starts open; the parent
+  // remounts this component (key) when the filter changes, so this initial
+  // state is recomputed rather than synced.
+  const [expandedChapters, setExpandedChapters] = useState<Set<number>>(() =>
+    conceptFilter
+      ? new Set(verses.filter((v) => v.concepts.includes(conceptFilter as Concept)).map((v) => v.chapter))
+      : new Set([2, 3, 6]),
+  );
 
   const toggleChapter = (chapterNum: number) => {
     setExpandedChapters(prev => {
@@ -47,15 +62,49 @@ export default function ChapterSidebar({
   };
 
   const getChapterVerses = (chapterNum: number) => {
-    return verses.filter(v => v.chapter === chapterNum);
+    return verses.filter(
+      (v) => v.chapter === chapterNum && (!conceptFilter || v.concepts.includes(conceptFilter as Concept)),
+    );
+  };
+
+  // Rows show two chips; under a filter the matching one is always among them.
+  const visibleConcepts = (concepts: readonly string[]) => {
+    const first = concepts.slice(0, 2);
+    if (conceptFilter && concepts.includes(conceptFilter) && !first.includes(conceptFilter)) {
+      return [first[0], conceptFilter];
+    }
+    return first;
+  };
+
+  const chipClick = (e: React.MouseEvent, concept: string) => {
+    if (!onConceptSelect) return;
+    e.stopPropagation();
+    onConceptSelect(concept);
   };
 
   return (
     <div className="chapter-sidebar">
+      {conceptFilter && (
+        <div className="concept-filter-bar">
+          <span className="concept-filter-label">Concept</span>
+          <span className="concept-filter-chip">
+            {conceptFilter}
+            <button
+              type="button"
+              className="concept-filter-clear"
+              onClick={onClearConceptFilter}
+              aria-label={`Clear ${conceptFilter} filter`}
+            >
+              <X size={11} strokeWidth={3} />
+            </button>
+          </span>
+        </div>
+      )}
       <div className="chapters-list">
         {chapters.map((chapter, index) => {
           const isExpanded = expandedChapters.has(chapter.number);
           const chapterVerses = getChapterVerses(chapter.number);
+          if (conceptFilter && chapterVerses.length === 0) return null;
           const inNetworkCount = chapterVerses.filter(v => networkVerses.has(v.id)).length;
 
           return (
@@ -105,8 +154,19 @@ export default function ChapterSidebar({
                         <div className="verse-number">{verse.id}</div>
                         <div className="verse-theme">{verse.theme ?? verse.transliteration}</div>
                         <div className="verse-concepts">
-                          {verse.concepts.slice(0, 2).map(concept => (
-                            <span key={concept} className="concept-tag">{concept}</span>
+                          {visibleConcepts(verse.concepts).map(concept => (
+                            <button
+                              key={concept}
+                              type="button"
+                              className={`concept-tag ${
+                                conceptFilter === concept ? 'is-active' : conceptFilter ? 'is-muted' : ''
+                              }`}
+                              onClick={(e) => chipClick(e, concept)}
+                              draggable={false}
+                              title={conceptFilter === concept ? 'Clear filter' : `Show all verses on ${concept}`}
+                            >
+                              {concept}
+                            </button>
                           ))}
                         </div>
                       </div>

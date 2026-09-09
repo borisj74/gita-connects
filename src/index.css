@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Noto+Serif+Devanagari:wght@400;500&display=swap');
 
 :root {
   /* Natural Earthy Palette */
@@ -46,9 +46,47 @@
   --terracotta-800: #743d2f;
   --terracotta-900: #5f352a;
 
+  /* Concept chips */
+  --chip-bg: #f7e3da;
+  --chip-border: #e8c4b4;
+
+  /* Overlays and keyboard focus */
+  --scrim: rgb(31 26 22 / 0.45);
+  /* Tooltips, toasts and hint bars read as a layer above the page, so they
+     stay dark in both themes. Building them from --brown-900 looked right in
+     light mode and inverted to near-white text on near-white in dark. */
+  --overlay-bg: #3a3530;
+  --overlay-text: #ece6dd;
+  --overlay-text-muted: #b6ada1;
+
+  /* Surfaces. Cards, buttons and menus were hardcoded white, which held in
+     light mode but left light panels under light text once the text tokens
+     flipped for dark. */
+  --surface: #ffffff;
+  --surface-sunken: #fafaf9;
+  --surface-border: #e7e5e4;
+  /* Verse numbers: a red that stays legible on either ground. */
+  --verse-id: #dc2626;
+  --ink-strong: #292524;
+  --ink-body: #374151;
+  --ink-muted: #6b7280;
+  /* Accents as *text*. The same sage and terracotta also serve as button
+     backgrounds with white text, so they cannot simply be lightened for dark
+     mode without wrecking those; text gets its own pair instead. */
+  --accent-sage-text: var(--sage-600);
+  /* For sage text sitting on a sage tint, where the normal pair is too close */
+  --accent-sage-strong: var(--sage-800);
+  --accent-terracotta-text: var(--terracotta-600);
+  --ink-soft: var(--brown-500);
+  --note-bg: #f3f5ef;
+  --note-border: var(--sage-500);
+  --focus-ring: #3a3530;
+
   /* Typography */
   --font-display: 'Cormorant Garamond', serif;
   --font-ui: 'Inter', sans-serif;
+  /* Cormorant carries no Devanagari glyphs; load a face that does. */
+  --font-sanskrit: 'Noto Serif Devanagari', 'Noto Sans Devanagari', serif;
 
   /* Spacing & Layout */
   --sidebar-width: 320px;
@@ -401,4 +439,40 @@ p, li, dd {
 [data-theme="dark"] .type-chip.selected {
   background: rgba(202, 117, 88, 0.2);
   border-color: rgb(202, 117, 88);
+}
+
+/* Keyboard focus baseline (App 24–26): anything without its own ring gets
+   this one. Mouse clicks never show it. */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+[data-theme="dark"] {
+  --focus-ring: #ece6dd;
+  /* Chips and the note surface are tinted paper in light mode; in dark they
+     have to be tinted ink, or they punch a white hole in the page. */
+  --chip-bg: #3a2c25;
+  --chip-border: #5c453a;
+  --note-bg: #232a20;
+
+  --surface: #211d19;
+  --surface-sunken: #1c1913;
+  --surface-border: #3a342d;
+  --verse-id: #f2867a;
+  --ink-strong: #ece6dd;
+  --ink-body: #d8cfc3;
+  --ink-muted: #a99e8f;
+  --accent-sage-text: #a9bb96;
+  --accent-sage-strong: #c6d4b4;
+  --accent-terracotta-text: #e6a184;
+  --ink-soft: #b3a591;
+
+  /* Pale tints used as backgrounds — hover states, the selected verse row,
+     the concept filter bar, text selection. Without these they stay pale and
+     the light text on them disappears. */
+  --sage-300: #3d4634;
+  --terracotta-50: #2b201b;
+  --terracotta-100: #35251f;
+  --terracotta-200: #452f26;
 }

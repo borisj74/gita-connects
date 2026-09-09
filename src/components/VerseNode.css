@@ -1,5 +1,5 @@
 .verse-node {
-  background: white;
+  background: var(--surface);
   border: 1px solid rgba(177, 93, 67, 0.25);
   border-radius: 16px;
   padding: 1rem;
@@ -19,14 +19,15 @@
 
 .node-remove {
   position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  width: 24px;
-  height: 24px;
+  top: -12px;
+  right: -12px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  border: none;
-  background: rgba(177, 93, 67, 0.12);
-  color: rgb(177, 93, 67);
+  border: 1px solid var(--beige-300);
+  background: var(--surface);
+  color: var(--brown-700);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
   font-size: 1.25rem;
   line-height: 0;
   cursor: pointer;
@@ -40,9 +41,65 @@
   padding: 0;
 }
 
-.verse-node:hover .node-remove {
+.verse-node:hover .node-remove,
+.node-remove:focus-visible {
   opacity: 1;
   pointer-events: auto;
+}
+
+.node-remove:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(58 53 48 / 0.16), 0 2px 6px rgb(0 0 0 / 0.1);
+}
+
+/* Keyboard focus on the card (App 24): white gap then a dark ring */
+.react-flow__node:focus {
+  outline: none;
+}
+
+.react-flow__node:focus-visible .verse-node {
+  box-shadow: 0 0 0 3px white, 0 0 0 6px var(--focus-ring), 0 4px 14px rgb(0 0 0 / 0.08);
+}
+
+.node-key-hints {
+  display: none;
+  position: absolute;
+  top: calc(100% + 14px);
+  left: 50%;
+  transform: translateX(-50%);
+  align-items: center;
+  gap: 14px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  background: var(--overlay-bg);
+  color: var(--overlay-text);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 16px;
+  white-space: nowrap;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.16);
+  pointer-events: none;
+  z-index: 20;
+}
+
+.node-key-hints span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.node-key-hints kbd {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgb(255 255 255 / 0.14);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 14px;
+}
+
+.react-flow__node:focus-visible .node-key-hints {
+  display: flex;
 }
 
 .node-remove:hover {
@@ -67,9 +124,73 @@
   align-items: center;
   justify-content: center;
   margin-bottom: 0.75rem;
-  padding-right: 1.75rem;
+  padding-right: 2.25rem;
   min-width: 0;
   min-height: 2.5rem;
+}
+
+/* Note button (App 29): filled when a note exists, quiet add otherwise */
+.node-note {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: var(--sage-100);
+  color: var(--accent-sage-text);
+  cursor: pointer;
+  transition: background var(--transition-base), color var(--transition-base);
+}
+
+.node-note:hover {
+  background: var(--sage-300);
+  /* The default sage sits too close to the sage tint to read on hover */
+  color: var(--accent-sage-strong);
+}
+
+.node-note.has-note {
+  background: var(--sage-500);
+  color: white;
+}
+
+.node-note.has-note:hover {
+  background: var(--sage-600);
+}
+
+.node-note::after {
+  content: attr(data-tip) '  N';
+  position: absolute;
+  right: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%) translateX(4px);
+  padding: 7px 11px;
+  border-radius: 8px;
+  background: var(--overlay-bg);
+  color: var(--overlay-text);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  white-space: pre;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.16);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 20;
+}
+
+.node-note:hover::after,
+.node-note:focus-visible::after {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+  transition-delay: 0.25s;
 }
 
 .node-verse-id {
@@ -105,7 +226,7 @@
   box-sizing: border-box;
   font-size: 0.8125rem;
   font-weight: 500;
-  color: #6B7280;
+  color: var(--ink-muted);
   line-height: 1.35;
   pointer-events: none;
   text-align: center;
@@ -119,13 +240,23 @@
 .node-translation {
   font-size: 0.875rem;
   line-height: 1.55;
-  color: #374151;
+  color: var(--ink-body);
   margin-top: 0.75rem;
   margin-bottom: 1rem;
   display: -webkit-box;
   -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Transliteration stands in only while the translation loads or is unavailable */
+.node-translation-fallback {
+  color: var(--ink-muted);
+  font-style: italic;
+}
+
+.node-translation-fallback.is-loading {
+  opacity: 0.7;
 }
 
 .node-concepts {
@@ -135,22 +266,77 @@
   margin-bottom: 0.5rem;
   width: 100%;
   min-width: 0;
-  overflow: hidden;
+  /* Rings and tooltips on the chips must not be clipped */
+  overflow: visible;
 }
 
 .node-concept {
-  background: #F97316;
-  color: white;
-  padding: 0.375rem 0.625rem;
-  border-radius: 6px;
-  font-size: 0.75rem;
+  position: relative;
+  background: var(--chip-bg);
+  color: var(--brown-900);
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-family: var(--font-ui);
+  font-size: 12px;
   font-weight: 500;
+  line-height: 16px;
   text-transform: lowercase;
-  border: none;
+  border: 1px solid var(--chip-border);
   flex: 0 0 auto;
   white-space: nowrap;
-  line-height: 1;
   box-sizing: border-box;
+  cursor: pointer;
+  transition: background var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.node-concept:hover {
+  border-color: var(--terracotta-400);
+}
+
+.node-concept:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(202 117 88 / 0.5);
+}
+
+/* Concept filter on: the matching chip gets a ring, the rest go quiet */
+.node-concept.is-active {
+  box-shadow: 0 0 0 2px rgb(202 117 88 / 0.3);
+}
+
+.node-concept.is-muted {
+  background: var(--beige-200);
+  border-color: var(--beige-200);
+  color: var(--brown-600);
+}
+
+/* Dark tooltip on hover/focus: "Show all verses on <concept>" */
+.node-concept::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%) translateX(-4px);
+  padding: 7px 11px;
+  border-radius: 8px;
+  background: var(--overlay-bg);
+  color: var(--overlay-text);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  text-transform: none;
+  white-space: nowrap;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.16);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 20;
+}
+
+.node-concept:hover::after,
+.node-concept:focus-visible::after {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+  transition-delay: 0.25s;
 }
 
 .node-handle {
@@ -177,13 +363,41 @@
   transform: translate(-50%, 50%);
 }
 
+/* Hovering the card lights the source handle with a soft halo and pins
+   the instruction to it — the how-to lives on the thing you manipulate. */
+.verse-node:hover .node-handle.react-flow__handle-bottom,
 .node-handle:hover {
-  width: 16px;
-  height: 16px;
-  min-width: 16px;
-  min-height: 16px;
-  background: var(--terracotta-400);
-  box-shadow: 0 0 0 4px var(--terracotta-100);
+  background: var(--terracotta-500);
+  box-shadow: 0 0 0 5px rgb(202 117 88 / 0.22);
+}
+
+.node-handle.react-flow__handle-bottom::after {
+  content: 'Drag to connect';
+  position: absolute;
+  top: calc(100% + 9px);
+  left: 50%;
+  translate: -50%;
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: var(--overlay-bg);
+  font-family: var(--font-ui);
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 14px;
+  color: var(--overlay-text);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-fast);
+}
+
+.verse-node:hover .node-handle.react-flow__handle-bottom::after {
+  opacity: 1;
+}
+
+/* Hide the label once the reader is mid-drag: it has done its job */
+.react-flow.connecting .node-handle.react-flow__handle-bottom::after {
+  opacity: 0;
 }
 
 .node-handle.react-flow__handle-top:hover {
@@ -232,7 +446,7 @@
   font-family: var(--font-ui);
   font-size: 0.8125rem;
   font-weight: 500;
-  color: rgb(105, 118, 90);
+  color: var(--accent-sage-text);
 }
 
 .node-expand:hover {

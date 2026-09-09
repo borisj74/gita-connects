@@ -28,38 +28,76 @@ export type VerseTextState =
  * Pass a null id to stand down — the hook still runs, keeping hook order
  * stable in callers that render an empty state.
  */
+// Shared cache: a verse opened in the panel and shown on a card is fetched
+// once per session. Promises are cached too so concurrent mounts share one
+// request. Text lives in memory only, never in storage.
+const cache = new Map<string, VerseText | Promise<VerseText>>();
+
+/** Fetch (or reuse) the translation for a verse id like "2.47". */
+export function fetchVerseText(verseId: string, signal?: AbortSignal): Promise<VerseText> {
+  const hit = cache.get(verseId);
+  if (hit) return Promise.resolve(hit);
+
+  const [chapter, verse] = verseId.split('.');
+  const request = fetch(`/api/verse?chapter=${chapter}&verse=${verse}`, { signal })
+    .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+    .then((text: VerseText) => {
+      if (!text.translation?.trim()) throw new Error('Empty translation');
+      cache.set(verseId, text);
+      return text;
+    })
+    .catch((error: unknown) => {
+      cache.delete(verseId);
+      throw error;
+    });
+  cache.set(verseId, request);
+  return request;
+}
+
+/** Synchronous lookup for text already fetched this session. */
+export function cachedVerseText(verseId: string): VerseText | undefined {
+  const hit = cache.get(verseId);
+  return hit && !(hit instanceof Promise) ? hit : undefined;
+}
+
 export function useVerseText(verseId: string | null): VerseTextState {
-  const [state, setState] = useState<VerseTextState>({ status: 'idle' });
+  const initial = (id: string | null): VerseTextState => {
+    if (!id) return { status: 'idle' };
+    const cached = cachedVerseText(id);
+    return cached ? { status: 'ready', text: cached } : { status: 'loading' };
+  };
+  const [state, setState] = useState<VerseTextState>(() => initial(verseId));
   const [requested, setRequested] = useState<string | null>(verseId);
 
   // Reset during render rather than in the effect: setting state inside an
   // effect body would queue a second render pass for every verse change.
   if (verseId !== requested) {
     setRequested(verseId);
-    setState(verseId ? { status: 'loading' } : { status: 'idle' });
+    setState(initial(verseId));
   }
 
   useEffect(() => {
-    if (!verseId) return;
+    if (!verseId || cachedVerseText(verseId)) return;
 
-    const [chapter, verse] = verseId.split('.');
-    const controller = new AbortController();
+    // The request is shared through the cache and may have other readers, so
+    // unmount just stops listening rather than aborting it.
+    let alive = true;
 
-    fetch(`/api/verse?chapter=${chapter}&verse=${verse}`, { signal: controller.signal })
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
-      .then((text: VerseText) => {
-        if (!text.translation?.trim()) throw new Error('Empty translation');
-        setState({ status: 'ready', text });
+    fetchVerseText(verseId)
+      .then((text) => {
+        if (alive) setState({ status: 'ready', text });
       })
       .catch((error: unknown) => {
-        if (error instanceof DOMException && error.name === 'AbortError') return;
+        if (!alive) return;
         // The panel only ever says "could not load", which hid a dev-server
         // misconfiguration once already. Put the real reason in the console.
         console.error(`[verse ${verseId}] translation unavailable:`, error);
         setState({ status: 'unavailable' });
       });
 
-    return () => controller.abort();
+    return () => {
+      alive = false;
+    };
   }, [verseId]);
 
   return state;

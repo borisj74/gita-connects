@@ -13,19 +13,30 @@ import ReactFlow, {
   type EdgeTypes,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { X, MousePointer2, Undo2, Redo2 } from 'lucide-react';
+import { X, MousePointer2, Undo2, Redo2, BookOpen, CircleHelp } from 'lucide-react';
 import { verses, connections } from '../data/index.js';
 import { expandableNeighbors, edgesJoining } from '../neighbors.js';
 import VerseNode from './VerseNode.js';
 import ConnectionEdge from './ConnectionEdge.js';
+import { captureCanvas, type CanvasImage } from '../exportNetwork.js';
 import ConnectionDialog from './ConnectionDialog.js';
+import ZoomControls from './ZoomControls.js';
 import type { ConnectionTypeDef } from '../connectionTypes.js';
+import type { Verse } from '../types.js';
+import type { Concept } from '../concepts.js';
 import { getTypeColor, getTypeLabel, isDirectionalType } from '../connectionTypes.js';
+import { writeAutosave } from '../autosave.js';
 import './VerseNetwork.css';
 
 interface VerseNetworkProps {
   onVerseSelect: (verseId: string) => void;
   selectedVerseId: string | null;
+  /** Concept chip acting as a filter (App 23): non-matching cards fade back. */
+  conceptFilter?: string | null;
+  onConceptSelect?: (concept: string) => void;
+  /** Verses with a personal note (App 29) and the way to open one. */
+  noteVerseIds?: ReadonlySet<string>;
+  onOpenNote?: (verseId: string) => void;
   activeFilters: Set<string>;
   onToggleFilter?: (type: string) => void;
   onNetworkVersesChange: (verses: Set<string>) => void;
@@ -33,6 +44,17 @@ interface VerseNetworkProps {
   connectionTypes: ConnectionTypeDef[];
   onAddCustomType: (type: ConnectionTypeDef) => void;
   onHistoryChange?: (canUndo: boolean, canRedo: boolean) => void;
+  /** Autosave lifecycle: 'saving' while a write is pending, 'saved' after. */
+  onAutosaveStatus?: (status: 'saving' | 'saved') => void;
+  /** Hide the empty-state card (e.g. while a restore prompt is showing). */
+  showEmptyState?: boolean;
+  /** Links the reader just removed (popover or Delete key), for an undo toast. */
+  onEdgesRemoved?: (removed: { source: string; target: string; label: string }[]) => void;
+  /** Whether the chapters sidebar is open — the empty state's copy depends on it. */
+  sidebarOpen?: boolean;
+  onOpenChapters?: () => void;
+  /** Opens the keyboard shortcuts / help overlay from the ? button. */
+  onShowHelp?: () => void;
   isMobile?: boolean;
   theme?: 'light' | 'dark';
 }
@@ -46,6 +68,8 @@ export interface VerseNetworkRef {
   undo: () => void;
   redo: () => void;
   focusNode: (verseId: string) => void;
+  /** Render the whole canvas to a PNG data URL, framed to the cards. */
+  captureImage: () => Promise<CanvasImage>;
   addVerse: (verseId: string) => void;
   addConnection: (
     fromId: string,
@@ -103,7 +127,7 @@ function buildEdge(
     // Directional relations (sequential, progression, goal) point from the
     // earlier or more basic verse to the later or resolving one.
     markerEnd: isDirectionalType(connectionTypes, conn.type)
-      ? { type: MarkerType.ArrowClosed, color, width: 18, height: 18 }
+      ? { type: MarkerType.Arrow, color, width: 16, height: 16, strokeWidth: 1.6 }
       : undefined,
     label,
     style: {
@@ -124,12 +148,22 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     {
       onVerseSelect,
       selectedVerseId,
+      conceptFilter = null,
+      onConceptSelect,
+      noteVerseIds,
+      onOpenNote,
       activeFilters,
       onNetworkVersesChange,
       onNetworkEdgesChange,
       connectionTypes,
       onAddCustomType,
       onHistoryChange,
+      onAutosaveStatus,
+      showEmptyState = true,
+      onEdgesRemoved,
+      sidebarOpen = true,
+      onOpenChapters,
+      onShowHelp,
       isMobile = false,
       theme = 'light',
     },
@@ -221,6 +255,23 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     useEffect(() => {
       onHistoryChange?.(canUndo, canRedo);
     }, [canUndo, canRedo, onHistoryChange]);
+
+    // Autosave: write the canvas shortly after it settles. An empty canvas
+    // only clears the store once this session has actually held content —
+    // otherwise the initial mount (run twice under StrictMode) would wipe a
+    // restore that is still waiting for the user's answer.
+    const hadContent = useRef(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+      if (nodes.length === 0 && !hadContent.current) return;
+      hadContent.current = true;
+      onAutosaveStatus?.('saving');
+      const t = setTimeout(() => {
+        writeAutosave(nodesRef.current, allEdgesRef.current);
+        onAutosaveStatus?.('saved');
+      }, 800);
+      return () => clearTimeout(t);
+    }, [nodes, allEdges, onAutosaveStatus]);
 
     useEffect(() => {
       const onKey = (e: KeyboardEvent) => {
@@ -394,7 +445,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     });
 
     setTimeout(() => {
-      fitView({ duration: 400, padding: 0.2 });
+      fitView({ duration: 400, padding: 0.2, maxZoom: 1 });
     }, 50);
   }, [setNodes, fitView, commit]);
 
@@ -441,7 +492,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     setNetworkVerses(prev => new Set([...prev, ...connectedVerseIds]));
 
     setTimeout(() => {
-      fitView({ duration: 400, padding: 0.2 });
+      fitView({ duration: 400, padding: 0.2, maxZoom: 1 });
     }, 100);
   }, [networkVerses, selectedVerseId, onVerseSelect, handleRemoveNode, setNodes, setAllEdges, fitView, connectionTypes, commit]);
 
@@ -540,7 +591,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       if (newEdges.length > 0) setAllEdges((eds) => [...eds, ...newEdges]);
 
       setNetworkVerses(finalSet);
-      setTimeout(() => fitView({ duration: 400, padding: 0.2 }), 100);
+      setTimeout(() => fitView({ duration: 400, padding: 0.2, maxZoom: 1 }), 100);
     },
     [onVerseSelect, handleRemoveNode, selectedVerseId, connectionTypes, setNodes, setAllEdges, fitView, commit],
   );
@@ -600,7 +651,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       });
 
       setNetworkVerses(finalSet);
-      setTimeout(() => fitView({ duration: 400, padding: 0.2 }), 120);
+      setTimeout(() => fitView({ duration: 400, padding: 0.2, maxZoom: 1 }), 120);
     },
     [commit, onVerseSelect, handleRemoveNode, selectedVerseId, connectionTypes, setNodes, setAllEdges, fitView],
   );
@@ -636,10 +687,25 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
   // Re-apply current registry styling, filter, and parallel-edge offsets
   // entirely in derived state so labels never overlap and color tweaks
   // propagate immediately.
-  const handleDeleteEdge = useCallback((edgeId: string) => {
+  // Single removal path for links: popover "Remove connection" and the
+  // Delete/Backspace key both land here, so both are undoable and both
+  // raise the toast.
+  const removeEdges = useCallback((edgeIds: string[]) => {
+    const ids = new Set(edgeIds);
+    const removed = allEdgesRef.current.filter((e) => ids.has(e.id));
+    if (removed.length === 0) return;
     commit();
-    setAllEdges((eds) => eds.filter((e) => e.id !== edgeId));
-  }, [commit]);
+    setAllEdges((eds) => eds.filter((e) => !ids.has(e.id)));
+    onEdgesRemoved?.(
+      removed.map((e) => ({
+        source: e.source,
+        target: e.target,
+        label: getTypeLabel(connectionTypes, (e.data?.typeId as string | undefined) ?? (e.label as string) ?? ''),
+      })),
+    );
+  }, [commit, connectionTypes, onEdgesRemoved]);
+
+  const handleDeleteEdge = useCallback((edgeId: string) => removeEdges([edgeId]), [removeEdges]);
 
   const filteredEdges = useMemo(() => {
     const enabled = allEdges.filter((edge) => {
@@ -676,7 +742,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         // Only directional relations get an arrowhead; this pass rebuilds
         // every edge, so it must decide again rather than inherit.
         markerEnd: isDirectionalType(connectionTypes, typeId)
-          ? { type: MarkerType.ArrowClosed, color, width: 18, height: 18 }
+          ? { type: MarkerType.Arrow, color, width: 16, height: 16, strokeWidth: 1.6 }
           : undefined,
         data: {
           ...edge.data,
@@ -710,21 +776,29 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       return nds.map((node) => {
         const connectedCount = expandableNeighbors(node.id, networkVerses).length;
 
+        const concepts = (node.data?.verse as Verse | undefined)?.concepts ?? [];
+        const offConcept = !!conceptFilter && !concepts.includes(conceptFilter as Concept);
         const dimmed =
-          spotlight && node.id !== selectedVerseId && !neighbors.has(node.id);
+          offConcept || (spotlight && node.id !== selectedVerseId && !neighbors.has(node.id));
 
+        const theme = (node.data?.verse as Verse | undefined)?.theme;
         return {
           ...node,
           className: dimmed ? 'node-dimmed' : '',
+          ariaLabel: theme ? `Verse ${node.id}, ${theme}` : `Verse ${node.id}`,
           data: {
             ...node.data,
             isSelected: node.id === selectedVerseId,
             connectedCount,
+            conceptFilter,
+            onConceptSelect,
+            hasNote: noteVerseIds?.has(node.id) ?? false,
+            onOpenNote: onOpenNote ? () => onOpenNote(node.id) : undefined,
           },
         };
       });
     });
-  }, [selectedVerseId, networkVerses, allEdges, setNodes]);
+  }, [selectedVerseId, networkVerses, allEdges, setNodes, conceptFilter, onConceptSelect, noteVerseIds, onOpenNote]);
 
   const getNetworkState = useCallback(() => {
     return { nodes, edges: allEdges };
@@ -761,7 +835,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       setNetworkVerses(verseIds);
 
       setTimeout(() => {
-        fitView({ duration: 400, padding: 0.2 });
+        fitView({ duration: 400, padding: 0.2, maxZoom: 1 });
       }, 100);
     }, 50);
   }, [setNodes, setAllEdges, onVerseSelect, handleRemoveNode, fitView]);
@@ -781,14 +855,78 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     [setCenter],
   );
 
+  // Keyboard on a focused card (App 24): Enter opens it, Delete removes it,
+  // arrows move focus to the linked card nearest in that direction. Capture
+  // phase so React Flow's own handlers (which would nudge the node) stay out.
+  const handleCanvasKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      const active = document.activeElement as HTMLElement | null;
+      if (!active || !active.classList.contains('react-flow__node')) return;
+      const id = active.dataset.id;
+      if (!id) return;
+
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+        onVerseSelect(id);
+        return;
+      }
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault();
+        e.stopPropagation();
+        handleRemoveNode(id);
+        return;
+      }
+      if (e.key.toLowerCase() === 'n' && !e.metaKey && !e.ctrlKey && !e.altKey && onOpenNote) {
+        e.preventDefault();
+        e.stopPropagation();
+        onOpenNote(id);
+        return;
+      }
+      const axis = e.key === 'ArrowLeft' || e.key === 'ArrowRight' ? 'x' : e.key === 'ArrowUp' || e.key === 'ArrowDown' ? 'y' : null;
+      if (!axis) return;
+      e.preventDefault();
+      e.stopPropagation();
+
+      const current = nodesRef.current.find((n) => n.id === id);
+      if (!current) return;
+      const linkedIds = new Set<string>();
+      allEdgesRef.current.forEach((edge) => {
+        if (edge.source === id) linkedIds.add(edge.target);
+        if (edge.target === id) linkedIds.add(edge.source);
+      });
+      const linked = nodesRef.current.filter((n) => linkedIds.has(n.id));
+      if (linked.length === 0) return;
+
+      const forward = e.key === 'ArrowRight' || e.key === 'ArrowDown';
+      const pos = (n: Node) => n.position[axis];
+      const ahead = linked.filter((n) => (forward ? pos(n) > pos(current) : pos(n) < pos(current)));
+      // Nearest card in that direction; wrap to the far side when none lies ahead.
+      const pool = ahead.length > 0 ? ahead : linked;
+      const target = pool.reduce((best, n) =>
+        forward ? (pos(n) < pos(best) ? n : best) : (pos(n) > pos(best) ? n : best),
+      );
+      const el = document.querySelector<HTMLElement>(`.react-flow__node[data-id="${target.id}"]`);
+      el?.focus();
+    },
+    [onVerseSelect, handleRemoveNode, onOpenNote],
+  );
+
   const removeEdgesByType = useCallback((typeId: string) => {
+    commit();
     setAllEdges((eds) =>
       eds.filter((edge) => {
         const t = (edge.data?.typeId as string | undefined) ?? (edge.label as string);
         return t !== typeId;
       }),
     );
-  }, []);
+  }, [commit]);
+
+  const captureImage = useCallback(() => {
+    const viewport = containerRef.current?.querySelector<HTMLElement>('.react-flow__viewport');
+    if (!viewport || nodesRef.current.length === 0) return Promise.reject(new Error('Nothing on the canvas to export.'));
+    return captureCanvas(viewport, nodesRef.current, theme);
+  }, [theme]);
 
   useImperativeHandle(ref, () => ({
     handleAutoArrange,
@@ -799,6 +937,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     undo,
     redo,
     focusNode,
+    captureImage,
     addVerse,
     addConnection,
   }));
@@ -807,9 +946,11 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
 
   return (
     <div
+      ref={containerRef}
       className={`verse-network ${showConnectHint ? 'connect-hint-active' : ''} ${isMobile ? 'is-mobile' : ''}`}
       onDragOver={isMobile ? undefined : handleDragOver}
       onDrop={isMobile ? undefined : handleDrop}
+      onKeyDownCapture={handleCanvasKeyDown}
     >
       <ReactFlow
         nodes={nodes}
@@ -818,10 +959,15 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onNodesDelete={handleNodesDelete}
+        onEdgesDelete={(deleted) => removeEdges(deleted.map((e) => e.id))}
+        // Clicking empty canvas closes the verse panel and lifts the spotlight.
+        onPaneClick={() => onVerseSelect('')}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         deleteKeyCode={isMobile ? null : ['Delete', 'Backspace']}
         fitView
+        // Never zoom past 100% just to fill the view with one card.
+        fitViewOptions={{ padding: 0.2, maxZoom: 1 }}
         minZoom={0.2}
         maxZoom={1.5}
         defaultViewport={{ x: 0, y: 0, zoom: isMobile ? 0.65 : 0.8 }}
@@ -834,8 +980,8 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         elementsSelectable
       >
         {theme === 'light' && <Background color="#FBF8F4" gap={20} />}
-        {nodes.length > 0 && (
-          <Panel position={isMobile ? 'bottom-left' : 'bottom-right'} className="canvas-zoom">
+        {(nodes.length > 0 || canUndo || canRedo) && (
+          <Panel position="bottom-left" className="canvas-history">
             <button
               className="control-button icon-only"
               onClick={undo}
@@ -856,48 +1002,75 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
             </button>
           </Panel>
         )}
+        {!isMobile && nodes.length > 0 && (
+          <Panel position="bottom-right" className="canvas-zoom">
+            {onShowHelp && (
+              <button
+                type="button"
+                className="canvas-help-fab"
+                onClick={onShowHelp}
+                title="Help and keyboard shortcuts (?)"
+                aria-label="Help and keyboard shortcuts"
+              >
+                <CircleHelp size={19} />
+              </button>
+            )}
+            <ZoomControls />
+          </Panel>
+        )}
       </ReactFlow>
 
       {showConnectHint && (
         <div className="connect-hint" role="status">
-          <MousePointer2 size={16} className="connect-hint-icon" />
-          <span>
-            {isMobile
-              ? 'Tip: touch and drag from the bottom dot on one verse to the top dot on another to connect them'
-              : 'Tip: drag from the dot at the bottom of one verse to the dot on top of another to connect them'}
-          </span>
+          <MousePointer2 size={17} className="connect-hint-icon" />
+          <div className="connect-hint-text">
+            <div className="connect-hint-title">Connect two verses</div>
+            <div className="connect-hint-body">
+              {isMobile
+                ? 'Touch and drag from the dot under one card to the dot above another.'
+                : 'Drag from the dot under one card to the dot above another.'}
+            </div>
+          </div>
           <button
+            type="button"
             className="connect-hint-close"
             onClick={dismissConnectHint}
             aria-label="Dismiss tip"
           >
-            <X size={14} />
+            <X size={15} />
           </button>
         </div>
       )}
 
-      {nodes.length === 0 && (
+      {nodes.length === 0 && showEmptyState && (
         <div className="network-empty-state">
           <h2 className="network-empty-state-title">Start Your Journey</h2>
           <p className="network-empty-state-description">
-            {isMobile
-              ? 'Tap Chapters to browse verses, or use the buttons below to seed your network with connected teachings from the Bhagavad Gita.'
-              : 'Drag a verse card from the left sidebar to begin exploring the beautiful connections between the teachings of the Bhagavad Gita.'}
+            {sidebarOpen && !isMobile
+              ? 'Drag a verse card from the chapters on the left, or seed the canvas with a set of connected teachings.'
+              : 'Open Chapters to browse all 18 chapters, or seed the canvas with a set of connected teachings.'}
           </p>
-          <ul className="network-empty-state-list">
-            <li>Each verse reveals thematic, conceptual, practical, and doctrinal connections</li>
-            <li>Connection lines display relationship types with colored badges</li>
-            <li>{isMobile ? 'Tap verses to read details and add suggestions' : 'Click verses to discover related teachings'}</li>
-            <li>{isMobile ? 'Pinch to zoom and drag the canvas to pan' : 'Drag verses around to organize your network'}</li>
-            <li>{isMobile ? 'Drag from verse dots to create custom connections' : 'Drag from one verse handle to another to create a custom connection'}</li>
-          </ul>
           <div className="network-empty-state-actions">
-            <button className="starter-button primary" onClick={handleAddStarterSet}>
-              Add starter set
-            </button>
-            <button className="starter-button" onClick={handleAddRandom}>
-              Add random verse
-            </button>
+            {(!sidebarOpen || isMobile) && onOpenChapters ? (
+              <>
+                <button type="button" className="starter-button primary" onClick={onOpenChapters}>
+                  <BookOpen size={17} />
+                  Open Chapters
+                </button>
+                <button type="button" className="starter-button" onClick={handleAddStarterSet}>
+                  Add starter set
+                </button>
+              </>
+            ) : (
+              <>
+                <button type="button" className="starter-button primary" onClick={handleAddStarterSet}>
+                  Add starter set
+                </button>
+                <button type="button" className="starter-button" onClick={handleAddRandom}>
+                  Add random verse
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}

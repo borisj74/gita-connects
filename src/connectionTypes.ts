@@ -128,6 +128,13 @@ export function saveActiveFilters(active: Set<string>, known: string[]): void {
   localStorage.removeItem(LEGACY_ACTIVE_FILTERS_KEY);
 }
 
+/** Colours offered when a reader creates a custom link type. */
+export const CUSTOM_TYPE_COLORS = [
+  '#ca7558', '#7d8a6e', '#8d7a66', '#c8a04a',
+  '#5a7a96', '#9b6a8b', '#5e9b8e', '#b85c5c',
+  '#6b8e23', '#4a6fa5', '#d49a6a', '#7a5c8a',
+];
+
 export function makeCustomTypeId(label: string): string {
   const slug = label
     .toLowerCase()

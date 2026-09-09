@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ReactFlowProvider } from 'reactflow';
@@ -87,5 +87,35 @@ describe('VerseNode', () => {
       </ReactFlowProvider>,
     );
     expect(container.querySelector('.verse-node')).toHaveClass('selected');
+  });
+
+  describe('without a summary', () => {
+    afterEach(() => vi.unstubAllGlobals());
+
+    const uncurated: Verse = {
+      ...verse,
+      id: '7.3',
+      summary: undefined,
+      theme: undefined,
+      concepts: [],
+      curated: false,
+      reviewed: false,
+    };
+
+    it('leads with the fetched English translation', async () => {
+      vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({
+        translation: 'Out of many thousands among men, one may endeavor for perfection.',
+      }))));
+      renderNode({ verse: uncurated });
+      expect(await screen.findByText(/Out of many thousands/)).toBeInTheDocument();
+      expect(screen.queryByText(uncurated.transliteration)).not.toBeInTheDocument();
+    });
+
+    it('falls back to the transliteration when the translation is unavailable', async () => {
+      vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.stubGlobal('fetch', vi.fn(async () => new Response('nope', { status: 500 })));
+      renderNode({ verse: { ...uncurated, id: '7.4' } });
+      expect(await screen.findByText(uncurated.transliteration)).toBeInTheDocument();
+    });
   });
 });

@@ -1,0 +1,504 @@
+/* ============ Canvas toolbar (App 11 — Improved toolbar) ============ */
+
+/* Shared 38px pill button used by every toolbar control */
+.tb-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  /* One height across the whole toolbar row, matching the search field and
+     the Chapters button, and clearing the 44px touch-target floor */
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--beige-300);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--brown-700);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 18px;
+  cursor: pointer;
+  /* Every control floating over the canvas shares one lift, so the toolbar,
+     the Chapters button and the zoom cluster read as the same layer */
+  box-shadow: var(--shadow);
+  transition: background var(--transition-base), border-color var(--transition-base);
+  white-space: nowrap;
+}
+
+.tb-button:hover:not(:disabled) {
+  background: var(--beige-100);
+  border-color: var(--beige-400);
+}
+
+.tb-button:focus-visible {
+  outline: 2px solid var(--brown-900);
+  outline-offset: 2px;
+}
+
+.tb-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tb-button .tb-chevron {
+  color: var(--brown-600);
+  transition: transform var(--transition-base);
+}
+
+.tb-button[aria-expanded="true"] .tb-chevron {
+  transform: rotate(180deg);
+}
+
+.tb-button-muted {
+  /* Reserve the width of the widest count ("10 of 10"). Without this the
+     button narrows when a digit drops, which widens the toolbar's action
+     group and drags the centred search field sideways as links are toggled. */
+  display: inline-block;
+  min-width: 7ch;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  line-height: 16px;
+  color: var(--brown-600);
+}
+
+/* Square icon-only variant (⋯ overflow) */
+.tb-button.tb-icon {
+  width: 44px;
+  padding: 0;
+  justify-content: center;
+}
+
+/* Open state: filled, so the trigger reads as the menu's anchor */
+.tb-button[aria-expanded="true"],
+.tb-button.tb-icon[aria-expanded="true"] {
+  background: var(--beige-200);
+  border-color: var(--beige-400);
+}
+
+[data-theme="dark"] .tb-button {
+  background: var(--beige-50);
+}
+
+[data-theme="dark"] .tb-button:hover:not(:disabled) {
+  background: var(--beige-200);
+}
+
+[data-theme="dark"] .tb-button[aria-expanded="true"] {
+  background: var(--beige-200);
+}
+
+/* ---- Toolbar row over the canvas ---- */
+.canvas-toolbar {
+  position: absolute;
+  /* 12px matches the Chapters button, which is a separate floating element */
+  top: 12px;
+  left: 20px;
+  right: 20px;
+  /* Two tracks: the tools take exactly what they need on the right, and the
+     search is centred in everything left over. Three tracks with 1fr on the
+     outside looks like it would centre the field, but a 1fr track still
+     respects its content's minimum width, so the tools push their track wider
+     and the field drifts — by 160px one way at 1920 and 91px the other at
+     1280. This is stable at every width instead. */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  /* The search is taller than the buttons, so centre rather than top-align */
+  align-items: center;
+  gap: 10px;
+  z-index: var(--z-sticky);
+  pointer-events: none;
+}
+
+.canvas-toolbar > * {
+  pointer-events: auto;
+}
+
+/* Chapters FAB (12px + 114px + gap) sits in the row when the sidebar is closed */
+.canvas-toolbar.sidebar-collapsed {
+  left: 142px;
+}
+
+/* ---- Search field: centred in the space before the tools ---- */
+.tb-search-slot {
+  grid-column: 1;
+  justify-self: center;
+  width: min(420px, 100%);
+  min-width: 0;
+}
+
+.tb-kbd {
+  flex-shrink: 0;
+  padding: 2px 7px;
+  border: 1px solid var(--beige-300);
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 14px;
+  color: var(--brown-600);
+}
+
+/* ---- Right tool group ---- */
+.canvas-actions {
+  grid-column: 2;
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* ---- Dropdown menus (Networks, overflow, link types) ---- */
+.tb-menu-anchor {
+  position: relative;
+}
+
+.tb-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  background: var(--surface);
+  border: 1px solid var(--beige-300);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
+  z-index: var(--z-popover);
+  animation: dropdownFadeIn 0.15s ease-out;
+}
+
+[data-theme="dark"] .tb-menu {
+  background: var(--beige-50);
+}
+
+.tb-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--brown-800);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 18px;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.tb-menu-item > svg {
+  flex-shrink: 0;
+  color: var(--brown-700);
+}
+
+.tb-menu-item-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.tb-menu-item-hint {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--brown-600);
+}
+
+.tb-menu-item:hover:not(:disabled),
+.tb-menu-item:focus-visible {
+  background: var(--beige-100);
+  outline: none;
+}
+
+.tb-menu-item:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.tb-menu-item.danger,
+.tb-menu-item.danger > svg {
+  color: #b3354a;
+}
+
+.tb-menu-item.danger:hover:not(:disabled) {
+  background: rgb(179 53 74 / 0.08);
+}
+
+.tb-menu-divider {
+  height: 1px;
+  margin: 6px 0;
+  background: var(--beige-200);
+}
+
+.tb-menu-heading {
+  padding: 8px 10px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brown-600);
+}
+
+/* Overflow menu */
+.tb-overflow-menu {
+  width: 222px;
+}
+
+/* Networks menu */
+.tb-networks-menu {
+  width: 296px;
+}
+
+.tb-recent-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 6px;
+}
+
+.tb-recent-row:hover {
+  background: var(--beige-100);
+}
+
+.tb-recent-open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  font-family: var(--font-ui);
+  text-align: left;
+  cursor: pointer;
+}
+
+.tb-recent-open:focus-visible {
+  outline: 2px solid var(--brown-900);
+  outline-offset: -2px;
+}
+
+.tb-recent-name {
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--brown-900);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tb-recent-meta {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--brown-600);
+}
+
+.tb-recent-delete {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin-right: 4px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--brown-400);
+  cursor: pointer;
+}
+
+.tb-recent-delete:hover {
+  background: rgb(179 53 74 / 0.08);
+  color: #b3354a;
+}
+
+.tb-recent-empty {
+  padding: 8px 10px 10px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--brown-600);
+}
+
+/* ---- Zoom cluster, bottom-right ---- */
+.tb-zoom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px;
+  background: var(--surface);
+  border: 1px solid var(--beige-300);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+
+[data-theme="dark"] .tb-zoom {
+  background: var(--beige-50);
+}
+
+.tb-zoom-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--brown-700);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.tb-zoom-btn:hover:not(:disabled) {
+  background: var(--beige-100);
+}
+
+.tb-zoom-btn:focus-visible {
+  outline: 2px solid var(--brown-900);
+  outline-offset: -2px;
+}
+
+.tb-zoom-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tb-zoom-sep {
+  width: 1px;
+  height: 20px;
+  background: var(--beige-300);
+}
+
+.tb-zoom-level {
+  min-width: 38px;
+  text-align: center;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--brown-700);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Mobile ---- */
+@media (max-width: 768px) {
+  .canvas-toolbar {
+    top: max(12px, env(safe-area-inset-top));
+    right: max(12px, env(safe-area-inset-right));
+  }
+
+  /* Search is an icon here, so it can sit beside the Chapters button */
+  .canvas-toolbar.sidebar-collapsed {
+    left: max(68px, calc(env(safe-area-inset-left) + 56px));
+  }
+
+  .tb-search-slot {
+    justify-self: start;
+    width: auto;
+  }
+
+  .canvas-actions {
+    gap: 8px;
+  }
+
+  .canvas-actions .tb-desktop-only {
+    display: none;
+  }
+}
+
+/* Autosave status — bottom-center pill, fades out a moment after saving */
+.autosave-pill {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  translate: -50%;
+  z-index: var(--z-sticky);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  background: var(--surface);
+  border: 1px solid var(--beige-300);
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.06);
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  line-height: 16px;
+  color: var(--brown-600);
+  white-space: nowrap;
+  pointer-events: none;
+  animation: autosaveIn 0.2s ease-out;
+}
+
+.autosave-pill > svg {
+  color: var(--accent-sage-text);
+}
+
+.autosave-pill.is-saving {
+  color: var(--ink-soft);
+}
+
+.autosave-pill.is-saving > svg {
+  color: var(--brown-400);
+}
+
+/* "Note saved to 2.47" (Note flow 4): dark pill, same spot as the autosave pill */
+.note-toast {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  translate: -50%;
+  z-index: var(--z-popover);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 16px;
+  border-radius: 10px;
+  background: var(--overlay-bg);
+  color: var(--overlay-text);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 16px;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+  animation: autosaveIn 0.2s ease-out;
+}
+
+.note-toast > svg {
+  color: var(--sage-400);
+}
+
+@keyframes autosaveIn {
+  from {
+    opacity: 0;
+    translate: -50% 6px;
+  }
+  to {
+    opacity: 1;
+    translate: -50% 0;
+  }
+}
+
+[data-theme="dark"] .autosave-pill {
+  background: var(--beige-50);
+}
+
+@media (max-width: 768px) {
+  .autosave-pill {
+    bottom: max(72px, calc(60px + env(safe-area-inset-bottom)));
+  }
+}
+
+/* Email beside "Your account" in the ⋯ menu: long addresses must not stretch it */
+.tb-menu-item-email {
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

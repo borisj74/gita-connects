@@ -27,7 +27,7 @@
   font-weight: 500;
   text-transform: capitalize;
   fill: var(--brown-900);
-  background: white;
+  background: var(--surface);
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
 }
@@ -42,7 +42,7 @@
 
 /* Custom Controls */
 .controls {
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--beige-300);
   border-radius: 8px;
   padding: 0.5rem;
@@ -82,7 +82,7 @@
   position: absolute;
   bottom: 1.5rem;
   left: 1.5rem;
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--beige-300);
   border-radius: 8px;
   padding: 1rem;
@@ -252,120 +252,109 @@
 /* Starter buttons in empty state */
 .network-empty-state-actions {
   display: flex;
-  gap: 0.75rem;
-  justify-content: center;
-  margin-top: 1.75rem;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin-top: 26px;
 }
 
 .starter-button {
-  font-family: var(--font-ui);
-  font-size: 0.875rem;
-  font-weight: 500;
-  padding: 0.625rem 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 42px;
+  padding: 0 16px;
+  border: 1px solid var(--beige-300);
   border-radius: 8px;
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 18px;
+  color: var(--brown-700);
   cursor: pointer;
-  border: 1px solid rgb(125, 138, 110);
-  background: white;
-  color: rgb(105, 118, 90);
-  transition: all var(--transition-base);
+  transition: background var(--transition-base);
 }
 
 .starter-button:hover {
-  background: rgba(125, 138, 110, 0.1);
-  transform: translateY(-1px);
+  background: var(--beige-100);
 }
 
 .starter-button.primary {
-  background: rgb(125, 138, 110);
+  height: 44px;
+  border-color: var(--sage-500);
+  background: var(--sage-500);
   color: white;
-  box-shadow: 0 2px 8px rgba(125, 138, 110, 0.3);
 }
 
 .starter-button.primary:hover {
-  background: rgb(105, 118, 90);
-  box-shadow: 0 4px 12px rgba(125, 138, 110, 0.4);
+  background: var(--sage-600);
 }
 
-/* Empty State */
+.starter-button:focus-visible {
+  outline: 2px solid var(--brown-900);
+  outline-offset: 2px;
+}
+
+/* Empty State (App 19) */
 .network-empty-state {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: white;
-  border: 1px solid rgba(177, 93, 67, 0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(396px, calc(100% - 48px));
+  padding: 32px 36px 36px;
+  background: var(--surface);
+  border: 1px solid var(--beige-200);
   border-radius: 16px;
-  padding: 2rem;
-  width: 400px;
-  max-width: 400px;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.06);
   z-index: 5;
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  animation: fadeIn 0.5s ease-out;
+  animation: fadeIn 0.4s ease-out;
 }
 
 .network-empty-state-title {
+  margin: 0;
   font-family: var(--font-display);
-  font-size: 2rem;
-  font-weight: 500;
+  font-size: 34px;
+  font-weight: 400;
+  line-height: 40px;
   color: var(--brown-900);
-  margin-bottom: 1rem;
 }
 
 .network-empty-state-description {
+  margin: 16px 0 0;
   font-family: var(--font-ui);
-  font-size: 1rem;
+  font-size: 14px;
+  line-height: 24px;
   color: var(--brown-700);
-  line-height: 1.6;
-  margin-bottom: 2rem;
 }
 
-.network-empty-state-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  text-align: left;
-}
-
-.network-empty-state-list li {
-  font-family: var(--font-ui);
-  font-size: 0.9375rem;
-  color: var(--brown-600);
-  line-height: 1.8;
-  padding-left: 1.5rem;
-  position: relative;
-  margin-bottom: 0.75rem;
-}
-
-.network-empty-state-list li:before {
-  content: '•';
-  position: absolute;
-  left: 0;
-  color: rgb(177, 93, 67);
-  font-size: 1.2rem;
-}
 
 
 /* One-time connect onboarding hint */
+/* Connect hint card — bottom-left, out of the toolbar's lane (App 18) */
 .connect-hint {
   position: absolute;
-  top: 1rem;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 32px;
+  bottom: 24px;
   display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  max-width: min(520px, calc(100% - 2rem));
-  background: white;
+  align-items: flex-start;
+  gap: 12px;
+  width: min(376px, calc(100% - 64px));
+  padding: 14px 16px;
+  background: var(--surface);
   border: 1px solid var(--beige-300);
-  border-radius: 999px;
-  padding: 0.625rem 0.875rem 0.625rem 1rem;
-  box-shadow: var(--shadow-lg);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.08);
   font-family: var(--font-ui);
-  font-size: 0.8125rem;
-  color: var(--brown-800);
   z-index: var(--z-fixed);
-  animation: connectHintIn 0.4s ease-out;
+  animation: connectHintIn 0.3s ease-out;
 }
 
 [data-theme="dark"] .connect-hint {
@@ -373,22 +362,45 @@
 }
 
 .connect-hint-icon {
-  color: rgb(177, 93, 67);
   flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--accent-terracotta-text);
+}
+
+.connect-hint-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.connect-hint-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 18px;
+  color: var(--brown-900);
+}
+
+.connect-hint-body {
+  font-size: 12.5px;
+  line-height: 19px;
+  color: var(--brown-700);
 }
 
 .connect-hint-close {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 24px;
   height: 24px;
+  margin: -4px -6px 0 0;
   border: none;
-  border-radius: 50%;
+  border-radius: 6px;
   background: transparent;
-  color: var(--brown-600);
+  color: var(--brown-400);
   cursor: pointer;
-  flex-shrink: 0;
   transition: background var(--transition-base);
 }
 
@@ -400,12 +412,17 @@
 @keyframes connectHintIn {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(-8px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
   }
+}
+
+/* Undo/redo sit above the hint card while it is up */
+.connect-hint-active .react-flow__panel.canvas-history {
+  bottom: 118px;
 }
 
 /* Pulse the node handles while the hint is up so the dots are findable */
@@ -447,7 +464,7 @@
   height: 36px;
   border-radius: 8px;
   border: 1px solid var(--beige-300);
-  background: white;
+  background: var(--surface);
   color: var(--brown-700);
   cursor: pointer;
   display: flex;
@@ -471,49 +488,80 @@
   background: var(--beige-50);
 }
 
-/* Undo/redo — desktop: bottom-right, stacked above theme toggle */
-.verse-network:not(.is-mobile) .react-flow__panel.canvas-zoom {
+/* Undo/redo — bottom-left */
+.react-flow__panel.canvas-history {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 0.5rem;
   margin: 0;
-  bottom: 64px;
-  right: 24px;
+  bottom: 20px;
+  left: 20px;
 }
 
-.canvas-zoom .control-button {
+.canvas-history .control-button {
   box-shadow: var(--shadow-sm);
 }
 
-[data-theme="dark"] .canvas-zoom .control-button {
+[data-theme="dark"] .canvas-history .control-button {
+  background: var(--beige-50);
+}
+
+/* Zoom cluster + help button — bottom-right */
+.react-flow__panel.canvas-zoom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  bottom: 20px;
+  right: 20px;
+}
+
+/* Persistent "?" — what makes dismissing the connect tip safe */
+.canvas-help-fab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--beige-300);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--brown-700);
+  /* The same lift as the Chapters button and the other floating controls */
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: background var(--transition-base);
+}
+
+.canvas-help-fab:hover {
+  background: var(--beige-100);
+  color: var(--brown-900);
+}
+
+.canvas-help-fab:focus-visible {
+  outline: 2px solid var(--brown-900);
+  outline-offset: 2px;
+}
+
+[data-theme="dark"] .canvas-help-fab {
   background: var(--beige-50);
 }
 
 /* Mobile canvas adjustments */
 @media (max-width: 768px) {
   .verse-network.is-mobile .connect-hint {
-    top: max(3.5rem, calc(2.5rem + env(safe-area-inset-top)));
-    max-width: calc(100% - 1.5rem);
-    border-radius: 12px;
-    flex-wrap: wrap;
-    justify-content: center;
-    text-align: center;
-    font-size: 0.75rem;
-    padding: 0.75rem 1rem;
+    left: 12px;
+    right: 12px;
+    width: auto;
+    bottom: max(72px, calc(60px + env(safe-area-inset-bottom)));
   }
 
-  /* Undo/redo on bottom-left — theme toggle stays bottom-right */
-  .verse-network.is-mobile .react-flow__panel.canvas-zoom {
-    display: flex;
-    margin: 0;
+  .verse-network.is-mobile .react-flow__panel.canvas-history {
     bottom: max(12px, env(safe-area-inset-bottom));
     left: max(12px, env(safe-area-inset-left));
-    right: auto;
-    flex-direction: row;
-    gap: 0.5rem;
   }
 
-  .verse-network.is-mobile .canvas-zoom .control-button {
+  .verse-network.is-mobile .canvas-history .control-button {
     width: 44px;
     height: 44px;
   }

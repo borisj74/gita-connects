@@ -18,7 +18,7 @@
   display: flex;
   flex-direction: column;
   border-right: 1px solid var(--beige-300);
-  background: white;
+  background: var(--surface);
 }
 
 .sidebar-wrapper.collapsed {
@@ -50,7 +50,7 @@
   height: 40px;
   border-radius: 8px;
   border: 1px solid var(--beige-300);
-  background: white;
+  background: var(--surface);
   color: var(--brown-700);
   cursor: pointer;
   display: flex;
@@ -82,7 +82,7 @@
   height: 44px;
   padding: 0 0.875rem;
   gap: 0.5rem;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow);
   /* Below search palette (--z-modal: 50) so Chapters stays behind search */
   z-index: var(--z-sticky);
 }
@@ -109,7 +109,7 @@
 }
 
 .app-header {
-  background: white;
+  background: var(--surface);
   border-bottom: 1px solid var(--beige-300);
   padding: 1.5rem 50px;
   position: sticky;
@@ -163,7 +163,7 @@
 .section-header {
   padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--beige-200);
-  background: white;
+  background: var(--surface);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -211,31 +211,6 @@
   flex: 1;
   overflow: hidden;
   position: relative;
-}
-
-/* Floating overlays over the canvas (no top header) */
-.canvas-actions {
-  position: absolute;
-  top: 16px;
-  right: 24px;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  z-index: var(--z-sticky);
-}
-
-/* Theme toggle, bottom-right corner */
-.theme-toggle-btn {
-  position: absolute;
-  bottom: 16px;
-  right: 24px;
-  color: var(--brown-700);
-  box-shadow: var(--shadow-sm);
-  z-index: var(--z-sticky);
-}
-
-[data-theme="dark"] .theme-toggle-btn {
-  background: var(--beige-50);
 }
 
 /* Responsive Design */
@@ -291,32 +266,26 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
 
-  /* Desktop canvas actions collapse into the hamburger; keep search icon */
-  .canvas-actions {
-    top: max(12px, env(safe-area-inset-top));
-    right: max(12px, env(safe-area-inset-right));
-    gap: 0.5rem;
-  }
-
-  .canvas-actions .connection-filters,
-  .canvas-actions .arrange-button,
-  .canvas-actions .clear-button,
-  .canvas-actions .save-load-controls {
-    display: none;
-  }
-
+  /* Desktop canvas actions collapse into the hamburger */
   .canvas-actions .mobile-actions {
     display: block;
+  }
+
+  .canvas-actions .tb-mobile-only {
+    display: inline-flex;
   }
 
   .sidebar-floating-toggle.chapters-fab {
     top: max(12px, env(safe-area-inset-top));
     left: max(12px, env(safe-area-inset-left));
+    /* The label costs ~80px the search field needs more; the icon carries it */
+    width: 44px;
+    padding: 0;
+    justify-content: center;
   }
 
-  .theme-toggle-btn {
-    bottom: max(12px, env(safe-area-inset-bottom));
-    right: max(12px, env(safe-area-inset-right));
+  .chapters-fab-label {
+    display: none;
   }
 
   .network-empty-state {
@@ -355,7 +324,7 @@
   height: 40px;
   border-radius: 8px;
   border: 1px solid var(--beige-300);
-  background: white;
+  background: var(--surface);
   color: var(--brown-700);
   cursor: pointer;
   display: flex;
@@ -374,6 +343,11 @@
   background: var(--beige-50);
 }
 
+/* Mobile-only controls — hidden on desktop */
+.tb-mobile-only {
+  display: none;
+}
+
 /* Mobile actions menu (hamburger) — hidden on desktop */
 .mobile-actions {
   display: none;
@@ -381,12 +355,15 @@
 }
 
 .hamburger-button {
-  width: 40px;
-  height: 40px;
+  /* 44px to match the search and Chapters buttons beside it, and to meet the
+     touch-target floor the rest of the toolbar already uses */
+  width: 44px;
+  height: 44px;
   border-radius: 8px;
   border: 1px solid var(--beige-300);
-  background: white;
+  background: var(--surface);
   color: var(--brown-700);
+  box-shadow: var(--shadow);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -403,7 +380,7 @@
   top: calc(100% + 8px);
   right: 0;
   min-width: 200px;
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--beige-300);
   border-radius: 10px;
   box-shadow: var(--shadow-lg);
@@ -446,7 +423,7 @@
 }
 
 .mobile-menu-item.danger {
-  color: var(--terracotta-600);
+  color: var(--accent-terracotta-text);
 }
 
 .mobile-menu-filters {

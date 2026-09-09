@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { X, Plus, ChevronDown } from 'lucide-react';
 import type { ConnectionTypeDef } from '../connectionTypes.js';
-import { makeCustomTypeId } from '../connectionTypes.js';
+import { makeCustomTypeId, CUSTOM_TYPE_COLORS } from '../connectionTypes.js';
 import './ConnectionDialog.css';
 
 interface ConnectionDialogProps {
@@ -17,11 +17,7 @@ interface ConnectionDialogProps {
   }) => void;
 }
 
-const DEFAULT_COLOR_PALETTE = [
-  '#ca7558', '#7d8a6e', '#8d7a66', '#c8a04a',
-  '#5a7a96', '#9b6a8b', '#5e9b8e', '#b85c5c',
-  '#6b8e23', '#4a6fa5', '#d49a6a', '#7a5c8a',
-];
+const DEFAULT_COLOR_PALETTE = CUSTOM_TYPE_COLORS;
 
 export default function ConnectionDialog({
   sourceVerseId,
