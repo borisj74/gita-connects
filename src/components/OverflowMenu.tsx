@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { MoreHorizontal, Download, FileJson, Moon, Sun, CircleHelp, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Download, FileJson, Moon, Sun, CircleHelp, Trash2, UserRound } from 'lucide-react';
 import './Toolbar.css';
 
 interface OverflowMenuProps {
@@ -12,6 +12,10 @@ interface OverflowMenuProps {
   canExport?: boolean;
   /** Download per-verse usage counts from this device (feeds the review queue). */
   onExportUsage?: () => void;
+  /** Open the sign-in / account dialog. Absent when the build has no cloud keys. */
+  onOpenAccount?: () => void;
+  /** Email of the signed-in reader, if any. */
+  accountEmail?: string | null;
   onShowShortcuts?: () => void;
 }
 
@@ -27,6 +31,8 @@ export default function OverflowMenu({
   onExport,
   canExport = true,
   onExportUsage,
+  onOpenAccount,
+  accountEmail,
   onShowShortcuts,
 }: OverflowMenuProps) {
   const [open, setOpen] = useState(false);
@@ -109,6 +115,16 @@ export default function OverflowMenu({
             <span className="tb-menu-item-label">Keyboard shortcuts</span>
             <span className="tb-menu-item-hint">{onShowShortcuts ? '?' : 'Soon'}</span>
           </button>
+          {onOpenAccount && (
+            <>
+              <div className="tb-menu-divider" role="separator" />
+              <button type="button" role="menuitem" className="tb-menu-item" onClick={run(onOpenAccount)}>
+                <UserRound size={16} />
+                <span className="tb-menu-item-label">{accountEmail ? 'Your account' : 'Sign in'}</span>
+                {accountEmail && <span className="tb-menu-item-hint tb-menu-item-email">{accountEmail}</span>}
+              </button>
+            </>
+          )}
           <div className="tb-menu-divider" role="separator" />
           <button
             type="button"

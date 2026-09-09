@@ -504,3 +504,11 @@
     bottom: max(72px, calc(60px + env(safe-area-inset-bottom)));
   }
 }
+
+/* Email beside "Your account" in the ⋯ menu: long addresses must not stretch it */
+.tb-menu-item-email {
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

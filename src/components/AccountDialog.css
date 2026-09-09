@@ -1,0 +1,130 @@
+/* Sign in / account — reuses the saved-networks dialog shell */
+.account-dialog {
+  width: min(440px, calc(100% - 32px));
+}
+
+.account-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 24px 4px;
+}
+
+.account-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--brown-600);
+}
+
+.account-input {
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--beige-300);
+  border-radius: 8px;
+  background: white;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  color: var(--brown-900);
+}
+
+.account-input::placeholder {
+  color: var(--brown-400);
+}
+
+.account-input:focus-visible {
+  outline: none;
+  border-color: var(--sage-500);
+  box-shadow: 0 0 0 3px rgb(125 138 110 / 0.18);
+}
+
+.account-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 42px;
+  margin-top: 4px;
+}
+
+.account-error {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: #b3354a;
+}
+
+.account-sent {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: var(--sage-100);
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--brown-800);
+}
+
+.account-sent > svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--sage-600);
+}
+
+.account-who {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: var(--beige-50);
+}
+
+.account-who > span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.account-avatar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  background: var(--sage-500);
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.account-email {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 18px;
+  color: var(--brown-900);
+  overflow-wrap: anywhere;
+}
+
+.account-note {
+  font-size: 12.5px;
+  line-height: 16px;
+  color: var(--brown-600);
+}
+
+.saved-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+[data-theme="dark"] .account-input {
+  background: var(--beige-100);
+}

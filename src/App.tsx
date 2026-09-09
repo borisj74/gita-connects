@@ -30,6 +30,9 @@ import { useNotes } from './notes.js';
 import { collectUsage, downloadJson } from './usage.js';
 import { buildPdf, downloadBlob, downloadDataUrl } from './exportNetwork.js';
 import ExportDialog, { type ExportFormat } from './components/ExportDialog.js';
+import AccountDialog from './components/AccountDialog.js';
+import { cloudEnabled } from './cloud/supabase.js';
+import { useSession, accountLabel } from './cloud/useSession.js';
 import type { Concept } from './concepts.js';
 import './App.css';
 
@@ -45,6 +48,8 @@ function App() {
   const [noteEdit, setNoteEdit] = useState<{ verseId: string; seq: number } | null>(null);
   const [noteToast, setNoteToast] = useState<string | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const { session } = useSession();
   const [sidebarOpen, setSidebarOpen] = useState(
     () => typeof window !== 'undefined' && window.innerWidth > 768,
   );
@@ -512,6 +517,8 @@ function App() {
                 onExport={() => setExportOpen(true)}
                 canExport={networkVerses.size > 0}
                 onExportUsage={() => downloadJson(`gita-usage-${new Date().toISOString().slice(0, 10)}.json`, collectUsage())}
+                onOpenAccount={cloudEnabled ? () => setAccountOpen(true) : undefined}
+                accountEmail={session ? accountLabel(session) : null}
                 onShowShortcuts={() => setShortcutsOpen(true)}
               />
             </div>
@@ -677,6 +684,7 @@ function App() {
         />
       )}
 
+      {accountOpen && <AccountDialog session={session} onClose={() => setAccountOpen(false)} />}
       {exportOpen && (
         <ExportDialog
           verseCount={networkVerses.size}
