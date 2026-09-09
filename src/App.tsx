@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ReactFlowProvider } from 'reactflow';
 import type { Node, Edge } from 'reactflow';
-import { PanelRightOpen, Moon, Sun, Menu, Save, FolderOpen, LayoutGrid, Trash2, Search, BookOpen, Check } from 'lucide-react';
+import { PanelRightOpen, Moon, Sun, Menu, Save, FolderOpen, LayoutGrid, Trash2, BookOpen, Check } from 'lucide-react';
 import { useMediaQuery, MOBILE_BREAKPOINT } from './hooks/useMediaQuery.js';
 import ChapterSidebar from './components/ChapterSidebar.js';
 import VerseNetwork, { type VerseNetworkRef } from './components/VerseNetwork.js';
 import VerseDetail from './components/VerseDetail.js';
-import SearchPalette from './components/SearchPalette.js';
+import SearchField, { type SearchFieldRef } from './components/SearchField.js';
 import ConnectionFilters from './components/ConnectionFilters.js';
 import SaveLoadControls, { type SaveLoadControlsRef } from './components/SaveLoadControls.js';
 import OverflowMenu from './components/OverflowMenu.js';
@@ -90,7 +90,7 @@ function App() {
     () => (localStorage.getItem('gita-connects-theme') as 'light' | 'dark') || 'light',
   );
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
+  const searchRef = useRef<SearchFieldRef>(null);
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
   const [clearedToast, setClearedToast] = useState<{ verses: number; links: number } | null>(null);
   const [removedLinksToast, setRemovedLinksToast] = useState<string | null>(null);
@@ -192,9 +192,7 @@ function App() {
       const typing = tag === 'INPUT' || tag === 'TEXTAREA';
 
       if (e.key === 'Escape') {
-        if (searchOpen) {
-          setSearchOpen(false);
-        } else if (typing) {
+        if (typing) {
           (e.target as HTMLElement).blur();
         } else if (selectedVerseId) {
           setSelectedVerseId(null);
@@ -204,10 +202,10 @@ function App() {
         return;
       }
 
-      // Cmd/Ctrl+K — open search palette (works anywhere)
+      // Cmd/Ctrl+K — jump to the search field (works anywhere)
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        setSearchOpen(true);
+        searchRef.current?.focus();
         return;
       }
 
@@ -220,10 +218,10 @@ function App() {
 
       if (typing) return;
 
-      // "/" — open search palette
+      // "/" — jump to the search field
       if (e.key === '/') {
         e.preventDefault();
-        setSearchOpen(true);
+        searchRef.current?.focus();
         return;
       }
 
@@ -249,7 +247,7 @@ function App() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selectedVerseId, searchOpen, shortcutsOpen, conceptFilter, handleOpenNote]);
+  }, [selectedVerseId, shortcutsOpen, conceptFilter, handleOpenNote]);
 
   // Clicking the active chip again clears the filter.
   const handleConceptSelect = useCallback((concept: string) => {
@@ -476,19 +474,16 @@ function App() {
         )}
 
         <div className="main-content">
-          {/* Toolbar row: search on the left, canvas tools on the right */}
+          {/* Toolbar row: search centred, canvas tools to its right */}
           <div className={`canvas-toolbar ${!sidebarOpen ? 'sidebar-collapsed' : ''}`}>
-          <button
-            type="button"
-            className="tb-button tb-search"
-            onClick={() => setSearchOpen(true)}
-            aria-label="Search verses"
-            title="Search verses (⌘K)"
-          >
-            <Search size={16} className="tb-search-icon" />
-            <span className="tb-search-label">Search verses</span>
-            <kbd className="tb-kbd">⌘K</kbd>
-          </button>
+          <div className="tb-search-slot">
+            <SearchField
+              ref={searchRef}
+              onVerseSelect={handleVerseSelect}
+              onAddVerse={(id) => verseNetworkRef.current?.addVerse(id)}
+              networkVerses={networkVerses}
+            />
+          </div>
 
           {/* Canvas tools, top-right */}
           <div className="canvas-actions">
@@ -536,15 +531,7 @@ function App() {
               />
             </div>
 
-            {/* Mobile: search + everything else in a hamburger menu */}
-            <button
-              type="button"
-              className="tb-button tb-icon tb-mobile-only"
-              onClick={() => setSearchOpen(true)}
-              aria-label="Search verses"
-            >
-              <Search size={18} />
-            </button>
+            {/* Mobile: everything but search lives in a hamburger menu */}
             <div className="mobile-actions" ref={mobileMenuRef}>
               <button
                 className="hamburger-button"
@@ -731,14 +718,6 @@ function App() {
 
       {shortcutsOpen && <ShortcutsOverlay onClose={() => setShortcutsOpen(false)} />}
 
-      {searchOpen && (
-        <SearchPalette
-          onVerseSelect={handleVerseSelect}
-          onAddVerse={(id) => verseNetworkRef.current?.addVerse(id)}
-          networkVerses={networkVerses}
-          onClose={() => setSearchOpen(false)}
-        />
-      )}
     </div>
   );
 }

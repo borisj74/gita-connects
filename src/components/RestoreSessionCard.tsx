@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react';
-import { Waypoints } from 'lucide-react';
 import { autosavedAgo, type Autosave } from '../autosave.js';
 import './RestoreSessionCard.css';
 
@@ -29,9 +28,6 @@ export default function RestoreSessionCard({ autosave, onRestore, onStartFresh }
       <p className="restore-body">Your last session was saved automatically on this device.</p>
 
       <div className="restore-summary">
-        <div className="restore-summary-icon" aria-hidden="true">
-          <Waypoints size={19} />
-        </div>
         <div className="restore-summary-text">
           <div className="restore-summary-counts">
             {plural(autosave.nodes.length, 'verse')} · {plural(autosave.edges.length, 'link')}

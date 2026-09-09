@@ -1,0 +1,321 @@
+/* Search as a toolbar field with a dropdown, not a modal */
+.sf-root {
+  position: relative;
+  width: 100%;
+  /* The shortcut badge has to disappear when the *field* runs out of room,
+     which is not the same thing as the viewport being narrow: the tools on
+     the right take a fixed width, so at 1100px the field can already be too
+     small while a viewport query still thinks there is space. */
+  container-type: inline-size;
+}
+
+.sf-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  /* Matches the Chapters button opposite it */
+  height: 44px;
+  padding: 0 10px 0 12px;
+  border: 1px solid var(--beige-300);
+  border-radius: 8px;
+  background: white;
+  box-shadow: var(--shadow);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  /* Nothing may spill past the rounded edge if the field is squeezed further */
+  overflow: hidden;
+}
+
+.sf-field:focus-within {
+  border-color: var(--terracotta-400);
+  box-shadow: 0 0 0 3px rgb(202 117 88 / 0.16);
+}
+
+.sf-icon {
+  flex-shrink: 0;
+  color: var(--brown-600);
+}
+
+.sf-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  color: var(--brown-900);
+}
+
+.sf-input::placeholder {
+  color: var(--brown-400);
+}
+
+.sf-kbd {
+  flex-shrink: 0;
+  padding: 2px 7px;
+  border: 1px solid var(--beige-300);
+  border-radius: 5px;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 14px;
+  color: var(--brown-600);
+}
+
+.sf-clear {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--brown-600);
+  cursor: pointer;
+}
+
+.sf-clear:hover {
+  background: var(--beige-200);
+  color: var(--brown-900);
+}
+
+/* ---- Dropdown ---- */
+.sf-dropdown {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  right: 0;
+  max-height: min(420px, calc(100vh - 120px));
+  overflow-y: auto;
+  padding: 6px;
+  /* A thin scrollbar keeps the right inset equal to the left one */
+  scrollbar-width: thin;
+  scrollbar-color: var(--brown-400) transparent;
+  border: 1px solid var(--beige-300);
+  border-radius: 10px;
+  background: white;
+  box-shadow: 0 16px 40px rgb(31 26 22 / 0.16);
+  z-index: var(--z-popover);
+}
+
+.sf-result {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  border-radius: 8px;
+}
+
+.sf-result.is-active {
+  background: var(--beige-100);
+}
+
+.sf-result-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 11px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font-ui);
+}
+
+.sf-result-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.sf-result-id {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--terracotta-600);
+}
+
+.sf-result-chapter {
+  font-size: 11px;
+  color: var(--brown-400);
+}
+
+.sf-result-theme {
+  font-size: 13.5px;
+  line-height: 18px;
+  color: var(--brown-900);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sf-result-concepts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.sf-result-concept {
+  padding: 2px 7px;
+  border: 1px solid var(--chip-border);
+  border-radius: 999px;
+  background: var(--chip-bg);
+  font-size: 10.5px;
+  line-height: 14px;
+  color: var(--brown-800);
+}
+
+.sf-result-add {
+  flex-shrink: 0;
+  align-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  /* Matches the row's text inset, so both edges of the panel read the same */
+  margin-right: 12px;
+  /* Quiet until reached for: eight of these in a list is a lot of green, and
+     the row itself is the primary action. */
+  border: 1px solid var(--beige-300);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--brown-400);
+  cursor: pointer;
+  transition: color var(--transition-base), border-color var(--transition-base), background var(--transition-base);
+}
+
+.sf-result.is-active .sf-result-add {
+  color: var(--brown-600);
+}
+
+.sf-result-add:hover:not(:disabled) {
+  border-color: var(--sage-500);
+  background: var(--sage-100);
+  color: var(--sage-600);
+}
+
+.sf-result-add.is-in-network {
+  border-color: transparent;
+  color: var(--sage-500);
+  cursor: default;
+}
+
+.sf-highlight {
+  background: transparent;
+  color: inherit;
+  font-weight: 700;
+}
+
+.sf-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 26px 16px 22px;
+  text-align: center;
+  color: var(--brown-600);
+}
+
+.sf-empty > svg {
+  color: var(--brown-400);
+}
+
+.sf-empty-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--brown-800);
+}
+
+.sf-empty-hint {
+  font-size: 12.5px;
+  line-height: 17px;
+  color: var(--brown-600);
+}
+
+[data-theme="dark"] .sf-field,
+[data-theme="dark"] .sf-dropdown {
+  background: var(--beige-50);
+}
+
+/* Narrow field: the shortcut hint is the first thing to go */
+@container (max-width: 280px) {
+  .sf-kbd {
+    display: none;
+  }
+}
+
+/* Phones: collapsed to an icon until tapped, then the field and its results
+   take the full width of the toolbar. Both are pinned to the viewport rather
+   than to the icon, which is too narrow to hang a readable panel from. */
+.sf-root.is-collapsed {
+  width: auto;
+}
+
+.sf-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--beige-300);
+  border-radius: 8px;
+  background: white;
+  color: var(--brown-700);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+}
+
+.sf-toggle:hover {
+  background: var(--beige-100);
+  color: var(--brown-900);
+}
+
+@media (max-width: 768px) {
+  .sf-root.is-expanded {
+    position: fixed;
+    top: max(12px, env(safe-area-inset-top));
+    left: max(12px, env(safe-area-inset-left));
+    right: max(12px, env(safe-area-inset-right));
+    width: auto;
+    z-index: var(--z-popover);
+  }
+
+  .sf-root.is-expanded .sf-field {
+    height: 44px;
+  }
+
+  .sf-dropdown {
+    max-height: calc(100vh - 120px);
+  }
+}
+
+.sf-dropdown::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sf-dropdown::-webkit-scrollbar-thumb {
+  background: var(--brown-400);
+  border-radius: 2px;
+}
+
+/* Hint shown while the field is focused but empty, so the field says what it
+   can actually match on rather than leaving you to guess */
+.sf-hint {
+  display: block;
+  padding: 12px 12px 13px;
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  line-height: 18px;
+  color: var(--brown-600);
+}
+
+.sf-hint strong {
+  font-weight: 600;
+  color: var(--brown-800);
+}

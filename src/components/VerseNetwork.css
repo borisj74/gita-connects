@@ -527,7 +527,8 @@
   border-radius: 999px;
   background: white;
   color: var(--brown-700);
-  box-shadow: 0 2px 8px rgb(0 0 0 / 0.08);
+  /* The same lift as the Chapters button and the other floating controls */
+  box-shadow: var(--shadow);
   cursor: pointer;
   transition: background var(--transition-base);
 }

@@ -16,7 +16,7 @@ interface Row {
 }
 
 const FINDING: Row[] = [
-  { label: 'Search verses', keys: [[`${mod}K`], ['/']] },
+  { label: 'Jump to search', keys: [[`${mod}K`], ['/']] },
   { label: 'Browse chapters', keys: [['B']] },
   { label: 'Previous / next verse', keys: [['↑'], ['↓']] },
   { label: 'Add or edit your note', keys: [['N']] },
