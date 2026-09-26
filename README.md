@@ -94,6 +94,7 @@ another port if 5173 is taken).
 | Script | What it does |
 | --- | --- |
 | `npm run dev` | Vite dev server on `0.0.0.0:5173` |
+| `npm run presentation` | Checks vedabase.io is reachable, then starts the dev server. For presenting from your own machine: in production Vedabase refuses Vercel, so verse text only loads when run locally |
 | `npm run build` | `tsc -b` type-check, then `vite build` — type errors fail the build |
 | `npm run lint` | ESLint 9 flat config |
 | `npm test` | Vitest in watch mode |
