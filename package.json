@@ -15,7 +15,8 @@
     "preview": "vite preview",
     "review:next": "tsx scripts/review-next.ts",
     "graph:report": "tsx scripts/graph-report.ts",
-    "db:migrate": "tsx scripts/migrate.ts"
+    "db:migrate": "tsx scripts/migrate.ts",
+    "concepts:jev": "tsx scripts/generate-concepts-jev.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",
@@ -38,6 +39,7 @@
     "@types/pg": "^8.23.1",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "@typesafe-ai/sdk": "^0.6.0",
     "@vitejs/plugin-react": "^5.1.1",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
