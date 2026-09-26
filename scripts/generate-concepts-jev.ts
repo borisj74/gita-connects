@@ -16,7 +16,8 @@
  * Everything written is reviewed: false, exactly like the keyword script, and
  * hand-written entries in src/data/curation.ts always take precedence.
  *
- * Needs TYPESAFE_API_KEY in the environment (never commit it). Responses are
+ * Needs TYPESAFE_API_KEY in the environment, or in a Claude Code cloud session
+ * a Bearer credential for api.typesafe.ai (never commit the key). Responses are
  * cached under node_modules/.cache/gita-jev, so rerunning with a different
  * threshold costs nothing.
  *
@@ -198,12 +199,18 @@ interface Tagging {
   tokens: number;
 }
 
+// In a Claude Code cloud session the key is stored as an environment
+// credential, which the egress proxy injects as the Authorization header on
+// requests to api.typesafe.ai, so it never appears in the process. The SDK
+// still insists on a key, so give it a placeholder the proxy overwrites.
+const apiKey = process.env.TYPESAFE_API_KEY?.trim() || (process.env.CLAUDE_CODE_REMOTE === 'true' ? 'injected-by-proxy' : undefined);
+
 let client: TypeSafeClient;
 try {
-  client = new TypeSafeClient({ defaultModel: flag('model'), timeout: 60_000 });
+  client = new TypeSafeClient({ apiKey, defaultModel: flag('model'), timeout: 60_000 });
 } catch (err) {
   if (err instanceof TypeSafeError) {
-    console.error(`${err.message}\nSet TYPESAFE_API_KEY in the environment (cloud: environment settings → Edit).`);
+    console.error(`${err.message}\nSet TYPESAFE_API_KEY, or in a cloud session add a Bearer credential for api.typesafe.ai.`);
     process.exit(1);
   }
   throw err;
@@ -261,7 +268,9 @@ async function tagAll(list: VerseText[]): Promise<Tagging[]> {
   try {
     await Promise.all(Array.from({ length: Math.min(concurrency, list.length) }, worker));
   } catch (err) {
-    if (err instanceof AuthenticationError) console.error('\nTypeSafe rejected the API key (401). Check TYPESAFE_API_KEY.');
+    if (err instanceof AuthenticationError) {
+      console.error('\nTypeSafe rejected the API key (401). Check TYPESAFE_API_KEY, or in the cloud the environment credential for api.typesafe.ai.');
+    }
     else if (err instanceof APIConnectionError) {
       console.error(`\nCould not reach ${client.baseURL}: ${err.message}\nIn a Claude Code cloud session, the environment's network access must allow api.typesafe.ai.`);
     } else throw err;
