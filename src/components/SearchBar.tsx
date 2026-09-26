@@ -44,9 +44,6 @@ export default function SearchBar({ onVerseSelect }: SearchBarProps) {
       // Search by concepts
       if (verse.concepts.some(c => c.toLowerCase().includes(lowerQuery))) return true;
 
-      // Search the word-by-word glosses — the only English every verse has
-      if (verse.wordMeanings.toLowerCase().includes(lowerQuery)) return true;
-
       // Search in transliteration
       if (verse.transliteration.toLowerCase().includes(lowerQuery)) return true;
 

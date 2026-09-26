@@ -33,12 +33,14 @@ Nothing in the MIT licence grants you any right to this text. If you fork this
 repository you receive the code and none of the Bhaktivedanta Book Trust's
 content, and you must obtain your own permission before displaying it.
 
-Sanskrit, transliteration and word-by-word glosses
---------------------------------------------------
+Sanskrit and transliteration
+----------------------------
 
 Imported from the gita/gita dataset (https://github.com/gita/gita), released
 under the Unlicense. The underlying Sanskrit is an ancient text in the public
-domain. See scripts/import-verses.mjs.
+domain. See scripts/import-verses.mjs. The dataset's English word-by-word
+glosses are not used: they have no stated source. The app's word-for-word
+synonyms are Prabhupada's, displayed from vedabase.io as above.
 
 Themes, concepts, summaries and connections
 -------------------------------------------

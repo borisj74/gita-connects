@@ -11,7 +11,6 @@ const verse: Verse = {
   id: '2.47',
   sanskrit: 'कर्मण्येवाधिकारस्ते',
   transliteration: 'karmany evadhikaras te',
-  wordMeanings: 'karmaṇi—in prescribed duties; eva—only; adhikāraḥ—right',
   theme: 'Selfless action',
   concepts: ['duty', 'detachment'],
   summary: 'You have a right to action alone, never to its fruits.',

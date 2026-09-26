@@ -1,6 +1,6 @@
 /**
  * Generates src/data/curation.generated.ts with TypeSafe's Jev model
- * (System One) instead of the keyword lexicon in scripts/generate-concepts.mjs.
+ * (System One).
  *
  * For each verse, one request asks 41 yes/no questions — "is <concept> one of
  * this verse's central ideas?", one per term in src/concepts.ts — plus one

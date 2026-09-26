@@ -50,11 +50,16 @@ describe('verses', () => {
     }
   });
 
-  it('fills in sanskrit, transliteration, and word meanings for every verse', () => {
+  it('fills in sanskrit and transliteration for every verse', () => {
     for (const verse of verses) {
       expect(verse.sanskrit.trim(), verse.id).not.toBe('');
       expect(verse.transliteration.trim(), verse.id).not.toBe('');
-      expect(verse.wordMeanings.trim(), verse.id).not.toBe('');
+    }
+  });
+
+  it('carries no English word glosses, which have no stated source', () => {
+    for (const verse of verses) {
+      expect(verse, verse.id).not.toHaveProperty('wordMeanings');
     }
   });
 

@@ -105,7 +105,6 @@ const SearchField = forwardRef<SearchFieldRef, SearchFieldProps>(
           if (`chapter ${verse.chapter}`.includes(q)) return true;
           if (verse.theme?.toLowerCase().includes(q)) return true;
           if (verse.concepts.some((c) => c.toLowerCase().includes(q))) return true;
-          if (verse.wordMeanings.toLowerCase().includes(q)) return true;
           if (verse.transliteration.toLowerCase().includes(q)) return true;
           return false;
         })

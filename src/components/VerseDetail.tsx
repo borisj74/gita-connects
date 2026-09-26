@@ -190,7 +190,8 @@ export default function VerseDetail({
 
   const sanskrit = live?.sanskrit || verse.sanskrit;
   const transliteration = live?.transliteration || verse.transliteration;
-  const wordMeanings = live?.synonyms || verse.wordMeanings;
+  // Word-for-word synonyms come only from Vedabase; there is no local copy.
+  const wordMeanings = live?.synonyms;
   const purport = live?.purport ?? [];
 
   const addButton = (

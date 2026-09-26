@@ -8,7 +8,6 @@ export interface VerseText {
   verse: number;
   sanskrit: string;
   transliteration: string;
-  wordMeanings: string; // word-by-word Sanskrit-English glosses
 }
 
 /** Hand-authored scholarship layered on top of a verse. */
@@ -18,7 +17,7 @@ export interface VerseCuration {
   concepts: Concept[];
   summary?: string;
   /**
-   * False for entries produced by scripts/generate-concepts.mjs that nobody
+   * False for entries produced by scripts/generate-concepts-jev.ts that nobody
    * has checked yet. Hand-written entries omit it (treated as reviewed).
    */
   reviewed?: boolean;

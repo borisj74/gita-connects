@@ -26,8 +26,8 @@ Draw your own connections, filter by type, and save networks for later.
 
 ## Data and sources
 
-All **701 verses** are present. Each carries Sanskrit, IAST transliteration, and
-word-by-word glosses, imported from the public-domain
+All **701 verses** are present. Each carries Sanskrit and IAST transliteration,
+imported from the public-domain
 [gita/gita](https://github.com/gita/gita) dataset (Unlicense) by
 [`scripts/import-verses.mjs`](scripts/import-verses.mjs).
 
@@ -46,7 +46,7 @@ it deploys as a Function.
 Of the 701 verses, **37 are hand-curated** — theme, concepts, a summary in our own words,
 and 1,057 authored connections — 120 among the curated verses plus a whole-text pass
 that links every one of the 701 verses. The other **664 carry machine-proposed
-concepts** from [`scripts/generate-concepts.mjs`](scripts/generate-concepts.mjs), marked
+concepts** from [`scripts/generate-concepts-jev.ts`](scripts/generate-concepts-jev.ts), marked
 `unreviewed` in the UI until a person checks them. Every verse has at least two concepts
 and belongs to one of eleven **theme clusters** ([`src/clusters.ts`](src/clusters.ts) —
 Arjuna's dilemma, Soul and self, Duty and action, …); suggested connections come from
