@@ -57,9 +57,9 @@ const TRANSLATIONS = 'https://raw.githubusercontent.com/gita/gita/main/data/tran
 // A.C. Bhaktivedanta Swami Prabhupada here.
 const SIGNAL_AUTHORS = ['Shri Purohit Swami', 'Swami Sivananda'] as const;
 
-// Placeholder until --validate has been run: set this to the threshold it
-// recommends so a plain run reproduces the validated output.
-const DEFAULT_THRESHOLD = 0.5;
+// The threshold --validate recommends (best F1 against the hand-curated
+// verses, jev-1.13.0), so a plain run reproduces the validated output.
+const DEFAULT_THRESHOLD = 0.25;
 const MIN_CONCEPTS = 2; // every verse needs at least two, so suggestions have something to match
 const MAX_CONCEPTS = 4; // hand-curated verses carry three or four
 
