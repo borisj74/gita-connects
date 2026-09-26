@@ -1,0 +1,15 @@
+{
+  "name": "gita-connects-promo",
+  "private": true,
+  "type": "module",
+  "description": "Promotional video for Gita Connects: captures the app, animates the shots, renders an MP4.",
+  "scripts": {
+    "capture": "node capture.mjs",
+    "render": "node render.mjs",
+    "video": "node capture.mjs && node render.mjs"
+  },
+  "devDependencies": {
+    "ffmpeg-static": "^5.2.0",
+    "playwright": "1.56.1"
+  }
+}

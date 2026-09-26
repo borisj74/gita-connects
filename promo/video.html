@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gita Connects promo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500&family=Noto+Serif+Devanagari:wght@500&display=block" rel="stylesheet">
+<style>
+  /* The app's own palette (src/index.css). */
+  :root {
+    --bg: #fbf8f4;
+    --ink: #292524;
+    --ink-soft: #74624f;
+    --terracotta: #b15d43;
+    --terracotta-soft: #ca7558;
+    --sage: #657158;
+    --line: #e8c4b4;
+  }
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); }
+  .scene { position: absolute; inset: 0; opacity: 0; overflow: hidden; }
+
+  /* Title and statement cards */
+  .card { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: var(--bg); }
+  .devanagari { font-family: 'Noto Serif Devanagari', serif; font-size: 38px; color: var(--terracotta); letter-spacing: 2px; margin-bottom: 18px; }
+  .wordmark { font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 168px; line-height: 1; color: var(--ink); letter-spacing: -1px; }
+  .rule { width: 120px; height: 2px; background: var(--terracotta-soft); margin: 38px 0 34px; transform-origin: center; }
+  .tagline { font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 500; font-size: 50px; color: var(--ink-soft); }
+  .statement { font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 92px; line-height: 1.25; color: var(--ink); }
+  .statement .soft { color: var(--terracotta); font-style: italic; }
+  .small { font-family: 'Inter', sans-serif; font-size: 26px; letter-spacing: 6px; text-transform: uppercase; color: var(--sage); margin-top: 44px; }
+
+  /* App shots: a camera over a 2x screenshot */
+  .shot img { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
+  .shot::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(to top, rgba(251,248,244,0.97) 0%, rgba(251,248,244,0.75) 16%, rgba(251,248,244,0) 34%);
+  }
+  .caption {
+    position: absolute; left: 0; right: 0; bottom: 78px; z-index: 2; text-align: center;
+    font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 64px; color: var(--ink);
+  }
+  .caption small {
+    display: block; margin-top: 10px;
+    font-family: 'Inter', sans-serif; font-weight: 500; font-size: 24px; letter-spacing: 4px; text-transform: uppercase; color: var(--terracotta);
+  }
+</style>
+</head>
+<body>
+
+<section class="scene card" id="title">
+  <div class="devanagari" data-in="0.3">भगवद्गीता</div>
+  <div class="wordmark" data-in="0.1">Gita Connects</div>
+  <div class="rule" data-in="0.9"></div>
+  <div class="tagline" data-in="1.3">See how the teachings of the Bhagavad-gītā connect</div>
+</section>
+
+<section class="scene card" id="statement">
+  <div class="statement">
+    <div data-in="0.2">Eighteen chapters.</div>
+    <div data-in="1.0">One conversation.</div>
+    <div class="soft" data-in="1.9">Countless threads between them.</div>
+  </div>
+</section>
+
+<section class="scene shot" id="wide">
+  <img src="shots/wide.png" alt="">
+  <div class="caption" data-in="0.5">Explore the Gītā as a map of ideas<small>Every verse, connected by theme</small></div>
+</section>
+
+<section class="scene shot" id="study">
+  <img src="shots/study.png" alt="">
+  <div class="caption" data-in="0.5">Open any verse<small>Its theme · the Sanskrit · where it leads</small></div>
+</section>
+
+<section class="scene shot" id="network">
+  <img src="shots/network.png" alt="">
+  <div class="caption" data-in="0.5">Follow a teaching across chapters<small>One link at a time</small></div>
+</section>
+
+<section class="scene shot" id="search">
+  <img src="shots/search.png" alt="">
+  <div class="caption" data-in="0.5">Search by idea<small>Surrender · duty · devotion</small></div>
+</section>
+
+<section class="scene shot" id="links">
+  <img src="shots/links.png" alt="">
+  <div class="caption" data-in="0.5">Ten kinds of connection<small>Thematic · progression · contrast · question and answer</small></div>
+</section>
+
+<section class="scene card" id="end">
+  <div class="wordmark" data-in="0.2">Gita Connects</div>
+  <div class="rule" data-in="0.8"></div>
+  <div class="tagline" data-in="1.1">A free study companion for devotees</div>
+  <div class="small" data-in="1.9">In development</div>
+</section>
+
+<script>
+  const FPS = 30;
+  const FADE = 0.7; // crossfade between scenes, seconds
+
+  // Scenes in order. For shots, the camera moves from `from` to `to`:
+  // x, y are the point of the screenshot at the centre of the frame (0–1),
+  // z is the zoom (1 shows the whole screenshot).
+  const SCENES = [
+    { id: 'title', dur: 5.0 },
+    { id: 'statement', dur: 4.8 },
+    { id: 'wide', dur: 7.0, from: { x: 0.5, y: 0.53, z: 1.08 }, to: { x: 0.42, y: 0.44, z: 1.4 } },
+    { id: 'study', dur: 7.0, from: { x: 0.42, y: 0.5, z: 1.3 }, to: { x: 0.62, y: 0.42, z: 1.15 } },
+    { id: 'network', dur: 7.0, from: { x: 0.33, y: 0.5, z: 1.7 }, to: { x: 0.5, y: 0.53, z: 1.08 } },
+    { id: 'search', dur: 5.8, from: { x: 0.42, y: 0.3, z: 1.45 }, to: { x: 0.4, y: 0.27, z: 1.6 } },
+    { id: 'links', dur: 5.8, from: { x: 0.68, y: 0.3, z: 1.45 }, to: { x: 0.7, y: 0.27, z: 1.6 } },
+    { id: 'end', dur: 6.0 },
+  ];
+
+  // Start times, overlapping by FADE so scenes crossfade.
+  let at = 0;
+  for (const s of SCENES) { s.start = at; at += s.dur - FADE; }
+  const DURATION = at + FADE;
+
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+  const ease = (p) => 0.5 - Math.cos(Math.PI * clamp(p, 0, 1)) / 2;
+  const lerp = (a, b, p) => a + (b - a) * p;
+
+  function render(t) {
+    for (const s of SCENES) {
+      const el = document.getElementById(s.id);
+      const local = t - s.start;
+      const isFirst = s === SCENES[0], isLast = s === SCENES[SCENES.length - 1];
+      const fadeIn = isFirst ? clamp(local / 0.8, 0, 1) : clamp(local / FADE, 0, 1);
+      const fadeOut = isLast ? clamp((s.dur - local) / 1.0, 0, 1) : clamp((s.dur - local) / FADE, 0, 1);
+      const visible = local > -0.001 && local < s.dur;
+      el.style.opacity = visible ? ease(Math.min(fadeIn, fadeOut)) : 0;
+      if (!visible) continue;
+
+      if (s.from) {
+        const p = ease(local / s.dur);
+        const z = lerp(s.from.z, s.to.z, p);
+        // Keep the frame inside the screenshot so no edge ever shows.
+        const x = clamp(lerp(s.from.x, s.to.x, p), 0.5 / z, 1 - 0.5 / z);
+        const y = clamp(lerp(s.from.y, s.to.y, p), 0.5 / z, 1 - 0.5 / z);
+        el.querySelector('img').style.transform =
+          `translate(${960 - x * 1920 * z}px, ${540 - y * 1080 * z}px) scale(${z})`;
+      }
+      // Staggered entrances: fade and rise from each element's data-in time.
+      for (const item of el.querySelectorAll('[data-in]')) {
+        const p = ease((local - Number(item.dataset.in)) / 0.9);
+        item.style.opacity = p;
+        item.style.transform = item.classList.contains('rule') ? `scaleX(${p})` : `translateY(${(1 - p) * 24}px)`;
+      }
+    }
+  }
+
+  window.VIDEO = { FPS, DURATION, render };
+  render(0);
+</script>
+</body>
+</html>
