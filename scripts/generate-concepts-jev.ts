@@ -8,10 +8,13 @@
  * its probability clears the threshold; the cluster choice decides how thin
  * verses are padded, so they land in the cluster Jev thinks they belong to.
  *
- * Licensing: only public-domain text is sent — the gita/gita word glosses
- * under src/data/verses/ and the Purohit Swami (1935) and Sivananda
- * translations — plus the project's own chapter themes. Prabhupada's
- * translation, purports and chapter titles (BBT copyright) are never sent.
+ * Licensing: the only verse text sent is Prabhupada's translation and
+ * word-for-word synonyms, which the Bhaktivedanta Book Trust has permitted us
+ * to send to TypeSafe solely to generate these tags (see NOTICE). It is read
+ * from vedabase.io through the app's own reader (api/verse.ts), held in memory
+ * for the request, and never written to disk, cached or committed; only Jev's
+ * scores are cached. Purports are not sent. The chapter name and subject are
+ * the traditional Sanskrit name and the project's own theme.
  *
  * Everything written is reviewed: false, exactly like the keyword script, and
  * hand-written entries in src/data/curation.ts always take precedence.
@@ -46,17 +49,15 @@ import { CONCEPTS, type Concept } from '../src/concepts.js';
 import { CLUSTERS, CONCEPT_CLUSTER, clusterLabel, clusterOf, type ClusterId } from '../src/clusters.js';
 import { chapters } from '../src/data/chapters.js';
 import { verseCuration } from '../src/data/curation.js';
+import { GET as readVedabase } from '../api/verse.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const VERSES_DIR = join(ROOT, 'src', 'data', 'verses');
 const OUT = join(ROOT, 'src', 'data', 'curation.generated.ts');
 const CACHE_DIR = join(ROOT, 'node_modules', '.cache', 'gita-jev');
-const TRANSLATIONS = 'https://raw.githubusercontent.com/gita/gita/main/data/translation.json';
 
-// Public-domain translators whose text is sent as context. Never add
-// A.C. Bhaktivedanta Swami Prabhupada here.
-const SIGNAL_AUTHORS = ['Shri Purohit Swami', 'Swami Sivananda'] as const;
-
+// NOTE: the numbers below were measured when Jev was sent public-domain
+// translations and glosses instead of Prabhupada's; rerun --validate.
 // Chosen from --validate against the hand-curated verses (jev-1.13.0). F1 is
 // flat from 0.10 to 0.65 (0.59–0.61), so this favours precision: 63% vs 59%
 // at the best-F1 cut of 0.25, since a wrong concept makes wrong connections
@@ -170,10 +171,7 @@ interface VerseText {
   id: string;
   chapter: number;
   verse: number;
-  wordMeanings: string;
 }
-
-const tidy = (s: string) => s.replace(/\s+/g, ' ').trim();
 
 const verseFiles = (await readdir(VERSES_DIR)).filter((f) => f.endsWith('.json')).sort();
 const verses: VerseText[] = (
@@ -182,28 +180,25 @@ const verses: VerseText[] = (
 
 const handCurated = new Set(Object.keys(verseCuration));
 
-const translationsRes = await fetch(TRANSLATIONS);
-if (!translationsRes.ok) throw new Error(`translation.json: HTTP ${translationsRes.status}`);
-const translations = (await translationsRes.json()) as { verse_id: number; authorName: string; description: string }[];
-// verse_id in the dataset is the 1-based global verse order, matching our sort.
-const translationsByIndex = new Map<number, Record<string, string>>();
-for (const t of translations) {
-  if (!(SIGNAL_AUTHORS as readonly string[]).includes(t.authorName)) continue;
-  const byAuthor = translationsByIndex.get(t.verse_id) ?? {};
-  byAuthor[t.authorName] = tidy(t.description);
-  translationsByIndex.set(t.verse_id, byAuthor);
-}
-
-/** Everything Jev sees about a verse. Public-domain text and our own chapter themes only. */
-function stateOf(v: VerseText): { [key: string]: JsonValue } {
+/**
+ * Everything Jev sees about a verse: Prabhupada's translation and synonyms,
+ * read through the app's Vedabase reader and kept in memory only, plus the
+ * chapter's Sanskrit name and our own theme.
+ */
+async function stateOf(v: VerseText): Promise<{ [key: string]: JsonValue }> {
+  const res = await readVedabase(new Request(`http://localhost/api/verse?chapter=${v.chapter}&verse=${v.verse}`));
+  const bbt = (await res.json()) as { translation?: string; synonyms?: string; error?: string; source?: string };
+  if (!res.ok || !bbt.translation) throw new VedabaseError(`${v.id}: ${bbt.error ?? `HTTP ${res.status}`} (${bbt.source ?? 'vedabase.io'})`);
   const ch = chapters.find((c) => c.number === v.chapter);
   return {
-    reference: `Bhagavad Gita ${v.id}`,
+    reference: `Bhagavad-gita As It Is ${v.id}`,
     chapter: { number: v.chapter, name: ch?.titleSanskrit ?? null, subject: ch?.theme ?? null },
-    wordByWordGlosses: v.wordMeanings,
-    translations: translationsByIndex.get(verses.indexOf(v) + 1) ?? {},
+    synonyms: bbt.synonyms ?? '',
+    translation: bbt.translation,
   };
 }
+
+class VedabaseError extends Error {}
 
 // ---- calling Jev ----
 interface Tagging {
@@ -235,7 +230,7 @@ await mkdir(CACHE_DIR, { recursive: true });
 const usage = { requests: 0, cached: 0, tokens: 0 };
 
 async function tag(v: VerseText): Promise<Tagging> {
-  const request = { state: stateOf(v), questions: QUESTIONS, model: client.defaultModel };
+  const request = { state: await stateOf(v), questions: QUESTIONS, model: client.defaultModel };
   const file = join(CACHE_DIR, `${createHash('sha256').update(JSON.stringify(request)).digest('hex').slice(0, 24)}.json`);
   if (useCache) {
     try {
@@ -286,7 +281,9 @@ async function tagAll(list: VerseText[]): Promise<Tagging[]> {
     if (err instanceof AuthenticationError) {
       console.error('\nTypeSafe rejected the API key (401). Check TYPESAFE_API_KEY, or in the cloud the environment credential for api.typesafe.ai.');
     }
-    else if (err instanceof APIConnectionError) {
+    else if (err instanceof VedabaseError) {
+      console.error(`\nCould not read a verse from Vedabase: ${err.message}\nIn a Claude Code cloud session, the environment's network access must allow vedabase.io.`);
+    } else if (err instanceof APIConnectionError) {
       console.error(`\nCould not reach ${client.baseURL}: ${err.message}\nIn a Claude Code cloud session, the environment's network access must allow api.typesafe.ai.`);
     } else throw err;
     process.exit(1);
