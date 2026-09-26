@@ -68,6 +68,11 @@ const DEFAULT_THRESHOLD = 0.6;
 // On the hand-curated verses at 0.6, a fill of 0.3 lifts recall from 57% to
 // 62% with precision unchanged at 63% (F1 0.60 -> 0.63), the best of any setting.
 const DEFAULT_FILL = 0.3;
+// Also tried against the hand-curated verses, and dropped: sending the
+// neighbouring verses' translations as context (F1 0.61), and asking whether a
+// verse "bears on" a concept instead of whether it is central (0.59, nearly
+// every verse hits the cap). Neither fixed the chapter 1 roll-call verses,
+// where grief stays under 0.45 whatever Jev is shown.
 const FILL_TO = 3;
 const MIN_CONCEPTS = 2; // every verse needs at least two, so suggestions have something to match
 const MAX_CONCEPTS = 4; // hand-curated verses carry three or four
