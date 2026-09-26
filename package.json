@@ -16,7 +16,7 @@
     "review:next": "tsx scripts/review-next.ts",
     "graph:report": "tsx scripts/graph-report.ts",
     "db:migrate": "tsx scripts/migrate.ts",
-    "concepts:jev": "NODE_USE_ENV_PROXY=1 NODE_NO_WARNINGS=1 tsx scripts/generate-concepts-jev.ts"
+    "concepts:jev": "NODE_USE_ENV_PROXY=1 no_proxy=$no_proxy,api.typesafe.ai NO_PROXY=$NO_PROXY,api.typesafe.ai NODE_NO_WARNINGS=1 tsx scripts/generate-concepts-jev.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",
