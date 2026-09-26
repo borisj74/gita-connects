@@ -1,6 +1,6 @@
 # Promo video
 
-A 45-second promotional video and a 15-second reel for Gita Connects, rendered from the real app.
+A 45-second promotional video and a 21-second reel for Gita Connects, rendered from the real app.
 
 ```sh
 npm run dev            # in the repository root: the app must be running
@@ -16,7 +16,7 @@ npm run video          # capture the shots, then render out/gita-connects-promo.
   H.264 MP4 with a silent audio track. `node render.mjs --still 12` renders the
   frame at 12 s to `out/still.png`, for quick checks.
 
-## The 15-second reel
+## The reel
 
 ```sh
 npm run dev            # in the repository root
@@ -24,13 +24,15 @@ cd promo
 npm run reel           # renders out/gita-connects-reel.mp4
 ```
 
-A faster cut, for social posts: the camera dives onto a connection, rides it
-into verse 18.66, opens the verse panel, expands the network, and flashes the
-link types. It is rendered from the live app rather than from screenshots:
-`reel.js` is injected into the page and drives React Flow's viewport, the
-nodes, edges and panel directly, so every zoom stays sharp, and its clicks are
-real clicks. For motion blur, each frame averages 4 to 24 renders, more
-where the camera moves fast. A render takes about ten minutes.
+A faster cut, for social posts: a verse is dragged in from the chapters
+panel, the camera rides a connection into verse 18.66, opens its panel, writes
+a note, scrolls through the connected and suggested verses, expands the
+network, and flashes the link types. It is rendered from the live app rather
+than from screenshots: `reel.js` is injected into the page and drives React
+Flow's viewport, the nodes, edges and panels directly, so every zoom stays
+sharp, and its clicks, drop and note are real. For motion blur, each frame
+averages 4 to 24 renders, more where the camera moves fast. A render takes
+about twelve minutes.
 
 - `node reel.mjs --samples 1` renders without motion blur, four times faster.
 - `node reel.mjs --still 4.2` (or `--still 1,4.2,9`) writes single frames to
@@ -41,4 +43,5 @@ where the camera moves fast. A render takes about ten minutes.
 Bhaktivedanta Book Trust's permission, which does not extend to promotional
 material. Capture and the reel refuse every `/api/verse` request, and the shots use the
 hand-curated verses, whose cards carry the project's own summaries. The
-sidebar, which shows the BBT chapter titles, is collapsed in every shot.
+sidebar, which shows the BBT chapter titles, is collapsed in every shot of the
+promo; the reel opens it with the chapter titles hidden.

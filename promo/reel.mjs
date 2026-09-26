@@ -1,4 +1,4 @@
-// Renders the 15-second reel to out/gita-connects-reel.mp4, straight from the
+// Renders the reel to out/gita-connects-reel.mp4, straight from the
 // running app: reel.js drives the app's own DOM, one frame at a time.
 //
 // Needs the app running: `npm run dev` in the repository root.
@@ -68,18 +68,67 @@ await freeze(true);
 // nodes correctly and the connections meet their verses.
 const HUB = '.react-flow__node[data-id="18.66"]';
 const run = {
+  async chapters(t) {
+    await click('fab', t, '.chapters-fab');
+    await page.waitForTimeout(500);
+    // Open chapter 2, unless it already is.
+    await page.evaluate(() => {
+      const header = [...document.querySelectorAll('.chapter-header')].find((h) => h.querySelector('.chapter-number')?.textContent.trim() === 'Chapter 2');
+      if (!header.classList.contains('expanded')) header.click();
+    });
+    await page.waitForTimeout(500);
+    await settle(() => window.REEL.afterChapters());
+  },
+  // A real drop, through the app's own handler, at the reel's chosen spot.
+  async drop(t) {
+    await page.evaluate((time) => { window.REEL.render(time); window.REEL.release(); }, t);
+    await page.evaluate(({ id, x, y }) => {
+      const target = document.querySelector('.verse-network');
+      const box = target.getBoundingClientRect();
+      const dataTransfer = new DataTransfer();
+      dataTransfer.setData('verseId', id);
+      // The app places the card at the drop point less (100, 50).
+      const at = { clientX: box.left + x + 100, clientY: box.top + y + 50, bubbles: true, cancelable: true, dataTransfer };
+      target.dispatchEvent(new DragEvent('dragover', at));
+      target.dispatchEvent(new DragEvent('drop', at));
+    }, await page.evaluate(() => ({ id: window.REEL.ADD, ...window.REEL.DROP })));
+    await page.waitForTimeout(900);
+    await settle(() => window.REEL.afterDrop());
+  },
+  async closeSide(t) {
+    await click('close', t, '.sidebar-wrapper [aria-label="Collapse sidebar"]');
+    await page.waitForTimeout(500);
+    await settle(() => window.REEL.afterCloseSide());
+  },
   async open(t) {
     await click('open', t, `${HUB} .node-translation`);
     await page.waitForTimeout(1200);
     // Collapse the translation, which would only say it is not loaded here.
     await page.evaluate(() => document.querySelector('button[aria-controls="vd-translation"]').click());
     await page.waitForTimeout(400);
-    await page.evaluate(() => window.REEL.afterOpen());
+    await settle(() => window.REEL.afterOpen());
+  },
+  async note(t) {
+    await click('note', t, '.vd-note-add');
+    await page.waitForTimeout(400);
+    await settle(() => window.REEL.afterNote());
+  },
+  async save(t) {
+    await page.evaluate(() => window.REEL.release());
+    // The reel typed the note straight into the field; type it for real, so
+    // the app has it to save.
+    const note = page.locator('.vd-note-textarea');
+    await note.fill('');
+    await note.fill(await page.evaluate(() => window.REEL.NOTE));
+    await click('save', t, '.vd-note-save');
+    await page.waitForTimeout(600);
+    await settle(() => window.REEL.afterSave());
   },
   async expand(t) {
+    await page.evaluate(() => window.REEL.keepExpandButton());
     await click('expand', t, `${HUB} .node-expand`);
     await page.waitForTimeout(1800);
-    await page.evaluate(() => window.REEL.afterExpand());
+    await settle(() => window.REEL.afterExpand());
   },
 };
 async function click(name, t, selector) {
@@ -93,6 +142,7 @@ async function click(name, t, selector) {
   await page.mouse.move(1, 1);
   await freeze(true);
 }
+const settle = (fn) => page.evaluate(fn);
 
 const pending = [...actions];
 async function renderAt(t) {

@@ -1,4 +1,4 @@
-// The timeline of the 15-second reel. reel.mjs injects this script into the
+// The timeline of the reel. reel.mjs injects this script into the
 // running app and calls REEL.render(t) for every frame: the footage is the
 // app's own DOM, so the camera is React Flow's viewport and every zoom stays
 // sharp. The reel animates the real nodes, edges and verse panel, and draws
@@ -6,28 +6,46 @@
 (() => {
   const W = 1920;
   const H = 1080;
-  const DURATION = 15;
+  const DURATION = 21.2;
 
   const HUB = '18.66'; // the verse the reel opens
+  const ADD = '2.47'; // the verse dragged in from the chapters
+  const DROP = { x: -260, y: 330 }; // where it lands, in flow coordinates
+  const NOTE = 'Surrender is the heart of the whole teaching.';
   const RIDE = '7.14-18.66-thematic'; // the connection the camera rides into it
   const TYPES = ['thematic', 'progression', 'goal', 'sequential', 'parallel'];
 
   // Beats, in seconds.
   const T = {
     iris: 1.5, // the dark intro opens onto the app
-    dive: 2.0, // the camera dives onto a connection
-    rideStart: 2.45,
-    rideEnd: 3.5,
-    open: 4.7, // click: the verse panel opens
-    scroll: 6.05, // the panel scrolls to the connected verses
-    expand: 7.4, // click: "Show 14 connected verses"
-    types: 9.35, // the link types, one at a time
+    chapters: 2.35, // click: the chapters panel opens
+    grab: 3.3, // a verse is picked up from the list...
+    drop: 4.15, // ...and dropped on the canvas
+    sideOut: 4.7, // the chapters panel slides away
+    closeSide: 5.05,
+    dive: 5.3, // the camera dives onto a connection
+    rideStart: 5.75,
+    rideEnd: 6.8,
+    open: 8.0, // click: the verse panel opens
+    note: 9.2, // click: "Add a note"
+    typeFrom: 9.4,
+    typeTo: 10.3,
+    save: 10.6,
+    scroll: 11.0, // the panel scrolls to the connected verses
+    suggest: 12.2, // ...and on to the suggested ones
+    expand: 13.6, // click: "Show 14 connected verses"
+    types: 15.55, // the link types, one at a time
     typeLen: 0.44,
-    outro: 11.95,
+    outro: 18.15,
   };
 
   const ACTIONS = [
+    { at: T.chapters, name: 'chapters' },
+    { at: T.drop, name: 'drop' },
+    { at: T.closeSide, name: 'closeSide' },
     { at: T.open, name: 'open' },
+    { at: T.note, name: 'note' },
+    { at: T.save, name: 'save' },
     { at: T.expand, name: 'expand' },
   ];
 
@@ -92,6 +110,13 @@
     return { nodes, edges };
   }
 
+  // Page position, ignoring transforms (the reel's own zoom among them).
+  function offsetOf(e) {
+    let x = 0, y = 0;
+    for (; e; e = e.offsetParent) { x += e.offsetLeft; y += e.offsetTop; }
+    return { x, y };
+  }
+
   const cssEsc = (s) => s.replace(/"/g, '\\"');
   const nodeSel = (id) => `.react-flow__node[data-id="${cssEsc(id)}"]`;
   const edgeSel = (id) => `.react-flow__edge[data-reel="${cssEsc(id)}"]`;
@@ -120,7 +145,10 @@
   function cameraAt(t) {
     const hub = S.graph.nodes.get(HUB);
     // Wide on the starter set, drifting in.
-    let cam = mix(S.wide, { ...S.wide, z: S.wide.z * 1.08 }, seg(t, T.iris, T.dive + 0.6));
+    let cam = mix(S.wide, { ...S.wide, z: S.wide.z * 1.05 }, seg(t, T.iris, T.chapters));
+    // Frame the drop, right of the chapters panel, and drift.
+    cam = mix(cam, shot(430, 560, 0.6, 1130, 540), inOutCubic(seg(t, T.chapters - 0.1, T.chapters + 0.7)));
+    cam = mix(cam, shot(430, 560, 0.64, 1130, 540), seg(t, T.chapters + 0.7, T.dive + 0.3));
     // Dive onto the connection, then ride the pulse.
     const p = ridePoint(t);
     // (Framed right of centre, clear of the captions.)
@@ -177,8 +205,19 @@
     html.reel-frozen .app, html.reel-frozen .app * { pointer-events: none !important; }
     *:focus-visible { outline: none !important; }
     html, body { background: #120e0b !important; }
-    .app { transform-origin: 50% 50%; overflow: hidden; }
+    .app { transform-origin: 50% 50%; overflow: hidden; background: #fbf8f4; }
     .autosave-pill, .canvas-history, .canvas-zoom, .note-toast { display: none !important; }
+    /* The chapter titles are the BBT's: not in the promo. */
+    .chapter-title, .chapter-title-sanskrit { display: none !important; }
+    #reel .ghost { position: absolute; left: 0; top: 0; width: 320px; box-sizing: border-box; padding: 18px 18px 16px; border-radius: 14px;
+      background: #fff; border: 1.5px solid #ca7558; box-shadow: 0 24px 60px rgba(41,37,36,0.25); transform-origin: 0 0;
+      font-family: Inter, sans-serif; color: ${INK}; }
+    #reel .ghost .gh { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+    #reel .ghost .gid { background: #3f342c; color: #fff; font-weight: 600; font-size: 15px; padding: 5px 12px; border-radius: 999px; }
+    #reel .ghost .gt { font-size: 13px; color: #78716c; }
+    #reel .ghost .gs { font-size: 13.5px; line-height: 1.5; color: #57534e; margin: 0 0 12px; }
+    #reel .ghost .gc { display: flex; flex-wrap: wrap; gap: 6px; }
+    #reel .ghost .gc span { font-size: 12px; padding: 4px 10px; border-radius: 999px; background: #f6e3da; border: 1px solid #efcfc1; }
     #reel { position: fixed; inset: 0; z-index: 2147483647; pointer-events: none; overflow: hidden;
       -webkit-font-smoothing: antialiased; font-kerning: normal; }
     #reel .layer { position: absolute; inset: 0; }
@@ -253,8 +292,9 @@
 
   function buildOverlay() {
     el('style', { text: STATIC_CSS }, document.head);
-    // Italic Cormorant, which the app does not load.
-    el('link', { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,500;1,600&display=block' }, document.head);
+    // The faces the reel sets type in (italic Cormorant, which the app does
+    // not load, among them).
+    el('link', { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&display=block' }, document.head);
     O.dyn = el('style', {}, document.head);
 
     const root = el('div', { id: 'reel' }, document.body);
@@ -303,14 +343,17 @@
     O.capbg = el('div', { id: 'reel-capbg', class: 'layer' }, root);
     O.captions = el('div', { class: 'layer' }, root);
     O.caps = [
+      { c: caption('01 — Chapters', ['Drag in any verse.']), tin: T.chapters + 0.4, tout: T.sideOut + 0.2 },
       { c: caption('Gita Connects', ['Every verse,', 'connected.']), tin: T.dive + 0.3, tout: T.rideEnd + 0.3 },
-      { c: caption('01 — Open', ['Open any verse.']), tin: T.open + 0.35, tout: T.scroll + 0.3 },
-      { c: caption('02 — Connected verses', ['Every link,', 'explained.']), tin: T.scroll + 0.45, tout: T.expand - 0.15 },
-      { c: caption('03 — Expand', ['Follow the', 'threads.']), tin: T.expand + 0.5, tout: T.types - 0.15 },
+      { c: caption('02 — Open', ['Open any verse.']), tin: T.open + 0.35, tout: T.note - 0.1 },
+      { c: caption('03 — Notes', ['Keep your', 'own notes.']), tin: T.note + 0.15, tout: T.save + 0.2 },
+      { c: caption('04 — Connected verses', ['Every link,', 'explained.']), tin: T.scroll + 0.35, tout: T.suggest - 0.05 },
+      { c: caption('05 — Suggestions', ['Find new', 'connections.']), tin: T.suggest + 0.2, tout: T.expand - 0.15 },
+      { c: caption('06 — Expand', ['Follow the', 'threads.']), tin: T.expand + 0.5, tout: T.types - 0.15 },
     ];
     O.typecount = el('div', { class: 'typecount' }, O.captions);
     O.typebar = el('i', {}, O.typecount);
-    O.typecountText = el('span', { class: 'w', text: '04 — Ten kinds of connection' }, el('span', { class: 'm' }, O.typecount));
+    O.typecountText = el('span', { class: 'w', text: '07 — Ten kinds of connection' }, el('span', { class: 'm' }, O.typecount));
     O.typewords = TYPES.map((type) => {
       const wrap = el('div', { class: 'typeword' }, O.captions);
       const m = el('span', { class: 'm' }, wrap);
@@ -329,9 +372,13 @@
     O.tagline = el('div', { class: 'tagline', text: 'See how the teachings of the Gītā connect' }, O.end);
     O.small = el('div', { class: 'small', text: 'A free study companion for devotees · In development' }, O.end);
 
+    // The verse card carried from the chapters panel to the canvas.
+    O.ghost = el('div', { class: 'ghost' }, root);
+    O.ghost.innerHTML = '<div class="gh"><span class="gid"></span><span class="gt"></span></div><p class="gs"></p><div class="gc"></div>';
+
     // The cursor and its click ripples.
     O.fx = el('svg:svg', { class: 'layer', viewBox: `0 0 ${W} ${H}`, width: W, height: H }, root);
-    O.ripples = [0, 1].map(() => el('svg:circle', { fill: 'none', stroke: EMBER, 'stroke-width': 3 }, O.fx));
+    O.ripples = [0, 1, 2, 3, 4, 5, 6, 7].map(() => el('svg:circle', { fill: 'none', stroke: EMBER, 'stroke-width': 3 }, O.fx));
     O.cursor = el('svg:svg', { id: 'reel-cursor', viewBox: '0 0 40 52' }, root);
     el('svg:path', {
       d: 'M3 3 L3 40 L12.5 31 L19 46 L26 43 L19.5 28.5 L32 28.5 Z',
@@ -351,17 +398,22 @@
   // ---------------------------------------------------------------- setup
   async function init() {
     buildOverlay();
-    // Retry: a web font fetch can fail once through the session's proxy.
-    for (let i = 0; i < 4; i++) {
+    // Retry: a web font fetch can fail through the session's proxy, and a
+    // missing roman Cormorant silently turns every heading italic.
+    const faces = [['normal', '600', 'Cormorant Garamond'], ['italic', '600', 'Cormorant Garamond'], ['normal', '500', 'Noto Serif Devanagari']];
+    const loaded = () => faces.every(([style, weight, family]) =>
+      [...document.fonts].some((f) => f.family.replace(/"/g, '') === family && f.style === style && f.weight === weight && f.status === 'loaded'));
+    for (let i = 0; i < 6 && !loaded(); i++) {
       try {
+        await document.fonts.load('600 100px "Cormorant Garamond"');
         await document.fonts.load('italic 600 100px "Cormorant Garamond"');
         await document.fonts.load('500 40px "Noto Serif Devanagari"', 'भगवद्गीता');
         await document.fonts.ready;
-        break;
       } catch {
-        await new Promise((r) => setTimeout(r, 1000));
+        await new Promise((r) => setTimeout(r, 1500));
       }
     }
+    if (!loaded()) throw new Error('Web fonts did not load; run again.');
     S.graph = readGraph();
     S.starter = new Set(S.graph.nodes.keys());
     S.starterEdges = new Set(S.graph.edges.map((e) => e.id));
@@ -381,6 +433,39 @@
     return { duration: DURATION, actions: ACTIONS };
   }
 
+  // After the chapters panel opens, on chapter 2.
+  function afterChapters() {
+    S.side = document.querySelector('.sidebar-wrapper');
+    S.sideW = S.side.offsetWidth;
+    const row = [...document.querySelectorAll('.verse-item')].find((r) => r.querySelector('.verse-number')?.textContent.trim() === ADD);
+    row.dataset.reelRow = '';
+    let sc = row.parentElement;
+    while (sc && !(sc.scrollHeight > sc.clientHeight + 2 && /auto|scroll/.test(getComputedStyle(sc).overflowY))) sc = sc.parentElement;
+    S.sideScroller = sc;
+    S.sideScroll0 = sc ? sc.scrollTop : 0;
+    // Bring the verse to a third of the way down the list.
+    S.sideScrollTo = sc ? Math.max(0, S.sideScroll0 + row.getBoundingClientRect().top - sc.getBoundingClientRect().top - sc.clientHeight / 3) : 0;
+    const v = { id: ADD, theme: row.querySelector('.verse-theme')?.textContent ?? '', concepts: [...row.querySelectorAll('.concept-tag')].map((c) => c.textContent) };
+    O.ghost.querySelector('.gid').textContent = v.id;
+    O.ghost.querySelector('.gt').textContent = v.theme;
+    O.ghost.querySelector('.gc').innerHTML = v.concepts.map((c) => `<span>${c}</span>`).join('');
+  }
+
+  // After the verse lands on the canvas: its connections draw in.
+  function afterDrop() {
+    S.graph = readGraph();
+    S.added = S.graph.edges.filter((e) => e.src === ADD || e.tgt === ADD);
+    S.starter.add(ADD);
+    for (const e of S.added) S.starterEdges.add(e.id);
+    // The card's own summary, for the carried card.
+    const summary = document.querySelector(`${nodeSel(ADD)} .node-translation`)?.textContent ?? '';
+    O.ghost.querySelector('.gs').textContent = summary;
+  }
+
+  function afterCloseSide() {
+    S.sideClosed = true;
+  }
+
   // After the verse panel opens.
   function afterOpen() {
     S.panel = document.querySelector('.verse-detail');
@@ -388,11 +473,42 @@
     const parts = [...S.panel.children].flatMap((c) => (c.classList.contains('vd-body') ? [...c.children] : [c]));
     parts.forEach((p, i) => (p.dataset.reelPart = i));
     S.panelParts = parts.length;
+    measurePanel();
+  }
+
+  // The two scroll stops: the connected verses, then the suggestions.
+  function measurePanel() {
     const connected = [...S.panel.querySelectorAll('.vd-connected')];
     connected.forEach((c, i) => (c.dataset.reelConn = i));
     S.connected = connected.length;
+    const max = S.panel.scrollHeight - S.panel.clientHeight;
     const section = connected[0]?.closest('.vd-section');
-    S.scrollTo = section ? Math.min(section.offsetTop - 70, S.panel.scrollHeight - S.panel.clientHeight) : 0;
+    S.scrollTo = section ? Math.min(section.offsetTop - 70, max) : 0;
+    const suggested = S.panel.querySelector('.vd-suggested')?.closest('.vd-section');
+    S.scrollTo2 = suggested ? Math.min(suggested.offsetTop - 70, max) : max;
+  }
+
+  function afterNote() {
+    S.textarea = document.querySelector('.vd-note-textarea');
+  }
+
+  function afterSave() {
+    S.textarea = null;
+    measurePanel();
+  }
+
+  // The app drops "Show 14 connected verses" once they are shown; keep it on
+  // the card, where the viewer just saw it clicked.
+  function keepExpandButton() {
+    const btn = document.querySelector(`${nodeSel(HUB)} .node-expand`);
+    const parent = btn.parentNode;
+    const next = btn.nextSibling;
+    const mo = new MutationObserver(() => {
+      if (btn.isConnected) return;
+      parent.insertBefore(btn, next?.parentNode === parent ? next : null);
+      mo.disconnect();
+    });
+    mo.observe(parent, { childList: true });
   }
 
   // After the network expands: time each new verse by its distance from the hub.
@@ -413,37 +529,57 @@
     S.fit = fit([...S.graph.nodes.values()], 0.84, 1150, 540);
   }
 
-  // Where the cursor clicks, in screen pixels, for the running camera.
+  // Where the cursor points, in screen pixels, for the running camera.
   function rectOf(selector) {
     const e = document.querySelector(selector);
     return e ? e.getBoundingClientRect() : null;
   }
+  const at = (r, fx, fy, fallback) => (r ? { x: r.left + r.width * fx, y: r.top + r.height * fy } : fallback);
   function target(name) {
-    // Once clicked, a target stays where it was: the expand button goes away.
+    // Once clicked, a target stays where it was (the note button, for one, goes away).
     if (S.clicked?.[name]) return S.clicked[name];
-    if (name === 'open') {
-      const r = rectOf(`${nodeSel(HUB)} .node-translation`) ?? rectOf(nodeSel(HUB));
-      return { x: r.left + r.width * 0.58, y: r.top + r.height * 0.45 };
-    }
-    if (name === 'list') {
-      const r = rectOf('[data-reel-conn="0"]');
-      return r ? { x: r.left + r.width * 0.62, y: r.top + r.height * 0.5 } : { x: 1700, y: 700 };
-    }
-    if (name === 'expand') {
-      const r = rectOf(`${nodeSel(HUB)} .node-expand`);
-      return r ? { x: r.left + r.width * 0.42, y: r.top + r.height * 0.55 } : { x: 700, y: 800 };
+    switch (name) {
+      case 'fab': return at(rectOf('.chapters-fab'), 0.5, 0.55, { x: 70, y: 36 });
+      case 'row': return at(rectOf('[data-reel-row]'), 0.3, 0.45, { x: 160, y: 420 });
+      case 'drop': {
+        const q = toScreen(cameraAt(Math.min(S.frameT ?? T.drop, T.drop)), DROP.x + 70, DROP.y + 50);
+        return q;
+      }
+      case 'close': return at(rectOf('.sidebar-wrapper [aria-label="Collapse sidebar"]'), 0.5, 0.5, { x: 300, y: 40 });
+      case 'open': return at(rectOf(`${nodeSel(HUB)} .node-translation`) ?? rectOf(nodeSel(HUB)), 0.58, 0.45);
+      case 'note': return at(rectOf('.vd-note-add'), 0.5, 0.55, { x: 1500, y: 560 });
+      case 'save': return at(rectOf('.vd-note-save'), 0.5, 0.55, { x: 1800, y: 700 });
+      case 'list': return at(rectOf('[data-reel-conn="0"]'), 0.62, 0.5, { x: 1700, y: 700 });
+      case 'suggest': return at(rectOf('.vd-suggested'), 0.55, 0.5, { x: 1700, y: 800 });
+      case 'expand': return at(rectOf(`${nodeSel(HUB)} .node-expand`), 0.42, 0.55, { x: 700, y: 800 });
     }
   }
 
   // ---------------------------------------------------------------- frame
   function render(t) {
+    S.frameT = t;
     const css = [];
     const cam = cameraAt(t);
-    css.push(`.react-flow__viewport { transform: translate(${W / 2 - cam.cx * cam.z}px, ${H / 2 - cam.cy * cam.z}px) scale(${cam.z}) !important; }`);
-    // Connections at least ~2.4 px wide on screen, so they stay crisp when
-    // the camera is wide.
-    S.edgeW = Math.max(3, 2.4 / cam.z);
+    // The canvas starts right of the chapters panel while it is open: offset
+    // for it, so the picture stays put on screen.
+    const rf = offsetOf(document.querySelector('.react-flow'));
+    css.push(`.react-flow__viewport { transform: translate(${W / 2 - rf.x - cam.cx * cam.z}px, ${H / 2 - rf.y - cam.cy * cam.z}px) scale(${cam.z}) !important; }`);
+    // Connections at least ~1.4 px wide on screen, so they don't break up
+    // when the camera is wide.
+    S.edgeW = Math.max(2.5, 1.4 / cam.z);
     css.push(`.react-flow__edge path.react-flow__edge-path { stroke-width: ${S.edgeW}px !important; }`);
+    // Once 18.66 is selected, the app fades connections that don't touch it
+    // to a faint trace. Hide them while the verse is open; bring them back in
+    // full with the whole network.
+    if (S.panel) {
+      const back = seg(t, T.expand + 0.9, T.expand + 1.4);
+      // Verses it fades too (2.47 among them) come back with the network.
+      css.push(`.react-flow__node.node-dimmed { opacity: ${lerp(0.25, 1, back)}; }`);
+      for (const e of S.graph.edges) {
+        if (e.src === HUB || e.tgt === HUB) continue;
+        css.push(`${edgeSel(e.id)} path.react-flow__edge-path { opacity: ${back} !important; } ${labelSel(e.id)} { opacity: ${back} !important; }`);
+      }
+    }
 
     const sc = screenAt(t);
     const flat = Math.abs(sc.rx) < 0.01 && Math.abs(sc.rz) < 0.01 && Math.abs(sc.s - 1) < 1e-4 && sc.ty === 0;
@@ -459,6 +595,7 @@
     if (last > 0) {
       css.push(`${nodeSel(HUB)} > .verse-node { box-shadow: 0 0 0 ${8 * last}px rgba(224,122,85,${0.85 * last}), 0 0 ${120 * last}px rgba(224,122,85,${0.7 * last}) !important; }`);
     }
+    renderChapters(t, css);
     renderPanel(t, css);
     renderExpand(t, css);
     renderTypes(t, css);
@@ -467,6 +604,7 @@
     renderIntro(t);
     renderCaptions(t);
     renderCursor(t);
+    renderGhost(t);
     renderEnd(t);
   }
 
@@ -582,8 +720,45 @@
     }
   }
 
+  // The chapters panel slides over the canvas; a verse is carried out of it.
+  function renderChapters(t, css) {
+    if (S.side && !S.sideClosed) {
+      const pin = outExpo(seg(t, T.chapters + 0.02, T.chapters + 0.5));
+      const pout = inExpo(seg(t, T.sideOut, T.closeSide));
+      css.push(`.sidebar-wrapper { translate: ${-(1 - pin + pout) * S.sideW}px 0 !important; position: relative; z-index: 20; }`);
+      if (S.sideScroller) S.sideScroller.scrollTop = lerp(S.sideScroll0, S.sideScrollTo, inOutCubic(seg(t, T.chapters + 0.3, T.chapters + 0.85)));
+      css.push(`[data-reel-row] { opacity: ${1 - 0.6 * ramp(t, T.grab, T.drop + 0.4, 0.1)}; }`);
+    }
+    // The dropped verse settles in, and its connections draw out of it.
+    if (S.added) {
+      const p = seg(t, T.drop, T.drop + 0.4);
+      css.push(`${nodeSel(ADD)} > .verse-node { opacity: ${clamp(p * 5)}; scale: ${lerp(1.04, 1, outCubic(p))}; }`);
+      for (const e of S.added) {
+        const q = outCubic(seg(t, T.drop + 0.2, T.drop + 0.8));
+        const off = (e.src === ADD ? 1 : -1) * e.L * (1 - q);
+        css.push(`${edgeSel(e.id)} path.react-flow__edge-path { stroke-dasharray: ${e.L + 1} ${e.L + 1}; stroke-dashoffset: ${off}; ${q < 0.97 ? 'marker-end: none;' : ''} }`);
+        const lp = seg(t, T.drop + 0.7, T.drop + 1.0);
+        css.push(`${labelSel(e.id)} { opacity: ${lp} !important; } ${labelSel(e.id)} .edge-label { scale: ${lerp(0.4, 1, outBack(lp))} !important; }`);
+      }
+    }
+  }
+
+  // The card carried under the cursor (after renderCursor, which places it).
+  function renderGhost(t) {
+    const carry = t > T.grab && t < T.drop + 0.15 && S.cursor;
+    O.ghost.style.display = carry ? 'block' : 'none';
+    if (!carry) return;
+    const z = cameraAt(t).z;
+    const lift = outBack(seg(t, T.grab, T.grab + 0.25));
+    const land = seg(t, T.drop, T.drop + 0.15);
+    O.ghost.style.transform = `translate(${S.cursor.x - 70 * z}px, ${S.cursor.y - 50 * z}px) scale(${z * lerp(0.7, 1.04, lift) * lerp(1, 0.96, land)}) rotate(${-3 * lift * (1 - land)}deg)`;
+    O.ghost.style.opacity = clamp(lift * 3) * (1 - land);
+  }
+
   function renderPanel(t, css) {
     if (!S.panel) return;
+    // The note, typed out a letter at a time.
+    if (S.textarea) S.textarea.value = NOTE.slice(0, Math.round(NOTE.length * seg(t, T.typeFrom, T.typeTo)));
     const pin = outExpo(seg(t, T.open + 0.05, T.open + 0.65));
     const pout = inExpo(seg(t, T.expand + 0.15, T.expand + 0.6));
     const x = (1 - pin + pout) * (S.panelW + 60);
@@ -592,9 +767,9 @@
       const p = outExpo(seg(t, T.open + 0.12 + i * 0.045, T.open + 0.72 + i * 0.045));
       css.push(`[data-reel-part="${i}"] { opacity: ${p}; translate: ${(1 - p) * 60}px 0; }`);
     }
-    S.panel.scrollTop = S.scrollTo * inOutCubic(seg(t, T.scroll, T.scroll + 0.75));
+    S.panel.scrollTop = lerp(0, S.scrollTo, inOutCubic(seg(t, T.scroll, T.scroll + 0.75))) + (S.scrollTo2 - S.scrollTo) * inOutCubic(seg(t, T.suggest, T.suggest + 0.75));
     for (let i = 0; i < S.connected; i++) {
-      const a = ramp(t, T.scroll + 0.55 + i * 0.14, T.expand + 0.1, 0.18);
+      const a = ramp(t, T.scroll + 0.55 + i * 0.14, T.suggest + 0.3, 0.18);
       css.push(`[data-reel-conn="${i}"] { box-shadow: 0 0 0 ${2 * a}px rgba(224,122,85,${a}), 0 14px 34px rgba(177,93,67,${0.18 * a}) !important; }`);
     }
     // The verse card answers each click.
@@ -636,9 +811,9 @@
       nodeW.set(e.src, Math.max(nodeW.get(e.src) ?? 0, w));
       nodeW.set(e.tgt, Math.max(nodeW.get(e.tgt) ?? 0, w));
       const op = lerp(1, 0.06 + 0.94 * w, dim);
-      // Thicker, not glowing: a CSS filter on a straight SVG line clips it to a stub.
-      const sw = lerp(S.edgeW, S.edgeW * 2.6, w * dim);
-      css.push(`${edgeSel(e.id)} { opacity: ${op}; } ${edgeSel(e.id)} path.react-flow__edge-path { stroke-width: ${sw}px !important; }`);
+      // Highlighted by dimming the rest only: no glow (a CSS filter on a
+      // straight SVG line clips it to a stub), no extra thickness.
+      css.push(`${edgeSel(e.id)} { opacity: ${op}; }`);
       css.push(`${labelSel(e.id)} { opacity: ${op} !important; } ${labelSel(e.id)} .edge-label { scale: ${1 + 0.5 * w * dim} !important; }`);
     }
     for (const n of S.graph.nodes.keys()) {
@@ -681,38 +856,63 @@
     O.capbg.style.opacity = bg;
   }
 
+  // The cursor's path: it arrives at each point by the given time, clicking
+  // there when `press` is set. Points are read from the page every frame, so
+  // they follow the camera.
+  function cursorKeys() {
+    const off = (p, dx, dy) => (p ? { x: p.x + dx, y: p.y + dy } : { x: W + 100, y: H + 100 });
+    return [
+      { t: 1.95, at: () => ({ x: 760, y: H + 80 }) },
+      { t: T.chapters, at: () => target('fab'), press: true },
+      { t: T.grab, at: () => target('row'), press: true },
+      { t: T.drop, at: () => target('drop'), press: true, d: T.drop - T.grab - 0.08 },
+      { t: T.sideOut - 0.05, at: () => target('close'), press: true },
+      { t: T.dive, at: () => ({ x: -120, y: 420 }), d: 0.4 },
+      { t: T.open - 0.6, at: () => off(target('open'), 620, 460), d: 0.01 },
+      { t: T.open, at: () => target('open'), press: true },
+      { t: T.note, at: () => target('note'), press: true },
+      { t: T.typeTo, at: () => off(target('save'), -160, 30), d: 0.6 },
+      { t: T.save, at: () => target('save'), press: true, d: 0.3 },
+      { t: T.scroll + 0.35, at: () => target('list') },
+      { t: T.suggest + 0.45, at: () => target('suggest') },
+      { t: T.expand, at: () => target('expand'), press: true },
+      { t: T.expand + 0.55, at: () => off(target('expand'), 160, 240), d: 0.45 },
+    ];
+  }
+
   function renderCursor(t) {
-    const t0 = T.open - 0.55;
-    const t1 = T.expand + 0.55;
-    const on = t > t0 && t < t1;
-    O.cursor.style.display = on ? 'block' : 'none';
+    const visible = Math.max(
+      seg(t, 1.95, 2.05) * (1 - seg(t, T.dive - 0.2, T.dive)),
+      seg(t, T.open - 0.6, T.open - 0.5) * (1 - seg(t, T.expand + 0.25, T.expand + 0.55)),
+    );
+    O.cursor.style.display = visible > 0 ? 'block' : 'none';
     O.ripples.forEach((r) => r.setAttribute('opacity', 0));
-    if (!on) return;
-    const A = target('open');
-    const B = target('list');
-    const C = target('expand');
-    const start = { x: A.x + 620, y: A.y + 460 };
-    let p = start;
-    const arc = (a, b, k, bend) => ({ x: lerp(a.x, b.x, k) + Math.sin(Math.PI * k) * bend, y: lerp(a.y, b.y, k) - Math.sin(Math.PI * k) * bend * 0.4 });
-    p = arc(start, A, outCubic(seg(t, t0, T.open - 0.05)), 60);
-    if (t > T.scroll - 0.35) p = arc(A, B, inOutCubic(seg(t, T.scroll - 0.35, T.scroll + 0.35)), -50);
-    if (t > T.expand - 0.65) p = arc(B, C, inOutCubic(seg(t, T.expand - 0.65, T.expand - 0.06)), 70);
-    if (t > T.expand + 0.1) p = { x: C.x + 160 * inCubic(seg(t, T.expand + 0.1, t1)), y: C.y + 240 * inCubic(seg(t, T.expand + 0.1, t1)) };
-    const press = (tc) => Math.exp(-Math.pow((t - tc) / 0.06, 2));
-    const s = 1 - 0.2 * (press(T.open) + press(T.expand));
-    const fade = seg(t, t0, t0 + 0.1) * (1 - seg(t, T.expand + 0.25, t1));
-    O.cursor.style.transform = `translate(${p.x - 3}px, ${p.y - 3}px) scale(${s})`;
-    O.cursor.style.opacity = fade;
-    [T.open, T.expand].forEach((tc, i) => {
-      const k = seg(t, tc, tc + 0.5);
-      if (k <= 0 || k >= 1) return;
-      const at = i === 0 ? A : C;
+    const keys = cursorKeys();
+    // Ripples, for every click in the last half second.
+    keys.filter((k) => k.press).forEach((k, i) => {
+      const q = seg(t, k.t, k.t + 0.5);
+      if (q <= 0 || q >= 1) return;
+      const at = S.pressed?.[i] ?? k.at();
       const r = O.ripples[i];
       r.setAttribute('cx', at.x);
       r.setAttribute('cy', at.y);
-      r.setAttribute('r', 8 + 64 * outExpo(k));
-      r.setAttribute('opacity', 0.85 * (1 - k));
+      r.setAttribute('r', 8 + 64 * outExpo(q));
+      r.setAttribute('opacity', 0.85 * (1 - q));
     });
+    if (visible <= 0) return;
+    let i = keys.findIndex((k) => k.t > t);
+    if (i < 0) i = keys.length - 1;
+    const b = keys[i];
+    const a = keys[Math.max(0, i - 1)];
+    const d = b.d ?? Math.min(0.55, b.t - a.t);
+    const k = inOutCubic(seg(t, b.t - d, b.t));
+    const A = a.at(), B = b.at();
+    const bend = Math.sin(Math.PI * k) * 50;
+    const p = { x: lerp(A.x, B.x, k) + bend, y: lerp(A.y, B.y, k) - bend * 0.4 };
+    const press = keys.filter((x) => x.press).reduce((m, x) => Math.max(m, Math.exp(-Math.pow((t - x.t) / 0.06, 2))), 0);
+    O.cursor.style.transform = `translate(${p.x - 3}px, ${p.y - 3}px) scale(${1 - 0.2 * press})`;
+    O.cursor.style.opacity = visible;
+    S.cursor = p;
   }
 
   function renderEnd(t) {
@@ -755,5 +955,7 @@
     S.clicked = { ...S.clicked, [name]: p };
   }
 
-  window.REEL = { init, render, release, target, clicked, speed, afterOpen, afterExpand, DURATION, ACTIONS };
+  window.REEL = {
+    init, render, release, target, clicked, speed, keepExpandButton,
+    afterChapters, afterDrop, afterCloseSide, afterNote, afterSave, DROP, ADD, NOTE, afterOpen, afterExpand, DURATION, ACTIONS };
 })();
