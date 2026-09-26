@@ -57,9 +57,11 @@ const TRANSLATIONS = 'https://raw.githubusercontent.com/gita/gita/main/data/tran
 // A.C. Bhaktivedanta Swami Prabhupada here.
 const SIGNAL_AUTHORS = ['Shri Purohit Swami', 'Swami Sivananda'] as const;
 
-// The threshold --validate recommends (best F1 against the hand-curated
-// verses, jev-1.13.0), so a plain run reproduces the validated output.
-const DEFAULT_THRESHOLD = 0.25;
+// Chosen from --validate against the hand-curated verses (jev-1.13.0). F1 is
+// flat from 0.10 to 0.65 (0.59–0.61), so this favours precision: 63% vs 59%
+// at the best-F1 cut of 0.25, since a wrong concept makes wrong connections
+// while a missing one is easy to add in review.
+const DEFAULT_THRESHOLD = 0.6;
 const MIN_CONCEPTS = 2; // every verse needs at least two, so suggestions have something to match
 const MAX_CONCEPTS = 4; // hand-curated verses carry three or four
 
