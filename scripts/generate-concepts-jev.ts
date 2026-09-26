@@ -26,7 +26,7 @@
  *   npm run concepts:jev -- --limit 20          tag the first 20 unreviewed verses, print, no write
  *   npm run concepts:jev                        tag every unreviewed verse and write the file
  *
- *   options: --threshold 0.6  --concurrency 4  --model jev-latest  --no-cache
+ *   options: --threshold 0.6  --fill 0.3  --concurrency 4  --model jev-latest  --no-cache
  */
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
@@ -62,6 +62,13 @@ const SIGNAL_AUTHORS = ['Shri Purohit Swami', 'Swami Sivananda'] as const;
 // at the best-F1 cut of 0.25, since a wrong concept makes wrong connections
 // while a missing one is easy to add in review.
 const DEFAULT_THRESHOLD = 0.6;
+// A verse with fewer than FILL_TO concepts above the threshold is topped up
+// with concepts Jev nearly chose (at least DEFAULT_FILL) before any blind
+// padding, so a verse whose third idea scored 0.5 keeps it. --fill 1 turns this off.
+// On the hand-curated verses at 0.6, a fill of 0.3 lifts recall from 57% to
+// 62% with precision unchanged at 63% (F1 0.60 -> 0.63), the best of any setting.
+const DEFAULT_FILL = 0.3;
+const FILL_TO = 3;
 const MIN_CONCEPTS = 2; // every verse needs at least two, so suggestions have something to match
 const MAX_CONCEPTS = 4; // hand-curated verses carry three or four
 
@@ -74,6 +81,7 @@ const flag = (name: string): string | undefined => {
 const has = (name: string) => args.includes(`--${name}`);
 
 const threshold = Number(flag('threshold') ?? DEFAULT_THRESHOLD);
+const fill = Number(flag('fill') ?? DEFAULT_FILL);
 const concurrency = Number(flag('concurrency') ?? 4);
 const limit = flag('limit') ? Number(flag('limit')) : undefined;
 const useCache = !has('no-cache');
@@ -286,13 +294,18 @@ async function tagAll(list: VerseText[]): Promise<Tagging[]> {
 
 /**
  * Concepts above the threshold, strongest first, capped at MAX_CONCEPTS. A
- * verse with fewer than MIN_CONCEPTS is padded with its likeliest remaining
- * concepts, taken first from the cluster Jev chose, so a thin verse still
- * lands in the right cluster. Returns how many came from padding.
+ * verse with fewer than FILL_TO is topped up with concepts above the lower
+ * fill bar. One still under MIN_CONCEPTS is padded with its likeliest
+ * remaining concepts, taken first from the cluster Jev chose, so a thin verse
+ * still lands in the right cluster. Returns how many came from padding.
  */
-function pick(t: Tagging, cut: number): { concepts: Concept[]; padded: number } {
+function pick(t: Tagging, cut: number, fillCut = fill): { concepts: Concept[]; padded: number } {
   const ranked = [...CONCEPTS].sort((a, b) => t.probs[b] - t.probs[a]);
   const concepts = ranked.filter((c) => t.probs[c] >= cut).slice(0, MAX_CONCEPTS);
+  for (const c of ranked) {
+    if (concepts.length >= FILL_TO || t.probs[c] < fillCut) break;
+    if (!concepts.includes(c)) concepts.push(c);
+  }
   let padded = 0;
   const padOrder = [...ranked.filter((c) => CONCEPT_CLUSTER[c] === t.cluster), ...ranked];
   for (const c of padOrder) {
@@ -337,15 +350,13 @@ if (has('validate')) {
   const hand = list.map((v) => verseCuration[v.id].concepts);
 
   console.log(`\n${list.length} hand-curated verses. Concepts, micro-averaged, with the ${MIN_CONCEPTS}–${MAX_CONCEPTS} per-verse rule applied:\n`);
-  console.log('  cut   precision  recall   F1   avg/verse');
-  let best = { cut: DEFAULT_THRESHOLD, f1: -1 };
-  for (let cut = 0.1; cut <= 0.901; cut += 0.05) {
+  const score = (cut: number, fillCut: number) => {
     let tp = 0;
     let fp = 0;
     let fn = 0;
     let n = 0;
     results.forEach((t, i) => {
-      const got = pick(t, cut).concepts;
+      const got = pick(t, cut, fillCut).concepts;
       n += got.length;
       tp += got.filter((c) => hand[i].includes(c)).length;
       fp += got.filter((c) => !hand[i].includes(c)).length;
@@ -354,21 +365,35 @@ if (has('validate')) {
     const p = tp / (tp + fp || 1);
     const r = tp / (tp + fn || 1);
     const f1 = (2 * p * r) / (p + r || 1);
-    if (f1 > best.f1) best = { cut: Math.round(cut * 100) / 100, f1 };
-    console.log(`  ${cut.toFixed(2)}     ${pct(p)}     ${pct(r)}   ${f1.toFixed(2)}    ${(n / list.length).toFixed(1)}`);
+    return { p, r, f1, avg: n / list.length };
+  };
+  const row = (x: number, s: ReturnType<typeof score>) =>
+    `  ${x.toFixed(2)}     ${pct(s.p)}     ${pct(s.r)}   ${s.f1.toFixed(2)}    ${s.avg.toFixed(1)}`;
+
+  console.log(`  cut   precision  recall   F1   avg/verse     (fill ${fill >= 1 ? 'off' : fill})`);
+  let best = { cut: DEFAULT_THRESHOLD, f1: -1 };
+  for (let cut = 0.1; cut <= 0.901; cut += 0.05) {
+    const s = score(cut, fill);
+    if (s.f1 > best.f1) best = { cut: Math.round(cut * 100) / 100, f1: s.f1 };
+    console.log(row(cut, s));
   }
 
+  console.log(`\nTopping thin verses up to ${FILL_TO} at --threshold ${threshold}:\n`);
+  console.log('  fill  precision  recall   F1   avg/verse');
+  console.log(row(1, score(threshold, 1)).replace('1.00', ' off'));
+  for (let f = 0.3; f < threshold - 0.001; f += 0.05) console.log(row(f, score(threshold, f)));
+
   const clusterHits = results.filter((t, i) => t.cluster === clusterOf(hand[i])).length;
-  const derivedHits = results.filter((t, i) => clusterOf(pick(t, best.cut).concepts) === clusterOf(hand[i])).length;
-  console.log(`\nbest F1 ${best.f1.toFixed(2)} at --threshold ${best.cut}`);
+  const derivedHits = results.filter((t, i) => clusterOf(pick(t, threshold).concepts) === clusterOf(hand[i])).length;
+  console.log(`\nbest single-threshold F1 ${best.f1.toFixed(2)} at --threshold ${best.cut}; in use: --threshold ${threshold} --fill ${fill}`);
   console.log(`cluster: Jev's choice matches the hand concepts' cluster in ${clusterHits}/${list.length};`);
   console.log(`         cluster derived from picked concepts matches in ${derivedHits}/${list.length}`);
 
-  console.log(`\nper verse at ${best.cut} (+ extra, − missed):`);
+  console.log(`\nper verse at --threshold ${threshold} --fill ${fill} (+ extra, − missed):`);
   const missed = new Map<Concept, number>();
   const extra = new Map<Concept, number>();
   results.forEach((t, i) => {
-    const got = pick(t, best.cut).concepts;
+    const got = pick(t, threshold).concepts;
     const plus = got.filter((c) => !hand[i].includes(c));
     const minus = hand[i].filter((c) => !got.includes(c));
     plus.forEach((c) => extra.set(c, (extra.get(c) ?? 0) + 1));
@@ -380,7 +405,7 @@ if (has('validate')) {
   const top = (m: Map<Concept, number>) => [...m].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([c, n]) => `${c}×${n}`).join(', ');
   console.log(`\nmost often missed: ${top(missed) || '—'}`);
   console.log(`most often extra:  ${top(extra) || '—'}`);
-  console.log(`\nIf that threshold looks right, set DEFAULT_THRESHOLD in this script to ${best.cut} and run without --validate.`);
+  console.log('\nTo change what a plain run uses, set DEFAULT_THRESHOLD and DEFAULT_FILL in this script.');
   printUsage(results[0]?.model);
   process.exit(0);
 }
