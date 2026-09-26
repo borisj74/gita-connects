@@ -128,22 +128,22 @@
     // Land on the verse.
     cam = mix(cam, shot(hub.cx, hub.cy, 1.3, 1110, 500), inOutCubic(seg(t, T.rideEnd - 0.25, T.open - 0.35)));
     // Make room for the panel (screenAt zooms in on both), then drift.
-    cam = mix(cam, shot(hub.cx, hub.cy, 1.12, 930, 410), inOutCubic(seg(t, T.open + 0.1, T.open + 0.9)));
-    cam = mix(cam, shot(hub.cx, hub.cy, 1.17, 930, 410), seg(t, T.open + 0.9, T.expand));
+    // (High in the frame, so the captions below stay clear of the card.)
+    cam = mix(cam, shot(hub.cx, hub.cy, 1.12, 930, 285), inOutCubic(seg(t, T.open + 0.1, T.open + 0.9)));
+    cam = mix(cam, shot(hub.cx, hub.cy, 1.17, 930, 285), seg(t, T.open + 0.9, T.expand));
     // Pull back to the whole network.
     if (S.fit) {
       cam = mix(cam, S.fit, inOutExpo(seg(t, T.expand + 0.2, T.expand + 1.45)));
       cam = mix(cam, { ...S.fit, cx: S.fit.cx - 60, z: S.fit.z * 1.07 }, inOutCubic(seg(t, T.expand + 1.45, T.outro)));
-      cam = mix(cam, { ...S.fit, z: S.fit.z * 0.75 }, inCubic(seg(t, T.outro, T.outro + 1.4)));
+      // Centre on the verse the reel opened, for the iris to close on.
+      cam = mix(cam, shot(hub.cx, hub.cy, S.fit.z * 0.85), inOutCubic(seg(t, T.outro - 0.15, T.outro + 0.7)));
     }
     return cam;
   }
 
-  // The app as a whole: unfolds in the intro, floats away in the outro.
+  // The app as a whole: unfolds from a tilt in the intro.
   function screenAt(t) {
     const unfold = outExpo(seg(t, T.iris, T.iris + 0.95));
-    const away = inOutCubic(seg(t, T.outro, T.outro + 1.25));
-    const gone = inCubic(seg(t, T.outro + 0.75, T.outro + 1.45));
     // Close in on the verse and its panel together, anchored top right so
     // the panel's header stays in frame.
     const close = inOutCubic(seg(t, T.open + 0.1, T.open + 0.9)) * (1 - inOutExpo(seg(t, T.expand + 0.2, T.expand + 1.3)));
@@ -151,11 +151,11 @@
       zs: lerp(1, 1.28, close),
       ax: W,
       ay: 0,
-      rx: lerp(34, 0, unfold) + 52 * away,
-      rz: -20 * away,
-      s: lerp(0.8, 1, unfold) * lerp(1, 0.5, away) * lerp(1, 0.6, gone) * (1 + 0.008 * impact(t, T.open) + 0.008 * impact(t, T.expand)),
-      ty: 70 * away,
-      op: 1 - gone,
+      rx: lerp(34, 0, unfold),
+      rz: 0,
+      s: lerp(0.8, 1, unfold) * (1 + 0.008 * impact(t, T.open) + 0.008 * impact(t, T.expand)),
+      ty: 0,
+      op: 1,
     };
   }
 
@@ -440,6 +440,10 @@
     const css = [];
     const cam = cameraAt(t);
     css.push(`.react-flow__viewport { transform: translate(${W / 2 - cam.cx * cam.z}px, ${H / 2 - cam.cy * cam.z}px) scale(${cam.z}) !important; }`);
+    // Connections at least ~2.4 px wide on screen, so they stay crisp when
+    // the camera is wide.
+    S.edgeW = Math.max(3, 2.4 / cam.z);
+    css.push(`.react-flow__edge path.react-flow__edge-path { stroke-width: ${S.edgeW}px !important; }`);
 
     const sc = screenAt(t);
     const flat = Math.abs(sc.rx) < 0.01 && Math.abs(sc.rz) < 0.01 && Math.abs(sc.s - 1) < 1e-4 && sc.ty === 0;
@@ -450,6 +454,11 @@
           border-radius: ${28 * (1 - sc.s) * 2}px; opacity: ${sc.op}; box-shadow: 0 60px 140px rgba(0,0,0,0.55); }`);
 
     renderRide(t, cam, css);
+    // The opened verse lights up again as the iris closes on it.
+    const last = inOutCubic(seg(t, T.outro, T.outro + 0.4));
+    if (last > 0) {
+      css.push(`${nodeSel(HUB)} > .verse-node { box-shadow: 0 0 0 ${8 * last}px rgba(224,122,85,${0.85 * last}), 0 0 ${120 * last}px rgba(224,122,85,${0.7 * last}) !important; }`);
+    }
     renderPanel(t, css);
     renderExpand(t, css);
     renderTypes(t, css);
@@ -466,13 +475,16 @@
     O.dark.style.display = O.sky.style.display = on || t > T.outro ? 'block' : 'none';
     for (const e of [O.n18, O.n18l, O.n700, O.n700l, O.countless]) e.style.display = on ? 'block' : 'none';
 
-    // The iris opens from the centre of the constellation onto the app.
-    const iris = inOutExpo(seg(t, T.iris, T.iris + 0.7)) * 1250;
+    // The iris opens from the centre of the constellation onto the app, and
+    // closes on it again at the end.
+    const opening = inOutExpo(seg(t, T.iris, T.iris + 0.7));
+    const closing = inOutExpo(seg(t, T.outro, T.outro + 0.8));
+    const iris = (t > T.outro ? 1 - closing : opening) * 1250;
     const mask = iris > 0 ? `radial-gradient(circle at 50% 50%, transparent ${iris}px, #000 ${iris + 60}px)` : 'none';
     O.dark.style.webkitMaskImage = O.dark.style.maskImage = mask;
-    O.dark.style.opacity = t > T.outro ? 0 : 1;
     O.irisRing.setAttribute('r', iris + 20);
-    O.irisRing.setAttribute('opacity', iris > 0 && on ? 0.8 * (1 - seg(t, T.iris + 0.15, T.iris + 0.7)) : 0);
+    const ring = t > T.outro ? seg(t, T.outro + 0.05, T.outro + 0.35) * (1 - seg(t, T.outro + 0.55, T.outro + 0.8)) : on ? 1 - seg(t, T.iris + 0.15, T.iris + 0.7) : 0;
+    O.irisRing.setAttribute('opacity', iris > 0 ? 0.8 * ring : 0);
 
     // "18 / Chapters", then "700 / Verses" counting up.
     const numStyle = (e, l, a, b) => {
@@ -491,7 +503,7 @@
 
     // Particles drift throughout the dark parts.
     const par = 1 + 0.9 * inCubic(seg(t, T.iris, T.iris + 0.7));
-    const dustOp = t < T.outro ? 1 - seg(t, T.iris + 0.1, T.iris + 0.6) : seg(t, T.outro + 0.3, T.outro + 1.2);
+    const dustOp = t < T.outro ? 1 - seg(t, T.iris + 0.1, T.iris + 0.6) : seg(t, T.outro + 0.5, T.outro + 1.2);
     for (const d of O.dust) {
       const x = W / 2 + (((d.x + t * d.v) % W) - W / 2) * par;
       const y = H / 2 + (d.y - H / 2 - t * d.v * 0.3) * par;
@@ -624,8 +636,9 @@
       nodeW.set(e.src, Math.max(nodeW.get(e.src) ?? 0, w));
       nodeW.set(e.tgt, Math.max(nodeW.get(e.tgt) ?? 0, w));
       const op = lerp(1, 0.06 + 0.94 * w, dim);
-      const sw = lerp(3, 9, w * dim);
-      css.push(`${edgeSel(e.id)} { opacity: ${op}; } ${edgeSel(e.id)} path.react-flow__edge-path { stroke-width: ${sw}px !important; filter: drop-shadow(0 0 ${10 * w * dim}px ${e.color}); }`);
+      // Thicker, not glowing: a CSS filter on a straight SVG line clips it to a stub.
+      const sw = lerp(S.edgeW, S.edgeW * 2.6, w * dim);
+      css.push(`${edgeSel(e.id)} { opacity: ${op}; } ${edgeSel(e.id)} path.react-flow__edge-path { stroke-width: ${sw}px !important; }`);
       css.push(`${labelSel(e.id)} { opacity: ${op} !important; } ${labelSel(e.id)} .edge-label { scale: ${1 + 0.5 * w * dim} !important; }`);
     }
     for (const n of S.graph.nodes.keys()) {
@@ -731,9 +744,16 @@
     return zoom + pan + turn;
   }
 
+  // Hand the page back to the app: while React Flow measures new or resized
+  // nodes it reads their size on screen against its own zoom, so the reel's
+  // camera and scaling must be out of the way. render() puts them back.
+  function release() {
+    O.dyn.textContent = '';
+  }
+
   function clicked(name, p) {
     S.clicked = { ...S.clicked, [name]: p };
   }
 
-  window.REEL = { init, render, target, clicked, speed, afterOpen, afterExpand, DURATION, ACTIONS };
+  window.REEL = { init, render, release, target, clicked, speed, afterOpen, afterExpand, DURATION, ACTIONS };
 })();

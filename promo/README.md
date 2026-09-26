@@ -30,7 +30,7 @@ link types. It is rendered from the live app rather than from screenshots:
 `reel.js` is injected into the page and drives React Flow's viewport, the
 nodes, edges and panel directly, so every zoom stays sharp, and its clicks are
 real clicks. For motion blur, each frame averages 4 to 24 renders, more
-where the camera moves fast. A render takes about four minutes.
+where the camera moves fast. A render takes about ten minutes.
 
 - `node reel.mjs --samples 1` renders without motion blur, four times faster.
 - `node reel.mjs --still 4.2` (or `--still 1,4.2,9`) writes single frames to

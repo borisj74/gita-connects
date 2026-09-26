@@ -21,11 +21,12 @@ const arg = (name, fallback) => (process.argv.includes(name) ? Number(process.ar
 // --still takes one time or a comma-separated list, in order.
 const stills = process.argv.includes('--still') ? process.argv[process.argv.indexOf('--still') + 1].split(',').map(Number) : null;
 const FPS = arg('--fps', 30);
-// Motion blur: each frame averages up to SAMPLES renders across half the
-// frame interval (a 180° shutter). Slow frames need fewer distinct renders:
+// Motion blur: each frame averages up to SAMPLES renders across a third of
+// the frame interval (a 120° shutter: enough to smooth the fast moves while
+// keeping lines sharp). Slow frames need fewer distinct renders:
 // each is written SAMPLES / n times, which averages the same.
 const SAMPLES = arg('--samples', 24);
-const SHUTTER = 0.5;
+const SHUTTER = 1 / 3;
 const STEPS = [1, 2, 3, 4, 6, 8, 12, 24].filter((n) => SAMPLES % n === 0 && n <= SAMPLES);
 const MAX_GAP = 12; // pixels the picture may move between two renders
 
@@ -61,33 +62,34 @@ await page.waitForLoadState('networkidle');
 const freeze = (on) => page.evaluate((v) => document.documentElement.classList.toggle('reel-frozen', v), on);
 await freeze(true);
 
-// The reel's clicks are real: at each action's time, the page is clicked
-// where the reel's cursor clicks.
+// The reel's clicks are real. The reel's cursor shows where the click lands in
+// the reel's framing; the click itself happens in the app's own layout, with
+// the reel's camera released, so React Flow measures the new and resized
+// nodes correctly and the connections meet their verses.
+const HUB = '.react-flow__node[data-id="18.66"]';
 const run = {
   async open(t) {
-    await clickAt('open', t);
-    await page.waitForTimeout(900);
+    await click('open', t, `${HUB} .node-translation`);
+    await page.waitForTimeout(1200);
     // Collapse the translation, which would only say it is not loaded here.
-    // (The panel is still off screen, waiting to slide in: click it directly.)
     await page.evaluate(() => document.querySelector('button[aria-controls="vd-translation"]').click());
     await page.waitForTimeout(400);
     await page.evaluate(() => window.REEL.afterOpen());
   },
   async expand(t) {
-    await clickAt('expand', t);
+    await click('expand', t, `${HUB} .node-expand`);
     await page.waitForTimeout(1800);
     await page.evaluate(() => window.REEL.afterExpand());
   },
 };
-async function clickAt(name, t) {
-  const p = await page.evaluate(([n, time]) => {
+async function click(name, t, selector) {
+  await page.evaluate(([n, time]) => {
     window.REEL.render(time);
-    const p = window.REEL.target(n);
-    window.REEL.clicked(n, p);
-    return p;
+    window.REEL.clicked(n, window.REEL.target(n));
+    window.REEL.release();
   }, [name, t]);
   await freeze(false);
-  await page.mouse.click(p.x, p.y);
+  await page.locator(selector).click();
   await page.mouse.move(1, 1);
   await freeze(true);
 }
@@ -115,7 +117,7 @@ const out = here('out/gita-connects-reel.mp4');
 const rate = FPS * SAMPLES;
 const encoder = spawn(ffmpeg, [
   '-y', '-loglevel', 'error',
-  '-f', 'image2pipe', '-c:v', 'mjpeg', '-framerate', String(rate), '-i', '-',
+  '-f', 'image2pipe', '-c:v', 'png', '-framerate', String(rate), '-i', '-',
   // Silent track, so players and social sites that expect audio accept it.
   '-f', 'lavfi', '-i', 'anullsrc=channel_layout=stereo:sample_rate=48000',
   '-filter:v', SAMPLES > 1
@@ -123,7 +125,7 @@ const encoder = spawn(ffmpeg, [
     : 'null',
   '-r', String(FPS),
   '-map', '0:v', '-map', '1:a', '-shortest',
-  '-c:v', 'libx264', '-preset', 'slow', '-crf', '16', '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
+  '-c:v', 'libx264', '-preset', 'slow', '-crf', '14', '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
   '-c:a', 'aac', '-b:a', '128k',
   out,
 ], { stdio: ['pipe', 'inherit', 'inherit'] });
@@ -140,9 +142,10 @@ for (let f = 0; f < frames; f++) {
   const unique = STEPS.find((k) => k >= Math.max(n, Math.min(4, SAMPLES)));
   for (let s = 0; s < unique; s++) {
     await renderAt((f + (s / unique) * SHUTTER) / FPS);
-    const jpeg = await page.screenshot({ type: 'jpeg', quality: 95 });
+    // PNG: JPEG's chroma subsampling smears thin coloured lines.
+    const png = await page.screenshot({ type: 'png' });
     for (let r = 0; r < SAMPLES / unique; r++) {
-      if (!encoder.stdin.write(jpeg)) await new Promise((res) => encoder.stdin.once('drain', res));
+      if (!encoder.stdin.write(png)) await new Promise((res) => encoder.stdin.once('drain', res));
     }
     renders++;
   }
