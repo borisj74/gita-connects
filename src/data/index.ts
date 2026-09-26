@@ -22,6 +22,7 @@ import ch15 from './verses/ch-15.json';
 import ch16 from './verses/ch-16.json';
 import ch17 from './verses/ch-17.json';
 import ch18 from './verses/ch-18.json';
+import { vedabasePage } from './vedabase.js';
 
 const verseTexts: VerseText[] = [
   ch01, ch02, ch03, ch04, ch05, ch06, ch07, ch08, ch09,
@@ -63,6 +64,6 @@ export const reviewedVerses = verses.filter((v) => v.reviewed);
  * Trust's own site. The app links here rather than reproducing that text.
  */
 export const vedabaseUrl = (verse: { chapter: number; verse: number }): string =>
-  `https://vedabase.io/en/library/bg/${verse.chapter}/${verse.verse}/`;
+  `https://vedabase.io/en/library/bg/${vedabasePage(verse.chapter, verse.verse)}/`;
 
 export { chapters, connections };

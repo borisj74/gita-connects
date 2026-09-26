@@ -66,10 +66,18 @@ describe('verses', () => {
 
   it('links every verse to its Vedabase page', () => {
     for (const verse of verses) {
-      expect(vedabaseUrl(verse)).toBe(
-        `https://vedabase.io/en/library/bg/${verse.chapter}/${verse.verse}/`,
-      );
+      expect(vedabaseUrl(verse), verse.id).toMatch(/^https:\/\/vedabase\.io\/en\/library\/bg\/\d+\/\d+(-\d+)?\/$/);
     }
+    const url = (id: string) => vedabaseUrl({ chapter: Number(id.split('.')[0]), verse: Number(id.split('.')[1]) });
+    expect(url('2.47')).toBe('https://vedabase.io/en/library/bg/2/47/');
+    // Verses that share a page on Vedabase.
+    expect(url('1.17')).toBe('https://vedabase.io/en/library/bg/1/16-18/');
+    expect(url('13.10')).toBe('https://vedabase.io/en/library/bg/13/8-12/');
+    // Chapter 1 runs one ahead of As It Is from 1.29.
+    expect(url('1.28')).toBe('https://vedabase.io/en/library/bg/1/28/');
+    expect(url('1.40')).toBe('https://vedabase.io/en/library/bg/1/39/');
+    expect(url('1.47')).toBe('https://vedabase.io/en/library/bg/1/46/');
+    expect(url('1.36')).toBe('https://vedabase.io/en/library/bg/1/32-35/');
   });
 
   it('gives every curated verse a theme and at least one concept', () => {

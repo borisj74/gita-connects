@@ -13,6 +13,7 @@
  * so a parser break degrades to the previous behaviour rather than an error.
  */
 import { parse, type HTMLElement } from 'node-html-parser';
+import { vedabasePage } from '../src/data/vedabase.js';
 
 // Node.js runtime is the default; no config export needed.
 
@@ -60,7 +61,7 @@ export async function GET(request: Request): Promise<Response> {
     return Response.json({ error: 'Unknown verse' }, { status: 400 });
   }
 
-  const source = `https://vedabase.io/en/library/bg/${chapter}/${verse}/`;
+  const source = `https://vedabase.io/en/library/bg/${vedabasePage(chapter, verse)}/`;
 
   try {
     const upstream = await fetch(source, {
