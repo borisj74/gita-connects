@@ -29,7 +29,7 @@
  *   npm run concepts:jev -- --limit 20          tag the first 20 unreviewed verses, print, no write
  *   npm run concepts:jev                        tag every unreviewed verse and write the file
  *
- *   options: --threshold 0.6  --fill 0.3  --concurrency 4  --model jev-latest  --no-cache
+ *   options: --threshold 0.8  --fill 0.3  --concurrency 4  --model jev-latest  --no-cache
  */
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
@@ -56,24 +56,21 @@ const VERSES_DIR = join(ROOT, 'src', 'data', 'verses');
 const OUT = join(ROOT, 'src', 'data', 'curation.generated.ts');
 const CACHE_DIR = join(ROOT, 'node_modules', '.cache', 'gita-jev');
 
-// NOTE: the numbers below were measured when Jev was sent public-domain
-// translations and glosses instead of Prabhupada's; rerun --validate.
-// Chosen from --validate against the hand-curated verses (jev-1.13.0). F1 is
-// flat from 0.10 to 0.65 (0.59–0.61), so this favours precision: 63% vs 59%
-// at the best-F1 cut of 0.25, since a wrong concept makes wrong connections
-// while a missing one is easy to add in review.
-const DEFAULT_THRESHOLD = 0.6;
+// Chosen from --validate against the hand-curated verses (jev-1.13.0, sent
+// Prabhupada's translation and synonyms). F1 is flat from 0.10 to 0.90
+// (0.57–0.60), so this favours precision: 62% at 0.8 against 56% at the
+// best-F1 cut of 0.1, since a wrong concept makes wrong connections while a
+// missing one is easy to add in review.
+const DEFAULT_THRESHOLD = 0.8;
 // A verse with fewer than FILL_TO concepts above the threshold is topped up
 // with concepts Jev nearly chose (at least DEFAULT_FILL) before any blind
 // padding, so a verse whose third idea scored 0.5 keeps it. --fill 1 turns this off.
-// On the hand-curated verses at 0.6, a fill of 0.3 lifts recall from 57% to
-// 62% with precision unchanged at 63% (F1 0.60 -> 0.63), the best of any setting.
+// With 0.8 and a fill of 0.3: precision 62%, recall 55%, F1 0.59.
 const DEFAULT_FILL = 0.3;
-// Also tried against the hand-curated verses, and dropped: sending the
-// neighbouring verses' translations as context (F1 0.61), and asking whether a
-// verse "bears on" a concept instead of whether it is central (0.59, nearly
-// every verse hits the cap). Neither fixed the chapter 1 roll-call verses,
-// where grief stays under 0.45 whatever Jev is shown.
+// Tried with the earlier public-domain input (two translations and word
+// glosses), and dropped: the neighbouring verses as context, and asking whether
+// a verse "bears on" a concept instead of whether it is central. Both scored
+// lower, and neither fixed the chapter 1 roll-call verses.
 const FILL_TO = 3;
 const MIN_CONCEPTS = 2; // every verse needs at least two, so suggestions have something to match
 const MAX_CONCEPTS = 4; // hand-curated verses carry three or four
@@ -374,16 +371,19 @@ if (has('validate')) {
 
   console.log(`  cut   precision  recall   F1   avg/verse     (fill ${fill >= 1 ? 'off' : fill})`);
   let best = { cut: DEFAULT_THRESHOLD, f1: -1 };
-  for (let cut = 0.1; cut <= 0.901; cut += 0.05) {
+  // Step in whole hundredths: adding 0.05 repeatedly drifts (0.1 + 14 × 0.05
+  // is 0.7999…), which would count a score of exactly 0.80 into the 0.80 row.
+  for (let k = 10; k <= 90; k += 5) {
+    const cut = k / 100;
     const s = score(cut, fill);
-    if (s.f1 > best.f1) best = { cut: Math.round(cut * 100) / 100, f1: s.f1 };
+    if (s.f1 > best.f1) best = { cut, f1: s.f1 };
     console.log(row(cut, s));
   }
 
   console.log(`\nTopping thin verses up to ${FILL_TO} at --threshold ${threshold}:\n`);
   console.log('  fill  precision  recall   F1   avg/verse');
   console.log(row(1, score(threshold, 1)).replace('1.00', ' off'));
-  for (let f = 0.3; f < threshold - 0.001; f += 0.05) console.log(row(f, score(threshold, f)));
+  for (let k = 30; k / 100 < threshold - 0.001; k += 5) console.log(row(k / 100, score(threshold, k / 100)));
 
   const clusterHits = results.filter((t, i) => t.cluster === clusterOf(hand[i])).length;
   const derivedHits = results.filter((t, i) => clusterOf(pick(t, threshold).concepts) === clusterOf(hand[i])).length;
