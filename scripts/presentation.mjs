@@ -9,10 +9,15 @@
 //
 // Usage: npm run presentation
 import { spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
 
 const PROBE = 'https://vedabase.io/en/library/bg/2/47/';
 
-try {
+// With a local copy of the book (npm run import:bbt), verses never touch
+// Vedabase, so there is nothing to check.
+if (existsSync(new URL('../private/bbt/bg.json', import.meta.url))) {
+  console.log('✓ Using your local copy of Bhagavad-gita As It Is: verse text loads instantly, even offline.\n');
+} else try {
   const res = await fetch(PROBE, {
     headers: { 'User-Agent': 'gita-connects (+https://gita-connects.vercel.app)' },
     signal: AbortSignal.timeout(10_000),
@@ -24,7 +29,8 @@ try {
   }
 } catch (err) {
   console.warn(`⚠ Cannot reach Vedabase (${err.cause?.code ?? err.message}): verse panels will show only the link.`);
-  console.warn('  Everything else — graph, themes, concepts, search — works offline.\n');
+  console.warn('  Everything else — graph, themes, concepts, search — works offline.');
+  console.warn('  To show verse text without Vedabase, import the book first: npm run import:bbt -- <path to the EPUB>\n');
 }
 
 console.log('Open each verse you plan to show once before you start; the first load takes a moment.');

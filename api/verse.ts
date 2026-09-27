@@ -1,18 +1,20 @@
 /**
- * Serves Prabhupada's translation and purport for one verse, fetched from
- * vedabase.io at request time.
+ * Serves Prabhupada's translation and purport for one verse: from a local
+ * copy of the book when this machine has one (see localCopy below), otherwise
+ * fetched from vedabase.io at request time.
  *
- * The Bhaktivedanta Book Trust granted this project permission to DISPLAY
- * that text, not to redistribute it. So it is deliberately never committed to
- * this repository, never written to disk, and never bundled: it is fetched
- * when a reader opens a verse and passed straight through. That is also why
- * this is a server function rather than a browser fetch — vedabase.io sends no
- * CORS header, and proxying keeps the attribution and caching in one place.
+ * The text is the Bhaktivedanta Book Trust's copyright. It is deliberately
+ * never committed to this repository and never bundled: the local copy lives
+ * in gitignored private/, and a fetched verse is passed straight through. This
+ * is a server function rather than a browser fetch because vedabase.io sends
+ * no CORS header, and one endpoint keeps the attribution in one place.
  *
  * If this endpoint fails for any reason the client falls back to linking out,
  * so a parser break degrades to the previous behaviour rather than an error.
  */
 import { parse, type HTMLElement } from 'node-html-parser';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { vedabasePage } from '../src/data/vedabase.js';
 
 // Node.js runtime is the default; no config export needed.
@@ -24,6 +26,26 @@ const VERSE_COUNTS: Record<number, number> = {
   1: 47, 2: 72, 3: 43, 4: 42, 5: 29, 6: 47, 7: 30, 8: 28, 9: 34,
   10: 42, 11: 55, 12: 20, 13: 35, 14: 27, 15: 20, 16: 24, 17: 28, 18: 78,
 };
+
+/**
+ * A local copy of the book, imported from the BBT's EPUB by
+ * scripts/import-bbt.ts into private/ (gitignored, never committed). When it
+ * is present, verses are served from it and vedabase.io is not contacted at
+ * all; when it is not, as on a deploy built from the repository, the verse is
+ * fetched from Vedabase as before. Read once per process.
+ */
+type LocalVerse = { sanskrit: string; transliteration: string; synonyms: string; translation: string; purport: string[] };
+let local: Record<string, LocalVerse> | null | undefined;
+function localCopy(): Record<string, LocalVerse> | null {
+  if (local === undefined) {
+    try {
+      local = JSON.parse(readFileSync(join(process.cwd(), 'private', 'bbt', 'bg.json'), 'utf8')).pages;
+    } catch {
+      local = null;
+    }
+  }
+  return local ?? null;
+}
 
 /** Text of the first element matching `selector`, as paragraphs. */
 function paragraphs(root: HTMLElement, selector: string): string[] {
@@ -61,7 +83,16 @@ export async function GET(request: Request): Promise<Response> {
     return Response.json({ error: 'Unknown verse' }, { status: 400 });
   }
 
-  const source = `https://vedabase.io/en/library/bg/${vedabasePage(chapter, verse)}/`;
+  const page = vedabasePage(chapter, verse);
+  const source = `https://vedabase.io/en/library/bg/${page}/`;
+
+  const stored = localCopy()?.[page];
+  if (stored) {
+    return Response.json(
+      { id: `${chapter}.${verse}`, ...stored, attribution: ATTRIBUTION, source },
+      { headers: { 'Cache-Control': 'private, no-store' } },
+    );
+  }
 
   try {
     const upstream = await fetch(source, {
