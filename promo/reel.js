@@ -663,17 +663,23 @@
     // when the camera is wide.
     S.edgeW = Math.max(2.5, 1.4 / cam.z);
     css.push(`.react-flow__edge path.react-flow__edge-path { stroke-width: ${S.edgeW}px !important; }`);
-    // Once 18.66 is selected, the app fades connections that don't touch it
-    // to a faint trace. Hide them while the verse is open; bring them back in
-    // full with the whole network.
+    // Close in on 18.66, only its own connections show: others would seem to
+    // run out of the card (7.14 to 9.22 passes right behind it), and once it
+    // is selected the app fades them to a faint trace anyway. They come back
+    // in full with the whole network.
+    {
+      const shown = Math.max(1 - seg(t, T.dive, T.dive + 0.4), seg(t, T.expand + 0.9, T.expand + 1.4));
+      if (shown < 1) {
+        for (const e of S.graph.edges) {
+          if (e.src === HUB || e.tgt === HUB) continue;
+          css.push(`${edgeSel(e.id)} path.react-flow__edge-path { opacity: ${shown} !important; } ${labelSel(e.id)} { opacity: ${shown} !important; }`);
+        }
+      }
+    }
     if (S.panel) {
       const back = seg(t, T.expand + 0.9, T.expand + 1.4);
       // Verses it fades too (2.47 among them) come back with the network.
       css.push(`.react-flow__node.node-dimmed { opacity: ${lerp(0.25, 1, back)}; }`);
-      for (const e of S.graph.edges) {
-        if (e.src === HUB || e.tgt === HUB) continue;
-        css.push(`${edgeSel(e.id)} path.react-flow__edge-path { opacity: ${back} !important; } ${labelSel(e.id)} { opacity: ${back} !important; }`);
-      }
     }
 
     const sc = screenAt(t);
