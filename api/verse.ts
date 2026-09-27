@@ -61,7 +61,11 @@ function localCopy(): Record<string, LocalVerse> | null {
 async function fromSupabase(page: string): Promise<LocalVerse | null> {
   const base = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!base || !key) return null;
+  if (!base || !key) {
+    // Names only, never values: this is the first thing to check in the logs.
+    console.error(`[api/verse] Supabase not configured: ${!base ? 'SUPABASE_URL' : 'SUPABASE_SERVICE_ROLE_KEY'} is not set`);
+    return null;
+  }
   const url = new URL('/rest/v1/bbt_verses', base);
   url.searchParams.set('page', `eq.${page}`);
   url.searchParams.set('select', 'sanskrit,transliteration,synonyms,translation,purport');
@@ -76,7 +80,11 @@ async function fromSupabase(page: string): Promise<LocalVerse | null> {
       return null;
     }
     const [row] = (await res.json()) as LocalVerse[];
-    return row?.translation ? row : null;
+    if (!row?.translation) {
+      console.error(`[api/verse] bbt_verses has no row for ${page}; has \`npm run bbt:upload\` been run?`);
+      return null;
+    }
+    return row;
   } catch (err) {
     console.error(`[api/verse] Supabase unreachable for ${page}: ${String(err)}`);
     return null;
