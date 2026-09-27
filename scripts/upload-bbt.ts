@@ -4,23 +4,17 @@
  * on the deployed site. Run `npm run db:migrate` first so the table exists.
  *
  * Connects like scripts/migrate.ts, with POSTGRES_URL_NON_POOLING from
- * .env.local (written by `vercel env pull`, never committed). Upserts every
- * section in one transaction and deletes any the book no longer has, so it is
- * safe to rerun after re-importing.
+ * .env.local (written by `vercel env pull`, never committed), verifying the
+ * server's certificate (scripts/pg-connect.ts). Upserts every section in one
+ * transaction and deletes any the book no longer has, so it is safe to rerun
+ * after re-importing.
  *
  *   npm run bbt:upload
  */
 import { existsSync, readFileSync } from 'node:fs';
-import { Client } from 'pg';
+import { connect, env } from './pg-connect.js';
 
 const SOURCE = 'private/bbt/bg.json';
-
-function env(key: string): string {
-  if (process.env[key]) return process.env[key]!;
-  const line = existsSync('.env.local') && readFileSync('.env.local', 'utf8').match(new RegExp(`^${key}="?([^"\\n]+)"?$`, 'm'));
-  if (!line) throw new Error(`${key} missing from .env.local — run: vercel env pull`);
-  return line[1];
-}
 
 if (!existsSync(SOURCE)) {
   console.error(`No ${SOURCE}. Import the book first: npm run import:bbt -- <path to the EPUB>`);
@@ -30,13 +24,7 @@ type Section = { sanskrit: string; transliteration: string; synonyms: string; tr
 const { pages } = JSON.parse(readFileSync(SOURCE, 'utf8')) as { pages: Record<string, Section> };
 const rows = Object.entries(pages);
 
-// Supabase's pooler presents a chain Node does not ship a root for; the
-// sslmode in the URL would otherwise override the setting below.
-const url = new URL(env('POSTGRES_URL_NON_POOLING'));
-url.searchParams.delete('sslmode');
-const local = ['localhost', '127.0.0.1', ''].includes(url.hostname);
-const client = new Client({ connectionString: url.toString(), ssl: local ? false : { rejectUnauthorized: false } });
-await client.connect();
+const client = await connect(env('POSTGRES_URL_NON_POOLING'));
 try {
   await client.query('begin');
   // One statement for the whole book: the rows go in as a JSON array.
