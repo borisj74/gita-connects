@@ -8,6 +8,7 @@
 //   node reel.mjs --still 4.2       one frame at 4.2 s, to out/reel-4.2.png
 //   node reel.mjs --still 1,4.2,9   several frames
 //   node reel.mjs --vertical        the 9:16 cut, to out/gita-connects-reel-vertical.mp4
+//   node reel.mjs --square          the 1:1 cut, to out/gita-connects-reel-square.mp4
 //
 // As in capture.mjs, every /api/verse request is refused, so no Prabhupada
 // text can reach the reel: the cards show the project's own summaries.
@@ -22,9 +23,15 @@ const arg = (name, fallback) => (process.argv.includes(name) ? Number(process.ar
 // --still takes one time or a comma-separated list, in order.
 // Vertical: the app at 810 × 1440, scaled 4/3 to a 1080 × 1920 frame. Wide
 // enough for the app's desktop layout, with its interface a third larger.
+// Square likewise: 900 × 900 scaled 6/5 to 1080 × 1080.
 const VERTICAL = process.argv.includes('--vertical');
-const VIEW = VERTICAL ? { width: 810, height: 1440, scale: 4 / 3 } : { width: 1920, height: 1080, scale: 1 };
-const NAME = VERTICAL ? 'reel-vertical' : 'reel';
+const SQUARE = process.argv.includes('--square');
+const VIEW = VERTICAL
+  ? { width: 810, height: 1440, scale: 4 / 3 }
+  : SQUARE
+    ? { width: 900, height: 900, scale: 6 / 5 }
+    : { width: 1920, height: 1080, scale: 1 };
+const NAME = VERTICAL ? 'reel-vertical' : SQUARE ? 'reel-square' : 'reel';
 const stills = process.argv.includes('--still') ? process.argv[process.argv.indexOf('--still') + 1].split(',').map(Number) : null;
 const FPS = arg('--fps', 30);
 // Motion blur: each frame averages up to SAMPLES renders across a third of

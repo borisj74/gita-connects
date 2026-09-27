@@ -23,6 +23,7 @@ npm run dev            # in the repository root
 cd promo
 npm run reel           # renders out/gita-connects-reel.mp4
 npm run reel:vertical  # the 9:16 cut, out/gita-connects-reel-vertical.mp4
+npm run reel:square    # the 1:1 cut, out/gita-connects-reel-square.mp4
 ```
 
 A faster cut, for social posts: a verse is dragged in from the chapters
@@ -45,6 +46,8 @@ about twelve minutes.
   third larger. Its captions sit at the top, clear of Instagram's buttons and
   caption at the bottom of a reel, and the camera closes in on the verse panel
   alone, since it is too narrow to read beside the card.
+- The square cut renders at 900 × 900, scaled by 6/5 to 1080 × 1080, with
+  the landscape cut's bottom-left captions at phone size.
 
 **No BBT text.** Prabhupada's translation is displayed in the app under the
 Bhaktivedanta Book Trust's permission, which does not extend to promotional

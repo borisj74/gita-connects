@@ -5,13 +5,31 @@
 // its type, cursor and light on an overlay above them.
 (() => {
   // The frame is the page: 1920 × 1080 for the landscape reel, 810 × 1440
-  // (rendered at 4/3 scale, to 1080 × 1920) for the vertical one.
+  // (rendered at 4/3 scale, to 1080 × 1920) for the vertical one, 900 × 900
+  // (at 6/5, to 1080 × 1080) for the square one.
   const W = window.innerWidth;
   const H = window.innerHeight;
-  const PORTRAIT = H > W;
+  const PORTRAIT = H > W * 1.1;
+  const SQUARE = !PORTRAIT && W < H * 1.1;
+  // Either small shape: type sized for a phone.
+  const COMPACT = PORTRAIT || SQUARE;
   // Framing that differs between the two: where on screen each shot puts its
   // subject, and how far the camera closes in on the verse panel.
-  const L = PORTRAIT
+  const L = SQUARE
+    ? {
+        wide: [W / 2, H / 2 + 10],
+        add: { cx: 200, cy: 560, z: 0.55, sx: 610, sy: H * 0.45 },
+        ride: { z: [1.5, 1.4], sx: W * 0.6, sy: H * 0.4 },
+        land: { z: 1.2, sx: W * 0.6, sy: H * 0.4 },
+        // The card beside the panel, both at full size, above the captions.
+        card: { z: [0.95, 1.0], sx: 240, sy: H * 0.36 },
+        panelZoom: { zs: 1, ax: W, ay: 0 },
+        panelTop: 70,
+        fit: [0.86, W / 2, H * 0.42],
+        iris: Math.hypot(W, H) / 2 + 150,
+        star: [1, 1],
+      }
+    : PORTRAIT
     ? {
         wide: [W / 2, H * 0.55],
         add: { cx: 200, cy: 560, z: 0.5, sx: 580, sy: H * 0.56 },
@@ -194,7 +212,7 @@
     // Pull back to the whole network.
     if (S.fit) {
       cam = mix(cam, S.fit, inOutExpo(seg(t, T.expand + 0.2, T.expand + 1.45)));
-      cam = mix(cam, { ...S.fit, cx: S.fit.cx - (PORTRAIT ? 0 : 60), z: S.fit.z * 1.07 }, inOutCubic(seg(t, T.expand + 1.45, T.outro)));
+      cam = mix(cam, { ...S.fit, cx: S.fit.cx - (COMPACT ? 0 : 60), z: S.fit.z * 1.07 }, inOutCubic(seg(t, T.expand + 1.45, T.outro)));
       // Centre on the verse the reel opened, for the iris to close on.
       cam = mix(cam, shot(hub.cx, hub.cy, S.fit.z * 0.85), inOutCubic(seg(t, T.outro - 0.15, T.outro + 0.7)));
     }
@@ -291,6 +309,26 @@
 
   // Upright: type sized for a phone, captions at the top, clear of the
   // app's own buttons and caption at the bottom of an Instagram reel.
+  // Square: the landscape layout's captions, bottom left, at phone size.
+  const SQUARE_CSS = `
+    #reel .num { top: 250px; font-size: 220px; }
+    #reel .numlabel { top: 490px; font-size: 20px; }
+    #reel .countless { top: 720px; font-size: 42px; }
+    #reel-capbg { background: radial-gradient(ellipse 760px 400px at 0% 100%, rgba(251,248,244,0.97) 0%, rgba(251,248,244,0.9) 40%, rgba(251,248,244,0) 100%); }
+    #reel .cap { left: 52px; bottom: 60px; }
+    #reel .kicker { font-size: 15px; letter-spacing: 4px; margin-bottom: 12px; gap: 12px; }
+    #reel .kicker i, #reel .typecount i { width: 32px; }
+    #reel .line { font-size: 64px; letter-spacing: -0.5px; }
+    #reel .typecount { left: 52px; bottom: 152px; font-size: 15px; letter-spacing: 4px; gap: 12px; }
+    #reel .typeword { left: 52px; bottom: 52px; font-size: 76px; }
+    #reel .typeword .dot { width: 18px; height: 18px; margin-right: 20px; }
+    #reel .deva { font-size: 30px; }
+    #reel .wordmark { font-size: 120px; }
+    #reel .rule { margin: 30px 0 26px; }
+    #reel .tagline { font-size: 34px; max-width: 700px; }
+    #reel .small { font-size: 15px; letter-spacing: 4px; line-height: 1.9; max-width: 640px; margin-top: 34px; }
+  `;
+
   const PORTRAIT_CSS = `
     #reel .num { top: 500px; font-size: 220px; }
     #reel .numlabel { top: 740px; font-size: 20px; }
@@ -347,7 +385,7 @@
   }
 
   function buildOverlay() {
-    el('style', { text: STATIC_CSS + (PORTRAIT ? PORTRAIT_CSS : '') }, document.head);
+    el('style', { text: STATIC_CSS + (PORTRAIT ? PORTRAIT_CSS : SQUARE ? SQUARE_CSS : '') }, document.head);
     // The faces the reel sets type in (italic Cormorant, which the app does
     // not load, among them).
     el('link', { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&display=block' }, document.head);
@@ -427,7 +465,7 @@
     O.rule = el('div', { class: 'rule' }, O.end);
     O.tagline = el('div', { class: 'tagline', text: 'See how the teachings of the Gītā connect' }, O.end);
     O.small = el('div', { class: 'small' }, O.end);
-    O.small.innerHTML = PORTRAIT ? 'A free study companion for devotees<br>In development' : 'A free study companion for devotees · In development';
+    O.small.innerHTML = COMPACT ? 'A free study companion for devotees<br>In development' : 'A free study companion for devotees · In development';
 
     // The verse card carried from the chapters panel to the canvas.
     O.ghost = el('div', { class: 'ghost' }, root);
@@ -690,7 +728,7 @@
       e.style.transform = `scale(${s})`;
       e.style.filter = `blur(${(1 - pin) * 18 + pout * 12}px)`;
       l.style.opacity = outCubic(seg(t, a + 0.08, a + 0.3)) * (1 - pout);
-      l.style.letterSpacing = `${lerp(30, 14, outExpo(seg(t, a, a + 0.5))) * (PORTRAIT ? 0.7 : 1)}px`;
+      l.style.letterSpacing = `${lerp(30, 14, outExpo(seg(t, a, a + 0.5))) * (COMPACT ? 0.7 : 1)}px`;
     };
     numStyle(O.n18, O.n18l, 0.05, 0.58);
     numStyle(O.n700, O.n700l, 0.58, 1.1);
