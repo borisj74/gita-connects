@@ -7,7 +7,8 @@
     "capture": "node capture.mjs",
     "render": "node render.mjs",
     "video": "node capture.mjs && node render.mjs",
-    "reel": "node reel.mjs"
+    "reel": "node reel.mjs",
+    "reel:vertical": "node reel.mjs --vertical"
   },
   "devDependencies": {
     "ffmpeg-static": "^5.2.0",

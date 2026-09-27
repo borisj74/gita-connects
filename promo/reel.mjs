@@ -7,6 +7,7 @@
 //   node reel.mjs --samples 1       faster, without motion blur
 //   node reel.mjs --still 4.2       one frame at 4.2 s, to out/reel-4.2.png
 //   node reel.mjs --still 1,4.2,9   several frames
+//   node reel.mjs --vertical        the 9:16 cut, to out/gita-connects-reel-vertical.mp4
 //
 // As in capture.mjs, every /api/verse request is refused, so no Prabhupada
 // text can reach the reel: the cards show the project's own summaries.
@@ -19,6 +20,11 @@ const APP = process.env.APP_URL ?? 'http://localhost:5173/';
 const here = (p) => new URL(p, import.meta.url).pathname;
 const arg = (name, fallback) => (process.argv.includes(name) ? Number(process.argv[process.argv.indexOf(name) + 1]) : fallback);
 // --still takes one time or a comma-separated list, in order.
+// Vertical: the app at 810 × 1440, scaled 4/3 to a 1080 × 1920 frame. Wide
+// enough for the app's desktop layout, with its interface a third larger.
+const VERTICAL = process.argv.includes('--vertical');
+const VIEW = VERTICAL ? { width: 810, height: 1440, scale: 4 / 3 } : { width: 1920, height: 1080, scale: 1 };
+const NAME = VERTICAL ? 'reel-vertical' : 'reel';
 const stills = process.argv.includes('--still') ? process.argv[process.argv.indexOf('--still') + 1].split(',').map(Number) : null;
 const FPS = arg('--fps', 30);
 // Motion blur: each frame averages up to SAMPLES renders across a third of
@@ -39,26 +45,43 @@ try {
 await mkdir(here('out'), { recursive: true });
 
 const browser = await chromium.launch({ args: ['--disable-lcd-text', '--font-render-hinting=none'] });
-const context = await browser.newContext({
-  viewport: { width: 1920, height: 1080 },
-  // The session's egress proxy re-signs HTTPS; without this, web fonts fail.
-  ignoreHTTPSErrors: true,
-});
-const page = await context.newPage();
-await page.route('**/api/verse**', (route) =>
-  route.fulfill({ status: 503, contentType: 'application/json', body: '{"error":"not used in the promo"}' }),
-);
-await page.goto(APP, { waitUntil: 'networkidle' });
-await page.evaluate(() => document.fonts.ready);
-await page.getByRole('button', { name: 'Add starter set' }).click();
-await page.waitForTimeout(1200);
-await page.getByRole('button', { name: 'Collapse sidebar' }).click();
-await page.getByRole('button', { name: 'Dismiss tip' }).click();
-await page.waitForTimeout(800);
-
-await page.addScriptTag({ path: here('reel.js') });
-const { duration, actions } = await page.evaluate(() => window.REEL.init());
-await page.waitForLoadState('networkidle');
+// A fresh browser context (nothing saved from a previous try) with the
+// starter set and the reel loaded. Web fonts can fail to load through the
+// session's proxy; reel.js refuses to start without them, so try again.
+async function setUp() {
+  const context = await browser.newContext({
+    viewport: { width: VIEW.width, height: VIEW.height },
+    deviceScaleFactor: VIEW.scale,
+    // The session's egress proxy re-signs HTTPS; without this, web fonts fail.
+    ignoreHTTPSErrors: true,
+  });
+  const page = await context.newPage();
+  await page.route('**/api/verse**', (route) =>
+    route.fulfill({ status: 503, contentType: 'application/json', body: '{"error":"not used in the promo"}' }),
+  );
+  await page.goto(APP, { waitUntil: 'networkidle' });
+  await page.evaluate(() => document.fonts.ready);
+  await page.getByRole('button', { name: 'Add starter set' }).click();
+  await page.waitForTimeout(1200);
+  await page.getByRole('button', { name: 'Collapse sidebar' }).click();
+  await page.getByRole('button', { name: 'Dismiss tip' }).click();
+  await page.waitForTimeout(800);
+  await page.addScriptTag({ path: here('reel.js') });
+  const timeline = await page.evaluate(() => window.REEL.init());
+  await page.waitForLoadState('networkidle');
+  return { page, ...timeline };
+}
+let setup;
+for (let attempt = 1; !setup; attempt++) {
+  try {
+    setup = await setUp();
+  } catch (error) {
+    if (attempt === 4 || !/fonts did not load/.test(error.message)) throw error;
+    console.warn(`Web fonts did not load; retrying (${attempt}/3).`);
+    for (const c of browser.contexts()) await c.close();
+  }
+}
+const { page, duration, actions } = setup;
 const freeze = (on) => page.evaluate((v) => document.documentElement.classList.toggle('reel-frozen', v), on);
 await freeze(true);
 
@@ -156,14 +179,14 @@ async function renderAt(t) {
 if (stills) {
   for (const t of stills) {
     await renderAt(t);
-    await page.screenshot({ path: here(`out/reel-${t}.png`) });
-    console.log(`out/reel-${t}.png`);
+    await page.screenshot({ path: here(`out/${NAME}-${t}.png`) });
+    console.log(`out/${NAME}-${t}.png`);
   }
   await browser.close();
   process.exit(0);
 }
 
-const out = here('out/gita-connects-reel.mp4');
+const out = here(`out/gita-connects-${NAME}.mp4`);
 const rate = FPS * SAMPLES;
 const encoder = spawn(ffmpeg, [
   '-y', '-loglevel', 'error',

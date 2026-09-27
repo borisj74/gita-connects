@@ -22,6 +22,7 @@ npm run video          # capture the shots, then render out/gita-connects-promo.
 npm run dev            # in the repository root
 cd promo
 npm run reel           # renders out/gita-connects-reel.mp4
+npm run reel:vertical  # the 9:16 cut, out/gita-connects-reel-vertical.mp4
 ```
 
 A faster cut, for social posts: a verse is dragged in from the chapters
@@ -37,7 +38,13 @@ about twelve minutes.
 - `node reel.mjs --samples 1` renders without motion blur, four times faster.
 - `node reel.mjs --still 4.2` (or `--still 1,4.2,9`) writes single frames to
   `out/reel-<t>.png`.
-- The beats are the `T` table at the top of `reel.js`.
+- The beats are the `T` table at the top of `reel.js`; the framing of each
+  shot, for either shape, is the `L` table beside it.
+- The vertical cut renders the app at 810 × 1440 and scales it by 4/3 to
+  1080 × 1920: wide enough for the app's desktop layout, with its interface a
+  third larger. Its captions sit at the top, clear of Instagram's buttons and
+  caption at the bottom of a reel, and the camera closes in on the verse panel
+  alone, since it is too narrow to read beside the card.
 
 **No BBT text.** Prabhupada's translation is displayed in the app under the
 Bhaktivedanta Book Trust's permission, which does not extend to promotional

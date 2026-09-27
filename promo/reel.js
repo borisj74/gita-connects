@@ -4,8 +4,38 @@
 // sharp. The reel animates the real nodes, edges and verse panel, and draws
 // its type, cursor and light on an overlay above them.
 (() => {
-  const W = 1920;
-  const H = 1080;
+  // The frame is the page: 1920 × 1080 for the landscape reel, 810 × 1440
+  // (rendered at 4/3 scale, to 1080 × 1920) for the vertical one.
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+  const PORTRAIT = H > W;
+  // Framing that differs between the two: where on screen each shot puts its
+  // subject, and how far the camera closes in on the verse panel.
+  const L = PORTRAIT
+    ? {
+        wide: [W / 2, H * 0.55],
+        add: { cx: 200, cy: 560, z: 0.5, sx: 580, sy: H * 0.56 },
+        ride: { z: [1.5, 1.4], sx: W / 2, sy: H * 0.5 },
+        land: { z: 1.3, sx: W / 2, sy: H * 0.52 },
+        card: { z: [1.0, 1.02], sx: 195, sy: H * 0.5 },
+        panelZoom: { zs: 1.4, ax: W, ay: H * 0.25 },
+        panelTop: 380, // where scroll stops put a section, in the panel
+        fit: [0.82, W / 2, H * 0.58],
+        iris: Math.hypot(W, H) / 2 + 150,
+        star: [0.72, 1.35],
+      }
+    : {
+        wide: [W / 2, H / 2 + 10],
+        add: { cx: 430, cy: 560, z: 0.6, sx: 1130, sy: 540 },
+        ride: { z: [1.75, 1.6], sx: 1110, sy: 470 },
+        land: { z: 1.3, sx: 1110, sy: 500 },
+        card: { z: [1.12, 1.17], sx: 930, sy: 285 },
+        panelZoom: { zs: 1.28, ax: W, ay: 0 },
+        panelTop: 70,
+        fit: [0.84, 1150, 540],
+        iris: 1250,
+        star: [1.45, 0.82],
+      };
   const DURATION = 21.2;
 
   const HUB = '18.66'; // the verse the reel opens
@@ -147,22 +177,24 @@
     // Wide on the starter set, drifting in.
     let cam = mix(S.wide, { ...S.wide, z: S.wide.z * 1.05 }, seg(t, T.iris, T.chapters));
     // Frame the drop, right of the chapters panel, and drift.
-    cam = mix(cam, shot(430, 560, 0.6, 1130, 540), inOutCubic(seg(t, T.chapters - 0.1, T.chapters + 0.7)));
-    cam = mix(cam, shot(430, 560, 0.64, 1130, 540), seg(t, T.chapters + 0.7, T.dive + 0.3));
+    const A = L.add;
+    cam = mix(cam, shot(A.cx, A.cy, A.z, A.sx, A.sy), inOutCubic(seg(t, T.chapters - 0.1, T.chapters + 0.7)));
+    cam = mix(cam, shot(A.cx, A.cy, A.z * 1.06, A.sx, A.sy), seg(t, T.chapters + 0.7, T.dive + 0.3));
     // Dive onto the connection, then ride the pulse.
     const p = ridePoint(t);
     // (Framed right of centre, clear of the captions.)
-    cam = mix(cam, shot(p.x, p.y, lerp(1.75, 1.6, seg(t, T.rideStart, T.rideEnd)), 1110, 470), inOutExpo(seg(t, T.dive, T.dive + 0.85)));
+    cam = mix(cam, shot(p.x, p.y, lerp(L.ride.z[0], L.ride.z[1], seg(t, T.rideStart, T.rideEnd)), L.ride.sx, L.ride.sy), inOutExpo(seg(t, T.dive, T.dive + 0.85)));
     // Land on the verse.
-    cam = mix(cam, shot(hub.cx, hub.cy, 1.3, 1110, 500), inOutCubic(seg(t, T.rideEnd - 0.25, T.open - 0.35)));
+    cam = mix(cam, shot(hub.cx, hub.cy, L.land.z, L.land.sx, L.land.sy), inOutCubic(seg(t, T.rideEnd - 0.25, T.open - 0.35)));
     // Make room for the panel (screenAt zooms in on both), then drift.
     // (High in the frame, so the captions below stay clear of the card.)
-    cam = mix(cam, shot(hub.cx, hub.cy, 1.12, 930, 285), inOutCubic(seg(t, T.open + 0.1, T.open + 0.9)));
-    cam = mix(cam, shot(hub.cx, hub.cy, 1.17, 930, 285), seg(t, T.open + 0.9, T.expand));
+    const C = L.card;
+    cam = mix(cam, shot(hub.cx, hub.cy, C.z[0], C.sx, C.sy), inOutCubic(seg(t, T.open + 0.1, T.open + 0.9)));
+    cam = mix(cam, shot(hub.cx, hub.cy, C.z[1], C.sx, C.sy), seg(t, T.open + 0.9, T.expand));
     // Pull back to the whole network.
     if (S.fit) {
       cam = mix(cam, S.fit, inOutExpo(seg(t, T.expand + 0.2, T.expand + 1.45)));
-      cam = mix(cam, { ...S.fit, cx: S.fit.cx - 60, z: S.fit.z * 1.07 }, inOutCubic(seg(t, T.expand + 1.45, T.outro)));
+      cam = mix(cam, { ...S.fit, cx: S.fit.cx - (PORTRAIT ? 0 : 60), z: S.fit.z * 1.07 }, inOutCubic(seg(t, T.expand + 1.45, T.outro)));
       // Centre on the verse the reel opened, for the iris to close on.
       cam = mix(cam, shot(hub.cx, hub.cy, S.fit.z * 0.85), inOutCubic(seg(t, T.outro - 0.15, T.outro + 0.7)));
     }
@@ -174,11 +206,14 @@
     const unfold = outExpo(seg(t, T.iris, T.iris + 0.95));
     // Close in on the verse and its panel together, anchored top right so
     // the panel's header stays in frame.
-    const close = inOutCubic(seg(t, T.open + 0.1, T.open + 0.9)) * (1 - inOutExpo(seg(t, T.expand + 0.2, T.expand + 1.3)));
+    // (Upright, the panel is too narrow to read beside the card: close in on
+    // the panel alone, and back out before the card's button is clicked.)
+    const back = PORTRAIT ? inOutCubic(seg(t, T.suggest + 0.75, T.expand - 0.15)) : inOutExpo(seg(t, T.expand + 0.2, T.expand + 1.3));
+    const close = inOutCubic(seg(t, T.open + 0.1, T.open + 0.9)) * (1 - back);
     return {
-      zs: lerp(1, 1.28, close),
-      ax: W,
-      ay: 0,
+      zs: lerp(1, L.panelZoom.zs, close),
+      ax: L.panelZoom.ax,
+      ay: L.panelZoom.ay,
       rx: lerp(34, 0, unfold),
       rz: 0,
       s: lerp(0.8, 1, unfold) * (1 + 0.008 * impact(t, T.open) + 0.008 * impact(t, T.expand)),
@@ -254,6 +289,27 @@
       filter: drop-shadow(0 6px 10px rgba(41,37,36,0.28)); }
   `;
 
+  // Upright: type sized for a phone, captions at the top, clear of the
+  // app's own buttons and caption at the bottom of an Instagram reel.
+  const PORTRAIT_CSS = `
+    #reel .num { top: 500px; font-size: 220px; }
+    #reel .numlabel { top: 740px; font-size: 20px; }
+    #reel .countless { top: 1120px; font-size: 42px; }
+    #reel-capbg { background: linear-gradient(to bottom, rgba(251,248,244,0.97) 0%, rgba(251,248,244,0.92) 22%, rgba(251,248,244,0) 38%); }
+    #reel .cap { left: 44px; right: 44px; bottom: auto; top: 150px; }
+    #reel .kicker { font-size: 15px; letter-spacing: 4px; margin-bottom: 12px; gap: 12px; }
+    #reel .kicker i, #reel .typecount i { width: 32px; }
+    #reel .line { font-size: 66px; letter-spacing: -0.5px; }
+    #reel .typecount { left: 44px; bottom: auto; top: 150px; font-size: 15px; letter-spacing: 4px; gap: 12px; }
+    #reel .typeword { left: 44px; bottom: auto; top: 186px; font-size: 80px; }
+    #reel .typeword .dot { width: 18px; height: 18px; margin-right: 20px; }
+    #reel .deva { font-size: 30px; }
+    #reel .wordmark { font-size: 120px; }
+    #reel .rule { margin: 30px 0 26px; }
+    #reel .tagline { font-size: 34px; max-width: 640px; }
+    #reel .small { font-size: 15px; letter-spacing: 4px; line-height: 1.9; max-width: 600px; margin-top: 34px; }
+  `;
+
   const O = {}; // overlay elements
 
   function caption(kicker, lines) {
@@ -291,7 +347,7 @@
   }
 
   function buildOverlay() {
-    el('style', { text: STATIC_CSS }, document.head);
+    el('style', { text: STATIC_CSS + (PORTRAIT ? PORTRAIT_CSS : '') }, document.head);
     // The faces the reel sets type in (italic Cormorant, which the app does
     // not load, among them).
     el('link', { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&display=block' }, document.head);
@@ -319,7 +375,7 @@
     for (let i = 0; i < 17; i++) {
       const rad = 150 + 330 * Math.sqrt((i + 1) / 17);
       const a = i * golden + 0.4;
-      O.stars.push({ x: Math.cos(a) * rad * 1.45, y: Math.sin(a) * rad * 0.82, d: rad });
+      O.stars.push({ x: Math.cos(a) * rad * L.star[0], y: Math.sin(a) * rad * L.star[1], d: rad });
     }
     O.links = [];
     O.stars.forEach((s, i) => {
@@ -370,7 +426,8 @@
     O.letters = [...'Gita Connects'].map((ch) => el('span', { text: ch === ' ' ? ' ' : ch }, wm));
     O.rule = el('div', { class: 'rule' }, O.end);
     O.tagline = el('div', { class: 'tagline', text: 'See how the teachings of the Gītā connect' }, O.end);
-    O.small = el('div', { class: 'small', text: 'A free study companion for devotees · In development' }, O.end);
+    O.small = el('div', { class: 'small' }, O.end);
+    O.small.innerHTML = PORTRAIT ? 'A free study companion for devotees<br>In development' : 'A free study companion for devotees · In development';
 
     // The verse card carried from the chapters panel to the canvas.
     O.ghost = el('div', { class: 'ghost' }, root);
@@ -417,7 +474,7 @@
     S.graph = readGraph();
     S.starter = new Set(S.graph.nodes.keys());
     S.starterEdges = new Set(S.graph.edges.map((e) => e.id));
-    S.wide = fit([...S.graph.nodes.values()], 0.86, W / 2, H / 2 + 10);
+    S.wide = fit([...S.graph.nodes.values()], 0.86, ...L.wide);
     S.ride = S.graph.edges.find((e) => e.id === RIDE);
     if (!S.ride) throw new Error(`No ${RIDE} connection in the starter set`);
     O.trail.setAttribute('d', S.ride.path.getAttribute('d'));
@@ -483,9 +540,9 @@
     S.connected = connected.length;
     const max = S.panel.scrollHeight - S.panel.clientHeight;
     const section = connected[0]?.closest('.vd-section');
-    S.scrollTo = section ? Math.min(section.offsetTop - 70, max) : 0;
+    S.scrollTo = section ? Math.min(section.offsetTop - L.panelTop, max) : 0;
     const suggested = S.panel.querySelector('.vd-suggested')?.closest('.vd-section');
-    S.scrollTo2 = suggested ? Math.min(suggested.offsetTop - 70, max) : max;
+    S.scrollTo2 = suggested ? Math.min(suggested.offsetTop - L.panelTop, max) : max;
   }
 
   function afterNote() {
@@ -526,7 +583,7 @@
       const fromSrc = ends[0] <= ends[1];
       S.drawAt.set(e.id, { a: Math.min(...ends) - 0.05, b: Math.max(...ends) + 0.15, fromSrc });
     }
-    S.fit = fit([...S.graph.nodes.values()], 0.84, 1150, 540);
+    S.fit = fit([...S.graph.nodes.values()], ...L.fit);
   }
 
   // Where the cursor points, in screen pixels, for the running camera.
@@ -617,7 +674,7 @@
     // closes on it again at the end.
     const opening = inOutExpo(seg(t, T.iris, T.iris + 0.7));
     const closing = inOutExpo(seg(t, T.outro, T.outro + 0.8));
-    const iris = (t > T.outro ? 1 - closing : opening) * 1250;
+    const iris = (t > T.outro ? 1 - closing : opening) * L.iris;
     const mask = iris > 0 ? `radial-gradient(circle at 50% 50%, transparent ${iris}px, #000 ${iris + 60}px)` : 'none';
     O.dark.style.webkitMaskImage = O.dark.style.maskImage = mask;
     O.irisRing.setAttribute('r', iris + 20);
@@ -633,7 +690,7 @@
       e.style.transform = `scale(${s})`;
       e.style.filter = `blur(${(1 - pin) * 18 + pout * 12}px)`;
       l.style.opacity = outCubic(seg(t, a + 0.08, a + 0.3)) * (1 - pout);
-      l.style.letterSpacing = `${lerp(30, 14, outExpo(seg(t, a, a + 0.5)))}px`;
+      l.style.letterSpacing = `${lerp(30, 14, outExpo(seg(t, a, a + 0.5))) * (PORTRAIT ? 0.7 : 1)}px`;
     };
     numStyle(O.n18, O.n18l, 0.05, 0.58);
     numStyle(O.n700, O.n700l, 0.58, 1.1);
@@ -862,7 +919,7 @@
   function cursorKeys() {
     const off = (p, dx, dy) => (p ? { x: p.x + dx, y: p.y + dy } : { x: W + 100, y: H + 100 });
     return [
-      { t: 1.95, at: () => ({ x: 760, y: H + 80 }) },
+      { t: 1.95, at: () => ({ x: W * 0.4, y: H + 80 }) },
       { t: T.chapters, at: () => target('fab'), press: true },
       { t: T.grab, at: () => target('row'), press: true },
       { t: T.drop, at: () => target('drop'), press: true, d: T.drop - T.grab - 0.08 },
