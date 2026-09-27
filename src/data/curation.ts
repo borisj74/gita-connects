@@ -2,12 +2,12 @@ import type { Connection, VerseCuration } from '../types.js';
 
 // Hand-authored scholarship: the themes, concepts, summaries and connections
 // that make up the verse graph. This is the part of the dataset that is
-// original work — the Sanskrit, transliteration and word glosses under
+// original work — the Sanskrit and transliteration under
 // src/data/verses/ are imported public-domain text and must not be edited by
 // hand (regenerate them with scripts/import-verses.mjs instead).
 //
 // Verses absent from this map are uncurated: they still render, and still
-// carry Sanskrit, transliteration, glosses and a Vedabase link, but they have
+// carry Sanskrit, transliteration and a Vedabase link, but they have
 // no theme, no concepts and no connections until someone curates them.
 export const verseCuration: Record<string, VerseCuration> = {
   '2.47': {

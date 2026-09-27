@@ -1,9 +1,9 @@
 // Regenerates src/data/verses/ch-NN.json from the public-domain gita/gita
-// dataset (Unlicense). Only the Sanskrit, its transliteration, and the
-// word-by-word glosses are imported — all public domain. No English
-// translation is copied: Prabhupada's translation and purport are under
-// Bhaktivedanta Book Trust copyright, so the app deep-links to vedabase.io
-// for those instead of reproducing them.
+// dataset (Unlicense). Only the Sanskrit and its transliteration are
+// imported. No English is copied: the dataset's word-by-word glosses have no
+// stated source, and the app's English — Prabhupada's translation, synonyms
+// and purport — is displayed from vedabase.io under the Bhaktivedanta Book
+// Trust's permission, never stored.
 //
 // Usage: node scripts/import-verses.mjs
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -46,9 +46,8 @@ for (const v of raw) {
     verse,
     sanskrit: stripMarker(v.text),
     transliteration: tidy(v.transliteration),
-    wordMeanings: tidy(v.word_meanings),
   };
-  for (const field of ['sanskrit', 'transliteration', 'wordMeanings']) {
+  for (const field of ['sanskrit', 'transliteration']) {
     if (!entry[field]) throw new Error(`${entry.id} has an empty ${field}`);
   }
   byChapter.set(chapter, [...(byChapter.get(chapter) ?? []), entry]);

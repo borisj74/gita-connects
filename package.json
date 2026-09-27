@@ -8,6 +8,9 @@
   },
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 5173",
+    "presentation": "node scripts/presentation.mjs",
+    "import:bbt": "tsx scripts/import-bbt.ts",
+    "bbt:upload": "tsx scripts/upload-bbt.ts",
     "build": "tsc -b && vite build",
     "test": "vitest",
     "test:run": "vitest run",
@@ -15,7 +18,8 @@
     "preview": "vite preview",
     "review:next": "tsx scripts/review-next.ts",
     "graph:report": "tsx scripts/graph-report.ts",
-    "db:migrate": "tsx scripts/migrate.ts"
+    "db:migrate": "tsx scripts/migrate.ts",
+    "concepts:jev": "NODE_USE_ENV_PROXY=1 no_proxy=$no_proxy,api.typesafe.ai NO_PROXY=$NO_PROXY,api.typesafe.ai NODE_NO_WARNINGS=1 tsx scripts/generate-concepts-jev.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",
@@ -38,6 +42,7 @@
     "@types/pg": "^8.23.1",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "@typesafe-ai/sdk": "^0.6.0",
     "@vitejs/plugin-react": "^5.1.1",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",

@@ -26,16 +26,20 @@ Draw your own connections, filter by type, and save networks for later.
 
 ## Data and sources
 
-All **701 verses** are present. Each carries Sanskrit, IAST transliteration, and
-word-by-word glosses, imported from the public-domain
+All **701 verses** are present. Each carries Sanskrit and IAST transliteration,
+imported from the public-domain
 [gita/gita](https://github.com/gita/gita) dataset (Unlicense) by
 [`scripts/import-verses.mjs`](scripts/import-verses.mjs).
 
-**Prabhupada's text is displayed, never stored.** The Bhaktivedanta Book Trust has granted
+**Prabhupada's text is displayed, never committed.** The Bhaktivedanta Book Trust has granted
 this project permission to *display* the translation and purport from *Bhagavad-gītā As It
 Is* — not to redistribute it. So that text is not in this repository and not in the built
-bundle: [`api/verse.ts`](api/verse.ts) fetches a verse from vedabase.io when a reader opens
-it and passes it through with the required attribution. The Sanskrit, transliteration and
+bundle: [`api/verse.ts`](api/verse.ts) serves a verse from a local copy of the book when the
+machine has one (`npm run import:bbt -- <path to the BBT EPUB>`, written to gitignored
+`private/`), on the deployed site from a Supabase table no browser can read
+(`npm run bbt:upload`, see [`supabase/README.md`](supabase/README.md)), and otherwise fetches
+it from vedabase.io, passing it through with the required
+attribution. The Sanskrit, transliteration and
 synonyms shown in the panel come from the same fetch, so the verse matches Vedabase exactly;
 the imported copy under `src/data/verses/` is the search index and offline fallback. See
 [NOTICE](NOTICE) for the licence split.
@@ -46,7 +50,7 @@ it deploys as a Function.
 Of the 701 verses, **37 are hand-curated** — theme, concepts, a summary in our own words,
 and 1,057 authored connections — 120 among the curated verses plus a whole-text pass
 that links every one of the 701 verses. The other **664 carry machine-proposed
-concepts** from [`scripts/generate-concepts.mjs`](scripts/generate-concepts.mjs), marked
+concepts** from [`scripts/generate-concepts-jev.ts`](scripts/generate-concepts-jev.ts), marked
 `unreviewed` in the UI until a person checks them. Every verse has at least two concepts
 and belongs to one of eleven **theme clusters** ([`src/clusters.ts`](src/clusters.ts) —
 Arjuna's dilemma, Soul and self, Duty and action, …); suggested connections come from
@@ -94,6 +98,9 @@ another port if 5173 is taken).
 | Script | What it does |
 | --- | --- |
 | `npm run dev` | Vite dev server on `0.0.0.0:5173` |
+| `npm run presentation` | Starts the dev server for presenting from your own machine, first checking where verse text will come from: the local copy, or vedabase.io (which refuses Vercel in production) |
+| `npm run import:bbt -- <epub>` | Imports *Bhagavad-gītā As It Is* from the BBT's EPUB into gitignored `private/`, so verses load instantly and offline. Never commit the output |
+| `npm run bbt:upload` | Uploads that local copy to the private `bbt_verses` table in Supabase, for the deployed site |
 | `npm run build` | `tsc -b` type-check, then `vite build` — type errors fail the build |
 | `npm run lint` | ESLint 9 flat config |
 | `npm test` | Vitest in watch mode |

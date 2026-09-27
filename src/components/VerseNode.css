@@ -470,3 +470,17 @@
   font-style: italic;
   opacity: 0.75;
 }
+
+/* Says the translation is missing rather than letting the transliteration
+   quietly stand in for it. */
+.node-translation-missing {
+  margin: -0.5rem 0 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--ink-muted);
+}
+
+.node-translation-missing a {
+  color: var(--accent-terracotta-strong);
+  font-weight: 500;
+}

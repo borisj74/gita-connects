@@ -190,7 +190,8 @@ export default function VerseDetail({
 
   const sanskrit = live?.sanskrit || verse.sanskrit;
   const transliteration = live?.transliteration || verse.transliteration;
-  const wordMeanings = live?.synonyms || verse.wordMeanings;
+  // Word-for-word synonyms come only from Vedabase; there is no local copy.
+  const wordMeanings = live?.synonyms;
   const purport = live?.purport ?? [];
 
   const addButton = (
@@ -274,18 +275,38 @@ export default function VerseDetail({
         {verseText.status === 'loading' && <div className="vd-muted">Loading from Vedabase…</div>}
         {live && <div className="vd-card vd-translation">{live.translation}</div>}
         {verseText.status === 'unavailable' && (
-          <div className="vd-muted">Could not load the translation right now.</div>
+          <div className="vd-muted">
+            The translation could not be loaded. It is fetched from Vedabase each time it is
+            shown and never stored here, so this verse can still be read at the source:{' '}
+            <a href={vedabaseUrl(verse)} target="_blank" rel="noreferrer noopener">
+              {verse.id} on Vedabase
+            </a>
+            .
+          </div>
         )}
       </Disclosure>
 
       {/* Commentary: Prabhupada's purport, fetched at view time from /api/verse
           and never stored — the Bhaktivedanta Book Trust permits display only. */}
-      {(purport.length > 0 || verseText.status === 'loading') && (
+      {(purport.length > 0 || verseText.status === 'loading' || verseText.status === 'unavailable') && (
         <Disclosure id="commentary" label="Commentary" open={openSections.commentary} onToggle={toggleSection}
-          preview={purport.length > 0 ? `${readMinutes(purport)} min read` : 'loading…'}>
+          preview={
+            purport.length > 0
+              ? `${readMinutes(purport)} min read`
+              : verseText.status === 'unavailable'
+                ? 'unavailable'
+                : 'loading…'
+          }>
           {purport.map((paragraph, i) => (
             <p key={i} className="vd-purport">{paragraph}</p>
           ))}
+          {/* The section used to disappear entirely, which read as though this
+              verse simply had no purport. The link out lives in the footer and
+              in the translation note, so this one only has to say what is
+              missing. */}
+          {verseText.status === 'unavailable' && (
+            <div className="vd-muted">The commentary could not be loaded either.</div>
+          )}
         </Disclosure>
       )}
 
