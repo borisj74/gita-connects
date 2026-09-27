@@ -24,6 +24,7 @@ cd promo
 npm run reel           # renders out/gita-connects-reel.mp4
 npm run reel:vertical  # the 9:16 cut, out/gita-connects-reel-vertical.mp4
 npm run reel:square    # the 1:1 cut, out/gita-connects-reel-square.mp4
+npm run reel:all       # all three, one after another (about 40 minutes)
 ```
 
 A faster cut, for social posts: a verse is dragged in from the chapters
