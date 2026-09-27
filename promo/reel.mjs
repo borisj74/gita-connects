@@ -83,9 +83,10 @@ for (let attempt = 1; !setup; attempt++) {
   try {
     setup = await setUp();
   } catch (error) {
-    if (attempt === 4 || !/fonts did not load/.test(error.message)) throw error;
-    console.warn(`Web fonts did not load; retrying (${attempt}/3).`);
+    if (attempt === 10 || !/fonts did not load/.test(error.message)) throw error;
+    console.warn(`Web fonts did not load; retrying (${attempt}/9).`);
     for (const c of browser.contexts()) await c.close();
+    await new Promise((r) => setTimeout(r, 5000 * attempt));
   }
 }
 const { page, duration, actions } = setup;
