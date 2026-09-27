@@ -28,6 +28,11 @@ imported from the BBT's EPUB edition, which this project has permission to use
 is never committed, bundled or published, and api/verse.ts uses it only to
 display a verse to a reader, with the same attribution.
 
+The deployed site keeps the same copy in the project's own Supabase database
+(table bbt_verses, filled by scripts/upload-bbt.ts), as Vedabase advised. No
+browser can read that table; only api/verse.ts reads it, on the server, to
+display a verse with the same attribution. See supabase/README.md.
+
 The Bhaktivedanta Book Trust has also permitted this project to send the verse
 text (translation and synonyms, not purports) to an AI service, TypeSafe, solely
 to generate the concept tags in src/data/curation.generated.ts

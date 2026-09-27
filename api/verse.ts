@@ -1,13 +1,15 @@
 /**
- * Serves Prabhupada's translation and purport for one verse: from a local
- * copy of the book when this machine has one (see localCopy below), otherwise
- * fetched from vedabase.io at request time.
+ * Serves Prabhupada's translation and purport for one verse, from the first
+ * source that has it: a local copy of the book on this machine (localCopy),
+ * the private bbt_verses table in Supabase on the deployed site
+ * (fromSupabase), or else vedabase.io, fetched at request time.
  *
  * The text is the Bhaktivedanta Book Trust's copyright. It is deliberately
  * never committed to this repository and never bundled: the local copy lives
- * in gitignored private/, and a fetched verse is passed straight through. This
- * is a server function rather than a browser fetch because vedabase.io sends
- * no CORS header, and one endpoint keeps the attribution in one place.
+ * in gitignored private/, the hosted copy in a table no browser can read, and
+ * a fetched verse is passed straight through. This is a server function
+ * rather than a browser fetch because vedabase.io sends no CORS header, and
+ * one endpoint keeps the attribution in one place.
  *
  * If this endpoint fails for any reason the client falls back to linking out,
  * so a parser break degrades to the previous behaviour rather than an error.
@@ -45,6 +47,40 @@ function localCopy(): Record<string, LocalVerse> | null {
     }
   }
   return local ?? null;
+}
+
+/**
+ * The book on the deployed site, where there is no local copy: the
+ * bbt_verses table in Supabase (supabase/migrations/0004_bbt_verses.sql),
+ * filled by `npm run bbt:upload`. Browsers cannot read that table; this reads
+ * it through Supabase's REST API with the service-role key, a server-only
+ * environment variable (never VITE_-prefixed, so never in the bundle).
+ * Returns null when not configured or on any failure, so the caller falls
+ * back to Vedabase.
+ */
+async function fromSupabase(page: string): Promise<LocalVerse | null> {
+  const base = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!base || !key) return null;
+  const url = new URL('/rest/v1/bbt_verses', base);
+  url.searchParams.set('page', `eq.${page}`);
+  url.searchParams.set('select', 'sanskrit,transliteration,synonyms,translation,purport');
+  // Legacy keys are JWTs and go in both headers; the newer sb_secret_ keys
+  // belong in apikey alone.
+  const headers: Record<string, string> = { apikey: key };
+  if (!key.startsWith('sb_')) headers.Authorization = `Bearer ${key}`;
+  try {
+    const res = await fetch(url, { headers, signal: AbortSignal.timeout(5000) });
+    if (!res.ok) {
+      console.error(`[api/verse] Supabase answered ${res.status} for ${page}`);
+      return null;
+    }
+    const [row] = (await res.json()) as LocalVerse[];
+    return row?.translation ? row : null;
+  } catch (err) {
+    console.error(`[api/verse] Supabase unreachable for ${page}: ${String(err)}`);
+    return null;
+  }
 }
 
 /** Text of the first element matching `selector`, as paragraphs. */
@@ -91,6 +127,15 @@ export async function GET(request: Request): Promise<Response> {
     return Response.json(
       { id: `${chapter}.${verse}`, ...stored, attribution: ATTRIBUTION, source },
       { headers: { 'Cache-Control': 'private, no-store' } },
+    );
+  }
+
+  const hosted = await fromSupabase(page);
+  if (hosted) {
+    return Response.json(
+      { id: `${chapter}.${verse}`, ...hosted, attribution: ATTRIBUTION, source },
+      // As for a Vedabase fetch below: cached at the edge, never persisted.
+      { headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } },
     );
   }
 

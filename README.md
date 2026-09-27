@@ -36,7 +36,9 @@ this project permission to *display* the translation and purport from *Bhagavad-
 Is* — not to redistribute it. So that text is not in this repository and not in the built
 bundle: [`api/verse.ts`](api/verse.ts) serves a verse from a local copy of the book when the
 machine has one (`npm run import:bbt -- <path to the BBT EPUB>`, written to gitignored
-`private/`), and otherwise fetches it from vedabase.io, passing it through with the required
+`private/`), on the deployed site from a Supabase table no browser can read
+(`npm run bbt:upload`, see [`supabase/README.md`](supabase/README.md)), and otherwise fetches
+it from vedabase.io, passing it through with the required
 attribution. The Sanskrit, transliteration and
 synonyms shown in the panel come from the same fetch, so the verse matches Vedabase exactly;
 the imported copy under `src/data/verses/` is the search index and offline fallback. See
@@ -98,6 +100,7 @@ another port if 5173 is taken).
 | `npm run dev` | Vite dev server on `0.0.0.0:5173` |
 | `npm run presentation` | Starts the dev server for presenting from your own machine, first checking where verse text will come from: the local copy, or vedabase.io (which refuses Vercel in production) |
 | `npm run import:bbt -- <epub>` | Imports *Bhagavad-gītā As It Is* from the BBT's EPUB into gitignored `private/`, so verses load instantly and offline. Never commit the output |
+| `npm run bbt:upload` | Uploads that local copy to the private `bbt_verses` table in Supabase, for the deployed site |
 | `npm run build` | `tsc -b` type-check, then `vite build` — type errors fail the build |
 | `npm run lint` | ESLint 9 flat config |
 | `npm test` | Vitest in watch mode |

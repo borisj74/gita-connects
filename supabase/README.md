@@ -6,7 +6,7 @@ work is mirrored to Postgres so it follows the reader to another device.
 
 ## What is stored
 
-Four tables, all per-user and all behind row-level security
+Four tables of a reader's work, all per-user and all behind row-level security
 (`user_id = auth.uid()`), so the browser can talk to PostgREST directly with
 the reader's own token and no server code sits in between:
 
@@ -17,9 +17,37 @@ the reader's own token and no server code sits in between:
 | `link_types` | Link types the reader invented |
 | `preferences` | Theme, hidden filters, open detail sections |
 
-**No verse text is ever stored.** Networks reference verses by id (`2.47`);
-translations and purports are fetched from vedabase.io when a verse is opened.
-The Bhaktivedanta Book Trust permits display, not redistribution.
+**No verse text is stored with a reader's work.** Networks reference verses by
+id (`2.47`).
+
+## The book: `bbt_verses`
+
+A fifth table holds *Bhagavad-gītā As It Is* (translation, synonyms, purport,
+Sanskrit) for the verse panel on the deployed site, where vedabase.io refuses
+Vercel's requests. It is the Bhaktivedanta Book Trust's copyright, shown only
+inside the app, so **no browser can read it**: row-level security is on with no
+policies, and `anon` and `authenticated` hold no privileges on it. Only
+`api/verse.ts`, a server function, reads it, through the REST API with the
+service-role key.
+
+Filling it, from a machine with the BBT's EPUB:
+
+```bash
+vercel env pull                                   # .env.local, never committed
+npm run db:migrate                                # creates the table
+npm run import:bbt -- ~/Downloads/EN_BG_epub_r11.epub
+npm run bbt:upload                                # 657 sections of the book
+```
+
+Rerunning the upload replaces the table's contents. The deployed function needs
+two **server-only** environment variables in Vercel — never `VITE_`-prefixed,
+which would put them in the bundle:
+
+- `SUPABASE_URL` (or the existing `VITE_SUPABASE_URL`, which it falls back to)
+- `SUPABASE_SERVICE_ROLE_KEY` — Project Settings → API in Supabase. It bypasses
+  row-level security, so set it for Production (and Preview if needed) only.
+
+Without them the function falls back to fetching from vedabase.io.
 
 ## How syncing behaves
 
