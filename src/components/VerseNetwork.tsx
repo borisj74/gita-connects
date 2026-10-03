@@ -17,6 +17,7 @@ import 'reactflow/dist/style.css';
 import { X, MousePointer2, Undo2, Redo2, BookOpen, CircleHelp } from 'lucide-react';
 import { verses, connections } from '../data/index.js';
 import { expandableNeighbors, edgesJoining } from '../neighbors.js';
+import { pickStarterSet } from '../starterSet.js';
 import VerseNode from './VerseNode.js';
 import ConnectionEdge from './ConnectionEdge.js';
 import { captureCanvas, type CanvasImage } from '../exportNetwork.js';
@@ -821,22 +822,9 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
   }, [addVerses]);
 
   const handleAddStarterSet = useCallback(() => {
-    const counts = verses
-      .map((v) => ({
-        id: v.id,
-        n: connections.filter((c) => c.from === v.id || c.to === v.id).length,
-      }))
-      .sort((a, b) => b.n - a.n);
-    const hub = counts[0]?.id;
-    if (!hub) return;
-    const neighbors = Array.from(
-      new Set(
-        connections
-          .filter((c) => c.from === hub || c.to === hub)
-          .map((c) => (c.from === hub ? c.to : c.from)),
-      ),
-    ).slice(0, 5);
-    addVerses([hub, ...neighbors]);
+    const set = pickStarterSet(connections);
+    if (set.length === 0) return;
+    addVerses(set);
     // Auto-arrange once the new nodes have mounted.
     setTimeout(() => handleAutoArrange(), 120);
   }, [addVerses, handleAutoArrange]);
