@@ -51,6 +51,10 @@ export default function ConnectionEdge({
   const drawDelay = data?.drawDelay as number | undefined;
   const drawingIn = drawDelay !== undefined && !reduceMotion;
   const delay = drawDelay ?? 0;
+  // Lines of the selected verse show flow. Not while drawing in, so the two
+  // effects never stack.
+  const flowing = Boolean(data?.flowing) && !drawingIn && !reduceMotion;
+  const directional = Boolean(data?.directional);
   const strokeWidth = Number(style?.strokeWidth ?? 2);
 
   // The trace and the spark at its head share one clock, so the dot always
@@ -122,6 +126,15 @@ export default function ConnectionEdge({
         style={drawingIn ? { ...style, animation: `edgeSettleIn 200ms ease-out ${380 + delay}ms backwards` } : style}
         markerEnd={markerEnd}
       />
+      {flowing && (
+        <path
+          className={directional ? 'edge-flow-beads' : 'edge-flow-breathe'}
+          d={edgePath}
+          style={{ stroke: borderColor }}
+          strokeWidth={directional ? strokeWidth + 3 : strokeWidth + 6}
+          aria-hidden="true"
+        />
+      )}
       {drawingIn && (
         <g
           className="edge-draw"

@@ -222,3 +222,32 @@
     animation: none;
   }
 }
+
+/* Lines of the selected verse show flow. Directional types: beads travel
+   source to target, the way the arrow points. Two-way types have no
+   direction to show, so they breathe instead. */
+.edge-flow-beads,
+.edge-flow-breathe {
+  fill: none;
+  pointer-events: none;
+  stroke-linecap: round;
+}
+
+.edge-flow-beads {
+  /* Zero-length dashes with round caps draw as dots, 22px apart. */
+  stroke-dasharray: 0 22;
+  animation: edgeBeads 1.1s linear infinite;
+}
+
+@keyframes edgeBeads {
+  to { stroke-dashoffset: -22; }
+}
+
+.edge-flow-breathe {
+  opacity: 0.08;
+  animation: edgeBreathe 2.6s ease-in-out infinite;
+}
+
+@keyframes edgeBreathe {
+  50% { opacity: 0.32; }
+}

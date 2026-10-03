@@ -907,6 +907,11 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
           parallelTotal: 1,
           onDelete: handleDeleteEdge,
           drawDelay: drawingIn?.get(pairKey(edge.source, edge.target)),
+          // The selected verse's own lines come alive: beads travel along
+          // directional ones, the rest breathe.
+          flowing:
+            spotlight && (edge.source === selectedVerseId || edge.target === selectedVerseId),
+          directional: isDirectionalType(connectionTypes, typeId),
         },
       };
     });
