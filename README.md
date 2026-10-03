@@ -17,6 +17,8 @@ Draw your own connections, filter by type, and save networks for later.
   definition, illustration and parallel. Six are directional and drawn with arrowheads.
   Readers can also define custom types
 - **Draw your own edges** — connect two nodes, pick a type, set strength (1–10), add a description
+- **What your network says** — a live panel that reads the canvas: its character from the
+  mix of link types, shared concepts, the hub verse, themes covered and missing, loose ends
 - **Filtering** — show/hide connection types; selection persists across reloads
 - **Verse detail** — Sanskrit, transliteration, translation, theme, concepts, and purport
 - **Search palette** — `Cmd/Ctrl+K` to jump to any verse; `Cmd/Ctrl+S` to save the network

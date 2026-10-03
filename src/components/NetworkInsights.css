@@ -1,0 +1,284 @@
+/* "What your network says": floats top-left on the canvas, under the toolbar */
+.insights {
+  position: absolute;
+  top: 72px;
+  left: 20px;
+  z-index: var(--z-sticky);
+  width: 300px;
+  max-height: calc(100% - 160px);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--beige-300);
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.08);
+  font-family: var(--font-ui);
+  overflow: hidden;
+}
+
+.insights:not(.is-open) {
+  width: auto;
+}
+
+.insights-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  border: 0;
+  background: transparent;
+  color: var(--brown-900);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.insights-toggle svg:first-child {
+  color: var(--accent-terracotta-text);
+}
+
+.insights-title {
+  flex: 1;
+}
+
+.insights-chevron {
+  color: var(--brown-600);
+  transition: rotate var(--transition-base);
+}
+
+.insights.is-open .insights-chevron {
+  rotate: 180deg;
+}
+
+.insights-toggle:focus-visible {
+  outline: 2px solid var(--terracotta-500);
+  outline-offset: -2px;
+  border-radius: 14px;
+}
+
+/* Something changed while the panel was closed */
+.insights-toggle.has-news .insights-title::after {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-left: 6px;
+  border-radius: 50%;
+  background: var(--terracotta-500);
+  vertical-align: 2px;
+}
+
+.insights-body {
+  padding: 0 14px 12px;
+  overflow-y: auto;
+  display: grid;
+  gap: 4px;
+}
+
+.insights-section {
+  margin: 0 -8px;
+  padding: 8px;
+  border-radius: 10px;
+}
+
+/* The section the last change touched glows once */
+.insights-section.is-fresh {
+  animation: insightsFresh 1.4s ease-out;
+}
+
+@keyframes insightsFresh {
+  0%,
+  30% {
+    background: var(--terracotta-50);
+    box-shadow: inset 0 0 0 1px var(--terracotta-200);
+  }
+}
+
+.insights-count {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--brown-600);
+}
+
+.insights-character {
+  margin: 4px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--brown-900);
+}
+
+.insights-mix {
+  display: flex;
+  gap: 2px;
+  height: 6px;
+  margin-top: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.insights-mix-part {
+  flex-basis: 0;
+  min-width: 6px;
+}
+
+.insights-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-terracotta-text);
+}
+
+.insights-heading-count {
+  margin-left: auto;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--brown-600);
+}
+
+.insights-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.insights-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--chip-border);
+  background: var(--chip-bg);
+  color: var(--brown-900);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.insights-chip:hover {
+  border-color: var(--terracotta-400);
+}
+
+.insights-chip.is-active {
+  background: var(--terracotta-500);
+  border-color: var(--terracotta-500);
+  color: white;
+}
+
+.insights-chip.is-verse {
+  font-weight: 600;
+}
+
+.insights-chip-count {
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+.insights-chip:focus-visible,
+.insights-verse:focus-visible {
+  outline: 2px solid var(--terracotta-500);
+  outline-offset: 2px;
+}
+
+.insights-verse {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--beige-300);
+  border-radius: 10px;
+  background: var(--beige-50, var(--surface));
+  color: var(--brown-900);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color var(--transition-fast);
+}
+
+.insights-verse:hover {
+  border-color: var(--terracotta-400);
+}
+
+.insights-verse-id {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--brown-900);
+  color: var(--surface);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.insights-verse-theme {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.insights-verse-meta {
+  font-size: 12px;
+  color: var(--brown-600);
+}
+
+.insights-clusters {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  color: var(--brown-900);
+}
+
+.insights-clusters li {
+  display: flex;
+  justify-content: space-between;
+}
+
+.insights-cluster-count {
+  color: var(--brown-600);
+  font-size: 12px;
+}
+
+.insights-missing {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--brown-600);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .insights-section.is-fresh {
+    animation: none;
+  }
+}
+
+/* Phones: a narrower card under the header buttons that starts closed
+   (see App); the bottom edge belongs to undo and the autosave pill. */
+@media (max-width: 768px) {
+  .insights {
+    top: max(68px, calc(env(safe-area-inset-top) + 56px));
+    left: 12px;
+    width: min(300px, calc(100% - 24px));
+    max-height: 55%;
+  }
+}

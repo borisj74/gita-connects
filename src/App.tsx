@@ -31,6 +31,7 @@ import { collectUsage, downloadJson } from './usage.js';
 import { buildPdf, downloadBlob, downloadDataUrl } from './exportNetwork.js';
 import ExportDialog, { type ExportFormat } from './components/ExportDialog.js';
 import AccountDialog from './components/AccountDialog.js';
+import NetworkInsights from './components/NetworkInsights.js';
 import { cloudEnabled } from './cloud/supabase.js';
 import { useSession, accountLabel } from './cloud/useSession.js';
 import { startSync, stopSync } from './cloud/sync.js';
@@ -649,6 +650,18 @@ function App() {
               autosave={pendingRestore}
               onRestore={handleRestoreSession}
               onStartFresh={handleStartFresh}
+            />
+          )}
+
+          {networkVerses.size >= 2 && (
+            <NetworkInsights
+              networkVerses={networkVerses}
+              networkEdges={networkEdges}
+              connectionTypes={renderableTypes}
+              conceptFilter={conceptFilter}
+              onConceptSelect={handleConceptSelect}
+              onVerseSelect={handleVerseSelect}
+              defaultOpen={!isMobile}
             />
           )}
 
