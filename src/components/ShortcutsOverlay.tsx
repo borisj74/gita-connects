@@ -34,6 +34,15 @@ const CANVAS: Row[] = [
   { label: 'Show this list', keys: [['?']] },
 ];
 
+// Answers "what happens when I connect two verses?" in the reader's terms.
+const CONNECTION_FACTS = [
+  'A line joins the two verses, labelled with the type you picked. One-way types, like Sequential or Goal, carry an arrow toward the verse they lead to.',
+  'Click the label to read the connection\'s note and strength, or to remove it.',
+  'Select a verse to spotlight what it links to: its connected verses stay lit, and its lines come alive.',
+  'Link types in the toolbar counts connections by type and lets you hide any type.',
+  `Your connections save with the canvas as you go, and ${mod}Z undoes one. They are yours: the app's own scholarly connections stay as they are.`,
+];
+
 function Keys({ keys }: { keys: string[][] }) {
   return (
     <span className="sc-keys">
@@ -106,7 +115,16 @@ export default function ShortcutsOverlay({ onClose }: ShortcutsOverlayProps) {
           </section>
         </div>
         <div className="sc-footer">
-          <strong>Connect two verses:</strong> drag from the dot under one card to the dot above another.
+          <p className="sc-footer-lead">
+            <strong>Connect two verses:</strong> drag from the dot under one card onto another card,
+            then pick how they relate.
+          </p>
+          <h3 className="sc-heading sc-footer-heading">What a connection does</h3>
+          <ul className="sc-facts">
+            {CONNECTION_FACTS.map((fact) => (
+              <li key={fact}>{fact}</li>
+            ))}
+          </ul>
         </div>
       </div>
     </div>

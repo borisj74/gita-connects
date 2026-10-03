@@ -119,6 +119,21 @@
   color: var(--brown-600);
 }
 
+.sc-footer-lead {
+  margin: 0 0 12px;
+}
+
+.sc-footer-heading {
+  margin-bottom: 6px;
+}
+
+.sc-facts {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+}
+
 .sc-footer strong {
   font-weight: 600;
   color: var(--brown-800);
