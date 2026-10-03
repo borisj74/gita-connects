@@ -20,11 +20,44 @@
   width: auto;
 }
 
+.insights-header {
+  display: flex;
+  align-items: center;
+}
+
+/* Hides the whole panel (the chevron only folds it) */
+.insights-close {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-right: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--brown-600);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.insights-close:hover {
+  background: var(--beige-100);
+  color: var(--brown-900);
+}
+
+.insights-close:focus-visible {
+  outline: 2px solid var(--terracotta-500);
+  outline-offset: 1px;
+}
+
 .insights-toggle {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 8px;
-  width: 100%;
   padding: 10px 14px;
   border: 0;
   background: transparent;

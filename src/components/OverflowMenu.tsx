@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { MoreHorizontal, Moon, Sun, CircleHelp, Trash2, UserRound } from 'lucide-react';
+import { MoreHorizontal, Moon, Sun, CircleHelp, Trash2, UserRound, Sparkles, Check } from 'lucide-react';
 import './Toolbar.css';
 
 interface OverflowMenuProps {
@@ -12,6 +12,9 @@ interface OverflowMenuProps {
   /** Email of the signed-in reader, if any. */
   accountEmail?: string | null;
   onShowShortcuts?: () => void;
+  /** Whether the "What your network says" panel is shown, and its toggle. */
+  insightsShown?: boolean;
+  onToggleInsights?: () => void;
 }
 
 /**
@@ -26,6 +29,8 @@ export default function OverflowMenu({
   onOpenAccount,
   accountEmail,
   onShowShortcuts,
+  insightsShown = false,
+  onToggleInsights,
 }: OverflowMenuProps) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -76,6 +81,21 @@ export default function OverflowMenu({
             {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
             <span className="tb-menu-item-label">{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
           </button>
+          {onToggleInsights && (
+            <button
+              type="button"
+              role="menuitemcheckbox"
+              aria-checked={insightsShown}
+              className="tb-menu-item"
+              onClick={run(onToggleInsights)}
+            >
+              <Sparkles size={16} />
+              <span className="tb-menu-item-label">What your network says</span>
+              <span className="tb-menu-item-hint tb-menu-item-check">
+                {insightsShown && <Check size={14} strokeWidth={2.6} aria-hidden="true" />}I
+              </span>
+            </button>
+          )}
           <button
             type="button"
             role="menuitem"

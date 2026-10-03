@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ReactFlowProvider } from 'reactflow';
 import type { Node, Edge } from 'reactflow';
-import { PanelRightOpen, Moon, Sun, Menu, Save, FolderOpen, LayoutGrid, Trash2, BookOpen, Check } from 'lucide-react';
+import { PanelRightOpen, Moon, Sun, Menu, Save, FolderOpen, LayoutGrid, Trash2, BookOpen, Check, Sparkles } from 'lucide-react';
 import { useMediaQuery, MOBILE_BREAKPOINT } from './hooks/useMediaQuery.js';
 import ChapterSidebar from './components/ChapterSidebar.js';
 import VerseNetwork, { type VerseNetworkRef } from './components/VerseNetwork.js';
@@ -41,6 +41,8 @@ import {
 import type { Concept } from './concepts.js';
 import './App.css';
 
+const INSIGHTS_HIDDEN_KEY = 'gita-connects-insights-hidden';
+
 function App() {
   const isMobile = useMediaQuery(MOBILE_BREAKPOINT);
   const [selectedVerseId, setSelectedVerseId] = useState<string | null>(null);
@@ -54,6 +56,27 @@ function App() {
   const [noteToast, setNoteToast] = useState<string | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  // "What your network says" can be hidden outright (× on the panel); the ⋯
+  // menu and the I key bring it back. Remembered across visits.
+  const [insightsHidden, setInsightsHidden] = useState(() => {
+    try {
+      return localStorage.getItem(INSIGHTS_HIDDEN_KEY) === '1';
+    } catch {
+      return false;
+    }
+  });
+  // Brought back on purpose: open it expanded, whatever its folded state was.
+  const [insightsReshown, setInsightsReshown] = useState(false);
+  const toggleInsights = useCallback(() => {
+    const next = !insightsHidden;
+    setInsightsHidden(next);
+    if (!next) setInsightsReshown(true);
+    try {
+      localStorage.setItem(INSIGHTS_HIDDEN_KEY, next ? '1' : '0');
+    } catch {
+      // Preference just doesn't stick — not worth surfacing.
+    }
+  }, [insightsHidden]);
   const { session } = useSession();
 
   // Mirror this device's work to the account while one is signed in. Signing
@@ -266,6 +289,13 @@ function App() {
         return;
       }
 
+      // "I" — show or hide "What your network says"
+      if (e.key.toLowerCase() === 'i' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        toggleInsights();
+        return;
+      }
+
       // "N" — note on the open verse (a focused card handles its own N)
       if (e.key.toLowerCase() === 'n' && !e.metaKey && !e.ctrlKey && !e.altKey && selectedVerseId) {
         e.preventDefault();
@@ -274,7 +304,7 @@ function App() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selectedVerseId, shortcutsOpen, conceptFilter, handleOpenNote]);
+  }, [selectedVerseId, shortcutsOpen, conceptFilter, handleOpenNote, toggleInsights]);
 
   // Clicking the active chip again clears the filter.
   const handleConceptSelect = useCallback((concept: string) => {
@@ -555,6 +585,8 @@ function App() {
                 onOpenAccount={cloudEnabled ? () => setAccountOpen(true) : undefined}
                 accountEmail={session ? accountLabel(session) : null}
                 onShowShortcuts={() => setShortcutsOpen(true)}
+                insightsShown={!insightsHidden}
+                onToggleInsights={toggleInsights}
               />
             </div>
 
@@ -598,6 +630,14 @@ function App() {
                     onClick={() => { handleAutoArrange(); setMobileMenuOpen(false); }}
                   >
                     <LayoutGrid size={16} /> Auto Arrange
+                  </button>
+                  <button
+                    className="mobile-menu-item"
+                    role="menuitemcheckbox"
+                    aria-checked={!insightsHidden}
+                    onClick={() => { toggleInsights(); setMobileMenuOpen(false); }}
+                  >
+                    <Sparkles size={16} /> {insightsHidden ? 'Show' : 'Hide'} what your network says
                   </button>
                   <button
                     className="mobile-menu-item"
@@ -653,7 +693,7 @@ function App() {
             />
           )}
 
-          {networkVerses.size >= 2 && (
+          {networkVerses.size >= 2 && !insightsHidden && (
             <NetworkInsights
               networkVerses={networkVerses}
               networkEdges={networkEdges}
@@ -667,6 +707,8 @@ function App() {
               accessToken={session?.access_token ?? null}
               onSignIn={() => setAccountOpen(true)}
               onRetype={(edgeId, typeId) => verseNetworkRef.current?.retypeConnection(edgeId, typeId)}
+              onClose={toggleInsights}
+              forceOpen={insightsReshown}
             />
           )}
 

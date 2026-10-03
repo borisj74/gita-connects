@@ -197,9 +197,9 @@
 }
 
 .tb-menu-item-label {
-  flex: 1;
-  min-width: 0;
-  /* Menu labels are short: the menu grows to fit them rather than wrapping */
+  /* Menu labels are short: the menu grows to fit them, never squeezing a
+     label into the hint beside it or onto a second line */
+  flex: 1 0 auto;
   white-space: nowrap;
 }
 
@@ -246,7 +246,10 @@
 
 /* Overflow menu */
 .tb-overflow-menu {
-  width: 222px;
+  /* Sized by its items, so a longer label or a hint never runs off the edge */
+  width: max-content;
+  min-width: 222px;
+  max-width: 320px;
 }
 
 /* Networks menu */
@@ -495,6 +498,17 @@
   .autosave-pill {
     bottom: max(72px, calc(60px + env(safe-area-inset-bottom)));
   }
+}
+
+/* A toggle's check mark sits just before its shortcut key */
+.tb-menu-item-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tb-menu-item-check svg {
+  color: var(--accent-terracotta-text);
 }
 
 /* "Your account" with the signed-in address on a quieter second line */

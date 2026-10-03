@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Edge } from 'reactflow';
-import { ChevronDown, Plus, Sparkles } from 'lucide-react';
+import { ChevronDown, Plus, Sparkles, X } from 'lucide-react';
 import { connections, getVerse } from '../data/index.js';
 import { analyzeNetwork, type NetworkInsights as Insights } from '../insights.js';
 import { getTypeColor, getTypeLabel, type ConnectionTypeDef } from '../connectionTypes.js';
@@ -26,6 +26,10 @@ interface NetworkInsightsProps {
   accessToken: string | null;
   onSignIn: () => void;
   onRetype: (edgeId: string, typeId: string) => void;
+  /** Hide the panel entirely; the ⋯ menu or the I key brings it back. */
+  onClose: () => void;
+  /** Open expanded regardless of the remembered state (it was just brought back). */
+  forceOpen?: boolean;
 }
 
 // What each section shows, as a string: when it changes, that section
@@ -59,8 +63,11 @@ export default function NetworkInsights({
   accessToken,
   onSignIn,
   onRetype,
+  onClose,
+  forceOpen = false,
 }: NetworkInsightsProps) {
   const [open, setOpen] = useState(() => {
+    if (forceOpen) return true;
     try {
       const saved = localStorage.getItem(OPEN_KEY);
       return saved === null ? defaultOpen : saved === '1';
@@ -131,6 +138,7 @@ export default function NetworkInsights({
       style={style}
       aria-label="What your network says"
     >
+      <div className="insights-header">
       <button
         type="button"
         className={`insights-toggle ${unseen ? 'has-news' : ''}`}
@@ -149,6 +157,16 @@ export default function NetworkInsights({
           Arrow keys move the panel.
         </span>
       </button>
+      <button
+        type="button"
+        className="insights-close"
+        onClick={onClose}
+        aria-label="Hide this panel"
+        title="Hide (I). Bring it back from the ⋯ menu."
+      >
+        <X size={15} strokeWidth={2.2} />
+      </button>
+      </div>
 
       {open && (
         <div className="insights-body" aria-live="polite">

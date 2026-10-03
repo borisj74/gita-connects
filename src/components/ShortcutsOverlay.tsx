@@ -28,6 +28,7 @@ const CANVAS: Row[] = [
   { label: 'Redo', keys: [[`${mod}⇧Z`]] },
   { label: 'Save network', keys: [[`${mod}S`]] },
   { label: 'Fit all verses in view', keys: [[`${mod}0`]] },
+  { label: 'Show or hide network insights', keys: [['I']] },
   { label: 'Open the focused verse', keys: [['⏎']] },
   { label: 'Move focus along links', keys: [['←'], ['→']] },
   { label: 'Remove focused verse or link', keys: [['Del']] },
