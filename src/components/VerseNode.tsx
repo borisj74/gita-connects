@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { Handle, Position } from 'reactflow';
-import { X, Plus, AlignLeft, FilePlus2 } from 'lucide-react';
+import { X, Plus, AlignLeft, FilePlus2, Check } from 'lucide-react';
 import type { Verse } from '../types.js';
 import { vedabaseUrl } from '../data/index.js';
 import { useVerseText } from '../hooks/useVerseText.js';
@@ -154,11 +154,18 @@ function VerseNode({ data }: VerseNodeProps) {
         })}
       </div>
 
-      {connectedCount > 0 && (
+      {connectedCount > 0 ? (
         <button className="node-expand" onClick={handleExpand} aria-label="Expand network">
           <Plus size={16} className="expand-icon" />
           <span className="expand-text">Show {connectedCount} connected verse{connectedCount !== 1 ? 's' : ''}</span>
         </button>
+      ) : (
+        // Every linked verse is already on the canvas. Say so in the button's
+        // place, so the card does not look like it lost a feature.
+        <p className="node-expand-done">
+          <Check size={14} strokeWidth={2.4} aria-hidden="true" />
+          All linked verses shown
+        </p>
       )}
 
       <Handle type="source" position={Position.Bottom} className="node-handle" />

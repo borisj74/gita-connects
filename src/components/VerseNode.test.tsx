@@ -55,9 +55,10 @@ describe('VerseNode', () => {
     expect(onSelect).not.toHaveBeenCalled();
   });
 
-  it('hides the expand button when nothing is connected', () => {
+  it('says all linked verses are shown instead of the expand button', () => {
     renderNode({ connectedCount: 0 });
     expect(screen.queryByRole('button', { name: 'Expand network' })).not.toBeInTheDocument();
+    expect(screen.getByText('All linked verses shown')).toBeInTheDocument();
   });
 
   it('shows a singular label for one connected verse', () => {
