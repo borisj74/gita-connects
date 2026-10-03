@@ -1,0 +1,194 @@
+/* Privacy, terms and cookies. The body never scrolls (the canvas owns the
+   viewport), so the page is its own scroll container. Palette and type come
+   from the canvas, like the sign-in page. */
+.legal-page {
+  height: 100vh;
+  height: 100dvh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 40px 20px 56px;
+  background: var(--beige-50);
+  font-family: var(--font-ui);
+  color: var(--ink-strong);
+}
+
+.legal-column {
+  width: min(720px, 100%);
+  margin: 0 auto;
+}
+
+.legal-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 20px;
+  color: var(--ink-muted);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: 6px;
+}
+
+.legal-back:hover {
+  color: var(--accent-terracotta-text);
+}
+
+.legal-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.legal-tab {
+  padding: 6px 14px;
+  border: 1px solid var(--surface-border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-muted);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.legal-tab:hover {
+  color: var(--accent-terracotta-text);
+}
+
+.legal-tab.is-current {
+  border-color: var(--accent-terracotta-text);
+  color: var(--accent-terracotta-text);
+}
+
+.legal-doc {
+  padding: 36px 40px 40px;
+  border: 1px solid var(--surface-border);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 0.06);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.legal-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 38px;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.legal-updated {
+  margin: 6px 0 20px;
+  color: var(--ink-muted);
+  font-size: 13px;
+}
+
+.legal-summary {
+  margin: 0 0 8px;
+  padding: 14px 18px;
+  border-left: 3px solid var(--accent-terracotta-text);
+  border-radius: 0 10px 10px 0;
+  background: var(--beige-50);
+  font-size: 15px;
+}
+
+.legal-doc h2 {
+  margin: 30px 0 8px;
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.legal-doc p {
+  margin: 0 0 12px;
+}
+
+.legal-doc ul {
+  margin: 0 0 12px;
+  padding-left: 22px;
+}
+
+.legal-doc li {
+  margin-bottom: 4px;
+}
+
+.legal-doc a,
+.legal-footer a {
+  color: var(--accent-terracotta-text);
+}
+
+.legal-doc table {
+  width: 100%;
+  margin: 4px 0 16px;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.legal-doc th,
+.legal-doc td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--surface-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.legal-doc th {
+  color: var(--ink-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.legal-footer {
+  margin-top: 20px;
+  color: var(--ink-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.legal-back:focus-visible,
+.legal-tab:focus-visible,
+.legal-doc a:focus-visible,
+.legal-footer a:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+  .legal-page {
+    padding: 20px 16px 40px;
+  }
+
+  .legal-doc {
+    padding: 24px 20px 28px;
+  }
+
+  .legal-title {
+    font-size: 30px;
+  }
+
+  /* Three columns are too tight on a phone: each row becomes a small card. */
+  .legal-doc thead {
+    display: none;
+  }
+
+  .legal-doc tr {
+    display: block;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--surface-border);
+  }
+
+  .legal-doc td {
+    display: block;
+    padding: 2px 0;
+    border: 0;
+  }
+
+  .legal-doc td:first-child {
+    font-weight: 600;
+  }
+}

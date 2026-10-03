@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
-import { X, Mail, LogOut, Check } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { X, Mail, LogOut, Check, Trash2 } from 'lucide-react';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '../cloud/supabase.js';
 import { useMagicLink, EMAIL } from '../cloud/useMagicLink.js';
@@ -7,6 +7,14 @@ import { accountLabel } from '../cloud/useSession.js';
 import { useSyncStatus } from '../cloud/sync.js';
 import ScrimHint from './ScrimHint.js';
 import './AccountDialog.css';
+
+/** Where the reader is in deleting their account. */
+type DeleteState =
+  | { step: 'idle' }
+  | { step: 'confirm' }
+  | { step: 'deleting' }
+  | { step: 'error'; message: string }
+  | { step: 'done' };
 
 interface AccountDialogProps {
   session: Session | null;
@@ -32,6 +40,14 @@ export default function AccountDialog({ session, onClose }: AccountDialogProps) 
   const { email, setEmail, status, error, send } = useMagicLink();
   const dialogRef = useRef<HTMLDivElement>(null);
   const firstRef = useRef<HTMLElement>(null);
+  const keepRef = useRef<HTMLButtonElement>(null);
+  const [deletion, setDeletion] = useState<DeleteState>({ step: 'idle' });
+  const confirming = deletion.step === 'confirm' || deletion.step === 'deleting' || deletion.step === 'error';
+
+  // The safe choice gets focus when the warning appears.
+  useEffect(() => {
+    if (deletion.step === 'confirm') keepRef.current?.focus();
+  }, [deletion.step]);
 
   useEffect(() => {
     const opener = document.activeElement as HTMLElement | null;
@@ -44,7 +60,7 @@ export default function AccountDialog({ session, onClose }: AccountDialogProps) 
       }
       if (e.key !== 'Tab' || !dialogRef.current) return;
       const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
-        'button:not(:disabled), input:not(:disabled)',
+        'button:not(:disabled), input:not(:disabled), a[href]',
       );
       if (focusable.length === 0) return;
       const first = focusable[0];
@@ -74,6 +90,26 @@ export default function AccountDialog({ session, onClose }: AccountDialogProps) 
     onClose();
   };
 
+  // Deletes the account and everything synced to it (see api/account.ts),
+  // then signs out locally: the session's user no longer exists, so there is
+  // nothing to tell the server.
+  const deleteAccount = async () => {
+    if (!session) return;
+    setDeletion({ step: 'deleting' });
+    try {
+      const res = await fetch('/api/account', {
+        method: 'DELETE',
+        headers: { authorization: `Bearer ${session.access_token}` },
+      });
+      const json = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) throw new Error(json.error ?? "We couldn't delete your account. Try again.");
+      setDeletion({ step: 'done' });
+      await supabase?.auth.signOut({ scope: 'local' });
+    } catch (error) {
+      setDeletion({ step: 'error', message: error instanceof Error ? error.message : String(error) });
+    }
+  };
+
   return (
     <div className="modal-overlay saved-dialog-overlay" onClick={onClose}>
       <ScrimHint label="Click anywhere to close" />
@@ -88,12 +124,14 @@ export default function AccountDialog({ session, onClose }: AccountDialogProps) 
         <div className="saved-dialog-header">
           <div>
             <h2 id="account-title" className="saved-dialog-title">
-              {session ? 'Your account' : 'Sign in'}
+              {deletion.step === 'done' ? 'Account deleted' : session ? 'Your account' : 'Sign in'}
             </h2>
             <p className="saved-dialog-subtitle">
-              {session
-                ? 'Your networks and notes follow you to any device.'
-                : 'Optional. Keep your networks and notes across devices.'}
+              {deletion.step === 'done'
+                ? 'Thank you for reading with Gita Connects.'
+                : session
+                  ? 'Your networks and notes follow you to any device.'
+                  : 'Optional. Keep your networks and notes across devices.'}
             </p>
           </div>
           <button
@@ -107,7 +145,53 @@ export default function AccountDialog({ session, onClose }: AccountDialogProps) 
           </button>
         </div>
 
-        {session ? (
+        {deletion.step === 'done' ? (
+          <div className="account-body">
+            <p className="account-sent" role="status">
+              <Check size={18} />
+              Your account and everything synced to it have been deleted. Anything saved in this
+              browser is still here, and you can keep using the app without an account.
+            </p>
+          </div>
+        ) : session && confirming ? (
+          <div className="account-body account-delete" role="group" aria-labelledby="account-delete-title">
+            <h3 id="account-delete-title" className="account-delete-title">
+              Delete your account?
+            </h3>
+            <p className="account-delete-text">
+              This permanently deletes your account and everything synced to it: saved networks,
+              notes, link types, preferences and your Check with AI history. It can't be undone.
+            </p>
+            <p className="account-delete-text">
+              Copies saved in this browser stay on this device.
+            </p>
+            {deletion.step === 'error' && (
+              <p className="account-error" role="alert">
+                {deletion.message}
+              </p>
+            )}
+            <div className="account-delete-actions">
+              <button
+                ref={keepRef}
+                type="button"
+                className="saved-btn-secondary"
+                onClick={() => setDeletion({ step: 'idle' })}
+                disabled={deletion.step === 'deleting'}
+              >
+                Keep my account
+              </button>
+              <button
+                type="button"
+                className="account-delete-confirm"
+                onClick={deleteAccount}
+                disabled={deletion.step === 'deleting'}
+                aria-busy={deletion.step === 'deleting'}
+              >
+                {deletion.step === 'deleting' ? 'Deleting…' : 'Delete permanently'}
+              </button>
+            </div>
+          </div>
+        ) : session ? (
           <div className="account-body">
             <p className="account-who">
               <span className="account-avatar" aria-hidden="true">
@@ -120,6 +204,14 @@ export default function AccountDialog({ session, onClose }: AccountDialogProps) 
                 </span>
               </span>
             </p>
+            <button
+              type="button"
+              className="account-delete-link"
+              onClick={() => setDeletion({ step: 'confirm' })}
+            >
+              <Trash2 size={14} aria-hidden="true" />
+              Delete my account…
+            </button>
           </div>
         ) : status === 'sent' ? (
           <div className="account-body">
@@ -162,12 +254,23 @@ export default function AccountDialog({ session, onClose }: AccountDialogProps) 
 
         <div className="saved-dialog-footer">
           <p className="saved-dialog-note">
-            {session
-              ? 'Signing out leaves this device’s copy in place.'
-              : 'No password to remember. We store your email and your own work, nothing else.'}
+            {deletion.step === 'done' ? (
+              'Questions? Email hello@gitaconnects.com.'
+            ) : session ? (
+              'Signing out leaves this device’s copy in place.'
+            ) : (
+              <>
+                No password to remember. By signing in you agree to our{' '}
+                <a href="/terms">Terms</a> and <a href="/privacy">Privacy Policy</a>.
+              </>
+            )}
           </p>
           <div className="saved-footer-actions">
-            {session ? (
+            {deletion.step === 'done' ? (
+              <button type="button" className="saved-btn-secondary" onClick={onClose}>
+                Close
+              </button>
+            ) : session ? (
               <button type="button" className="saved-btn-secondary" onClick={signOut}>
                 <LogOut size={15} />
                 Sign out

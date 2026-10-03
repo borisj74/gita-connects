@@ -197,6 +197,12 @@ export default function ChapterSidebar({
           );
         })}
       </div>
+      <footer className="sidebar-legal">
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
+        <a href="/cookies">Cookies</a>
+        <a href="mailto:hello@gitaconnects.com">Contact</a>
+      </footer>
     </div>
   );
 }

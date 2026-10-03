@@ -76,8 +76,9 @@ export default function SignInPage() {
               {status === 'sending' ? 'Sending…' : 'Email me a link'}
             </button>
             <p className="signin-note">
-              No password to choose or reset. We store your email address and the work you make,
-              nothing else.
+              No password to choose or reset. By signing in you agree to our{' '}
+              <a href="/terms">Terms</a> and <a href="/privacy">Privacy Policy</a>, which explains
+              what we store and why.
             </p>
           </form>
         )}

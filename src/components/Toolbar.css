@@ -191,6 +191,12 @@
   transition: background var(--transition-fast);
 }
 
+/* A menu item that goes to another page is a link, styled like the rest. */
+a.tb-menu-item {
+  box-sizing: border-box;
+  text-decoration: none;
+}
+
 .tb-menu-item > svg {
   flex-shrink: 0;
   color: var(--brown-700);

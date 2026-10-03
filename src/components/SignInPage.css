@@ -214,3 +214,8 @@
     font-size: 29px;
   }
 }
+
+.signin-note a {
+  color: inherit;
+  text-decoration: underline;
+}

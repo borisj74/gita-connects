@@ -22,6 +22,9 @@
     "concepts:jev": "NODE_USE_ENV_PROXY=1 no_proxy=$no_proxy,api.typesafe.ai NO_PROXY=$NO_PROXY,api.typesafe.ai NODE_NO_WARNINGS=1 tsx scripts/generate-concepts-jev.ts"
   },
   "dependencies": {
+    "@fontsource/cormorant-garamond": "^5.3.0",
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/noto-serif-devanagari": "^5.3.0",
     "@supabase/supabase-js": "^2.116.0",
     "@types/dagre": "^0.7.54",
     "@typesafe-ai/sdk": "^0.6.0",

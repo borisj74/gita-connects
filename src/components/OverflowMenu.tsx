@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { MoreHorizontal, Moon, Sun, CircleHelp, Trash2, UserRound, Sparkles, Check } from 'lucide-react';
+import { MoreHorizontal, Moon, Sun, CircleHelp, Trash2, UserRound, Sparkles, Check, Scale } from 'lucide-react';
 import './Toolbar.css';
 
 interface OverflowMenuProps {
@@ -108,6 +108,10 @@ export default function OverflowMenu({
             <span className="tb-menu-item-label">Keyboard shortcuts</span>
             <span className="tb-menu-item-hint">{onShowShortcuts ? '?' : 'Soon'}</span>
           </button>
+          <a role="menuitem" className="tb-menu-item" href="/privacy">
+            <Scale size={16} />
+            <span className="tb-menu-item-label">Privacy, terms &amp; cookies</span>
+          </a>
           {onOpenAccount && (
             <>
               <div className="tb-menu-divider" role="separator" />

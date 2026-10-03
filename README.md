@@ -29,6 +29,8 @@ Draw your own connections, filter by type, and save networks for later.
 - **Search palette** — `Cmd/Ctrl+K` to jump to any verse; `Cmd/Ctrl+S` to save the network
 - **Save / load networks** — named snapshots in `localStorage`
 - **Light and dark themes**
+- **Privacy, terms and cookies** — `/privacy`, `/terms` and `/cookies`, linked from the sidebar,
+  the ⋯ menu and the sign-in form; readers can delete their account from *Your account*
 - **Mobile layout** — drawers and bottom sheets instead of side panels
 
 ## Data and sources
@@ -206,3 +208,16 @@ It needs, in Vercel (server-only, never `VITE_`-prefixed):
 - `SUPABASE_SERVICE_ROLE_KEY` for the daily count, in the `ai_checks` table
   (`npm run db:migrate` creates it). Without the key or the table, the limit is off and the
   function logs why.
+
+## Privacy and legal pages
+
+The policy text lives in [`src/legal/documents.tsx`](src/legal/documents.tsx) and is written from
+what the app actually does. Keep it in step with the code: when the app starts collecting,
+storing or sending something new (a new service, analytics, a new kind of synced data), update
+the matching page and move `LEGAL_UPDATED` forward in the same change. Anything that needs
+consent, such as most analytics, must ask before it runs.
+
+- **No third parties on load.** Fonts are self-hosted (`src/fonts.ts`), and the
+  Content-Security-Policy in `vercel.json` only allows our own origin and Supabase.
+- **Account deletion.** [`api/account.ts`](api/account.ts) deletes the reader from Supabase Auth
+  with the secret key; every table cascades from `auth.users`, so their synced data goes with it.
