@@ -44,8 +44,11 @@ two **server-only** environment variables in Vercel — never `VITE_`-prefixed,
 which would put them in the bundle:
 
 - `SUPABASE_URL` (or the existing `VITE_SUPABASE_URL`, which it falls back to)
-- `SUPABASE_SERVICE_ROLE_KEY` — Project Settings → API in Supabase. It bypasses
-  row-level security, so set it for Production (and Preview if needed) only.
+- `SUPABASE_SECRET_KEY` (an `sb_secret_` key) or the legacy
+  `SUPABASE_SERVICE_ROLE_KEY` — Project Settings → API Keys in Supabase. The
+  newer one wins when both are set, since the legacy key stops working once
+  Supabase disables legacy keys. It bypasses row-level security, so set it for
+  Production (and Preview if needed) only.
 
 Without them the function falls back to fetching from vedabase.io.
 

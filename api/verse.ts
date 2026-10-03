@@ -59,11 +59,15 @@ function localCopy(): Record<string, LocalVerse> | null {
  * back to Vedabase.
  */
 async function fromSupabase(page: string): Promise<LocalVerse | null> {
-  const base = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const base = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  // The newer sb_secret_ key when the integration provides it: the legacy
+  // service-role key stops working once Supabase disables legacy keys.
+  const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!base || !key) {
     // Names only, never values: this is the first thing to check in the logs.
-    console.error(`[api/verse] Supabase not configured: ${!base ? 'SUPABASE_URL' : 'SUPABASE_SERVICE_ROLE_KEY'} is not set`);
+    console.error(
+      `[api/verse] Supabase not configured: ${!base ? 'SUPABASE_URL' : 'SUPABASE_SECRET_KEY / SUPABASE_SERVICE_ROLE_KEY'} is not set`,
+    );
     return null;
   }
   const url = new URL('/rest/v1/bbt_verses', base);

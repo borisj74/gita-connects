@@ -44,6 +44,9 @@ beforeEach(() => {
   vi.stubEnv('SUPABASE_URL', 'https://db.example');
   vi.stubEnv('SUPABASE_ANON_KEY', 'anon');
   vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'service');
+  vi.stubEnv('VITE_SUPABASE_ANON_KEY', '');
+  vi.stubEnv('SUPABASE_PUBLISHABLE_KEY', '');
+  vi.stubEnv('SUPABASE_SECRET_KEY', '');
   vi.stubEnv('TYPESAFE_API_KEY', 'ts-key');
   systemOne.mockReset().mockResolvedValue({
     model: 'jev',
@@ -122,6 +125,25 @@ describe('POST /api/check', () => {
     vi.stubEnv('TYPESAFE_API_KEY', '');
     vi.stubEnv('CLAUDE_CODE_REMOTE', '');
     expect((await (await call('good')).json()).reason).toBe('missing-key');
+  });
+
+  it('prefers the newer keys over legacy ones that rotation disabled', async () => {
+    vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'sb_publishable_new');
+    vi.stubEnv('SUPABASE_SECRET_KEY', 'sb_secret_new');
+    expect((await call('good')).status).toBe(200);
+    const calls = vi.mocked(fetch).mock.calls.map(([url, init]) => ({
+      path: new URL(String(url)).pathname,
+      headers: new Headers(init?.headers),
+    }));
+    const auth = calls.find((c) => c.path === '/auth/v1/user')!;
+    expect(auth.headers.get('apikey')).toBe('sb_publishable_new');
+    const table = calls.filter((c) => c.path === '/rest/v1/ai_checks');
+    expect(table.length).toBeGreaterThan(0);
+    for (const c of table) {
+      expect(c.headers.get('apikey')).toBe('sb_secret_new');
+      // sb_secret_ keys are not JWTs, so they go in apikey alone.
+      expect(c.headers.get('authorization')).toBeNull();
+    }
   });
 
   it('says so when accounts or the AI key are not configured', async () => {

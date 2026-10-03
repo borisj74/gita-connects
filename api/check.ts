@@ -45,8 +45,15 @@ function verseForCheck(id: string): Verse | undefined {
 }
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-const supabaseUrl = () => process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
-const anonKey = () => process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = () => process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+// The browser's own key comes first: it is the one sign-in is known to work
+// with. The Supabase integration's variables are locked in Vercel and can lag
+// behind a key rotation, so its newer publishable key is tried before the
+// legacy anon key.
+const anonKey = () =>
+  process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY;
+/** The newer sb_secret_ key when the integration provides it, else the legacy service-role key. */
+const secretKey = () => process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 /** The signed-in reader's id, or null when the token is missing or invalid. */
 async function readerId(request: Request): Promise<string | null | 'unconfigured'> {
@@ -69,7 +76,7 @@ async function readerId(request: Request): Promise<string | null | 'unconfigured
 }
 
 function serviceHeaders(): Record<string, string> | null {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const key = secretKey();
   if (!key) return null;
   // Legacy keys are JWTs and go in both headers; sb_secret_ keys in apikey alone.
   const headers: Record<string, string> = { apikey: key };
@@ -86,7 +93,7 @@ async function usedToday(userId: string): Promise<number | null> {
   const base = supabaseUrl();
   const headers = serviceHeaders();
   if (!base || !headers) {
-    console.error('[api/check] Daily limit off: SUPABASE_SERVICE_ROLE_KEY is not set');
+    console.error('[api/check] Daily limit off: SUPABASE_SECRET_KEY / SUPABASE_SERVICE_ROLE_KEY is not set');
     return null;
   }
   const url = new URL('/rest/v1/ai_checks', base);
