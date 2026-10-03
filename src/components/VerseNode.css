@@ -557,3 +557,49 @@
     animation: none;
   }
 }
+
+/* Dragging a connection over a card: the whole card is the drop target.
+   It lifts and rings, and its top dot swells to receive the line. */
+.verse-node.connect-target-valid {
+  border-color: var(--terracotta-500);
+  box-shadow:
+    0 0 0 4px rgb(202 117 88 / 0.2),
+    0 10px 28px rgb(0 0 0 / 0.14);
+  scale: 1.02;
+}
+
+.verse-node.connect-target-valid .node-handle.react-flow__handle-top {
+  width: 18px;
+  height: 18px;
+  box-shadow: 0 0 0 6px rgb(202 117 88 / 0.25);
+}
+
+/* Over its own card there is nothing to connect to */
+.verse-node.connect-target-invalid {
+  cursor: not-allowed;
+  border-style: dashed;
+  border-color: var(--brown-400);
+}
+
+/* Let go on its own card: a short "no" shake */
+.verse-node.connect-reject {
+  animation: nodeReject 380ms ease-in-out;
+}
+
+@keyframes nodeReject {
+  20% { translate: -6px 0; }
+  40% { translate: 5px 0; }
+  60% { translate: -3px 0; }
+  80% { translate: 2px 0; }
+  100% { translate: 0 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .verse-node.connect-target-valid {
+    scale: none;
+  }
+
+  .verse-node.connect-reject {
+    animation: none;
+  }
+}

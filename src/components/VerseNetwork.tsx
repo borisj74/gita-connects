@@ -6,6 +6,7 @@ import ReactFlow, {
   MarkerType,
   Panel,
   useReactFlow,
+  useStore,
   type Node,
   type Edge,
   type Connection as RFConnection,
@@ -20,12 +21,16 @@ import VerseNode from './VerseNode.js';
 import ConnectionEdge from './ConnectionEdge.js';
 import { captureCanvas, type CanvasImage } from '../exportNetwork.js';
 import ConnectionDialog from './ConnectionDialog.js';
+import ConnectionLine from './ConnectionLine.js';
+import { ConnectTargetContext, type ConnectTarget } from './connectTarget.js';
+import SnapBack from './SnapBack.js';
 import ZoomControls from './ZoomControls.js';
 import type { ConnectionTypeDef } from '../connectionTypes.js';
 import type { Verse } from '../types.js';
 import type { Concept } from '../concepts.js';
 import { getTypeColor, getTypeLabel, isDirectionalType } from '../connectionTypes.js';
 import { writeAutosave } from '../autosave.js';
+import { useMediaQuery } from '../hooks/useMediaQuery.js';
 import './VerseNetwork.css';
 
 interface VerseNetworkProps {
@@ -337,12 +342,108 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       }
     }, []);
 
+    // While a connection is dragged: which verse it came from, and which
+    // card is under the pointer (or whose top dot it has snapped to). Any
+    // card is a drop target, not just its dot.
+    const [connectingFrom, setConnectingFrom] = useState<string | null>(null);
+    const [connectTarget, setConnectTarget] = useState<ConnectTarget>(null);
+    const connectTargetRef = useRef<ConnectTarget>(null);
+    const madeConnectionRef = useRef(false);
+    const snappedNodeId = useStore((s) => s.connectionEndHandle?.nodeId ?? null);
+    const pointerNodeIdRef = useRef<string | null>(null);
+    // A drag that did not land: its line reels back, and a drop on the
+    // verse's own card shakes that card.
+    const [snapBack, setSnapBack] = useState<{
+      from: string;
+      x: number;
+      y: number;
+      reject: boolean;
+      key: number;
+    } | null>(null);
+    const [shakeId, setShakeId] = useState<string | null>(null);
+    useEffect(() => {
+      if (!shakeId) return;
+      const t = setTimeout(() => setShakeId(null), 450);
+      return () => clearTimeout(t);
+    }, [shakeId]);
+    const reduceMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
+
+    const updateConnectTarget = useCallback(() => {
+      const from = connectingFrom;
+      const id = pointerNodeIdRef.current ?? snappedNodeId;
+      const next: ConnectTarget = from && id ? { id, valid: id !== from } : null;
+      const prev = connectTargetRef.current;
+      if (prev?.id === next?.id && prev?.valid === next?.valid) return;
+      connectTargetRef.current = next;
+      setConnectTarget(next);
+    }, [connectingFrom, snappedNodeId]);
+
+    useEffect(() => {
+      updateConnectTarget();
+    }, [updateConnectTarget]);
+
+    useEffect(() => {
+      if (!connectingFrom) return;
+      const onMove = (e: PointerEvent) => {
+        const card = document.elementFromPoint(e.clientX, e.clientY)?.closest('.react-flow__node');
+        pointerNodeIdRef.current = card?.getAttribute('data-id') ?? null;
+        updateConnectTarget();
+      };
+      window.addEventListener('pointermove', onMove);
+      return () => window.removeEventListener('pointermove', onMove);
+    }, [connectingFrom, updateConnectTarget]);
+
+    const onConnectStart = useCallback(
+      (_event: React.MouseEvent | React.TouchEvent, { nodeId }: { nodeId: string | null }) => {
+        madeConnectionRef.current = false;
+        pointerNodeIdRef.current = null;
+        setConnectingFrom(nodeId);
+      },
+      [],
+    );
+
     const onConnect = useCallback((params: RFConnection) => {
       if (!params.source || !params.target) return;
       if (params.source === params.target) return;
+      madeConnectionRef.current = true;
       dismissConnectHint();
       setPendingConnection({ source: params.source, target: params.target });
     }, [dismissConnectHint]);
+
+    // React Flow only connects when the drop lands on (or snaps to) a dot.
+    // Finish the drop ourselves when it lands anywhere on another card, and
+    // reel the line back when it lands nowhere useful.
+    const onConnectEnd = useCallback((event: MouseEvent | TouchEvent) => {
+      const from = connectingFrom;
+      const target = connectTargetRef.current;
+      setConnectingFrom(null);
+      connectTargetRef.current = null;
+      setConnectTarget(null);
+      pointerNodeIdRef.current = null;
+      if (!from || madeConnectionRef.current) return;
+
+      if (target?.valid) {
+        dismissConnectHint();
+        setPendingConnection({ source: from, target: target.id });
+        return;
+      }
+      if (reduceMotion) return;
+      const reject = target?.id === from;
+      if (reject) setShakeId(from);
+      const point = 'changedTouches' in event ? event.changedTouches[0] : event;
+      if (!point) return;
+      setSnapBack({ from, x: point.clientX, y: point.clientY, reject, key: Date.now() });
+    }, [connectingFrom, dismissConnectHint, reduceMotion]);
+
+    // Types already linking the pair being connected; the dialog greys them
+    // out instead of silently ignoring a duplicate.
+    const linkedTypeIds = useMemo(() => {
+      if (!pendingConnection) return [];
+      const key = pairKey(pendingConnection.source, pendingConnection.target);
+      return allEdges
+        .filter((e) => pairKey(e.source, e.target) === key)
+        .map((e) => (e.data?.typeId as string | undefined) ?? (e.label as string));
+    }, [pendingConnection, allEdges]);
 
     const handleConfirmConnection = useCallback(
       ({
@@ -854,11 +955,13 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
                 : justConnected?.target === node.id ? 'target'
                   : null,
             pulseColor: justConnected?.color,
+            connectHover: connectTarget?.id === node.id ? (connectTarget.valid ? 'valid' : 'invalid') : null,
+            connectReject: shakeId === node.id,
           },
         };
       });
     });
-  }, [selectedVerseId, networkVerses, allEdges, setNodes, conceptFilter, onConceptSelect, noteVerseIds, onOpenNote, justConnected]);
+  }, [selectedVerseId, networkVerses, allEdges, setNodes, conceptFilter, onConceptSelect, noteVerseIds, onOpenNote, justConnected, connectTarget, shakeId]);
 
   const getNetworkState = useCallback(() => {
     return { nodes, edges: allEdges };
@@ -1012,73 +1115,80 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       onDrop={isMobile ? undefined : handleDrop}
       onKeyDownCapture={handleCanvasKeyDown}
     >
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        onNodesDelete={handleNodesDelete}
-        onEdgesDelete={(deleted) => removeEdges(deleted.map((e) => e.id))}
-        // Clicking empty canvas closes the verse panel and lifts the spotlight.
-        onPaneClick={() => onVerseSelect('')}
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
-        deleteKeyCode={isMobile ? null : ['Delete', 'Backspace']}
-        fitView
-        // Never zoom past 100% just to fill the view with one card.
-        fitViewOptions={{ padding: 0.2, maxZoom: 1 }}
-        minZoom={0.2}
-        maxZoom={1.5}
-        defaultViewport={{ x: 0, y: 0, zoom: isMobile ? 0.65 : 0.8 }}
-        panOnDrag
-        panOnScroll={false}
-        zoomOnPinch
-        zoomOnScroll={false}
-        preventScrolling
-        nodesConnectable
-        elementsSelectable
-      >
-        {theme === 'light' && <Background color="#FBF8F4" gap={20} />}
-        {(nodes.length > 0 || canUndo || canRedo) && (
-          <Panel position="bottom-left" className="canvas-history">
-            <button
-              className="control-button icon-only"
-              onClick={undo}
-              disabled={!canUndo}
-              title="Undo (⌘Z)"
-              aria-label="Undo"
-            >
-              <Undo2 size={16} />
-            </button>
-            <button
-              className="control-button icon-only"
-              onClick={redo}
-              disabled={!canRedo}
-              title="Redo (⌘⇧Z)"
-              aria-label="Redo"
-            >
-              <Redo2 size={16} />
-            </button>
-          </Panel>
-        )}
-        {!isMobile && nodes.length > 0 && (
-          <Panel position="bottom-right" className="canvas-zoom">
-            {onShowHelp && (
+      <ConnectTargetContext.Provider value={connectTarget}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnectStart={onConnectStart}
+          onConnect={onConnect}
+          onConnectEnd={onConnectEnd}
+          isValidConnection={(c) => c.source !== c.target}
+          connectionLineComponent={ConnectionLine}
+          connectionRadius={40}
+          onNodesDelete={handleNodesDelete}
+          onEdgesDelete={(deleted) => removeEdges(deleted.map((e) => e.id))}
+          // Clicking empty canvas closes the verse panel and lifts the spotlight.
+          onPaneClick={() => onVerseSelect('')}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          deleteKeyCode={isMobile ? null : ['Delete', 'Backspace']}
+          fitView
+          // Never zoom past 100% just to fill the view with one card.
+          fitViewOptions={{ padding: 0.2, maxZoom: 1 }}
+          minZoom={0.2}
+          maxZoom={1.5}
+          defaultViewport={{ x: 0, y: 0, zoom: isMobile ? 0.65 : 0.8 }}
+          panOnDrag
+          panOnScroll={false}
+          zoomOnPinch
+          zoomOnScroll={false}
+          preventScrolling
+          nodesConnectable
+          elementsSelectable
+        >
+          {theme === 'light' && <Background color="#FBF8F4" gap={20} />}
+          {(nodes.length > 0 || canUndo || canRedo) && (
+            <Panel position="bottom-left" className="canvas-history">
               <button
-                type="button"
-                className="canvas-help-fab"
-                onClick={onShowHelp}
-                title="Help and keyboard shortcuts (?)"
-                aria-label="Help and keyboard shortcuts"
+                className="control-button icon-only"
+                onClick={undo}
+                disabled={!canUndo}
+                title="Undo (⌘Z)"
+                aria-label="Undo"
               >
-                <CircleHelp size={19} />
+                <Undo2 size={16} />
               </button>
-            )}
-            <ZoomControls />
-          </Panel>
-        )}
-      </ReactFlow>
+              <button
+                className="control-button icon-only"
+                onClick={redo}
+                disabled={!canRedo}
+                title="Redo (⌘⇧Z)"
+                aria-label="Redo"
+              >
+                <Redo2 size={16} />
+              </button>
+            </Panel>
+          )}
+          {!isMobile && nodes.length > 0 && (
+            <Panel position="bottom-right" className="canvas-zoom">
+              {onShowHelp && (
+                <button
+                  type="button"
+                  className="canvas-help-fab"
+                  onClick={onShowHelp}
+                  title="Help and keyboard shortcuts (?)"
+                  aria-label="Help and keyboard shortcuts"
+                >
+                  <CircleHelp size={19} />
+                </button>
+              )}
+              <ZoomControls />
+            </Panel>
+          )}
+        </ReactFlow>
+      </ConnectTargetContext.Provider>
 
       {showConnectHint && (
         <div className="connect-hint" role="status">
@@ -1135,11 +1245,24 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         </div>
       )}
 
+      {snapBack && (
+        <SnapBack
+          key={snapBack.key}
+          fromId={snapBack.from}
+          x={snapBack.x}
+          y={snapBack.y}
+          reject={snapBack.reject}
+          container={containerRef.current}
+          onDone={() => setSnapBack(null)}
+        />
+      )}
+
       {pendingConnection && (
         <ConnectionDialog
           sourceVerseId={pendingConnection.source}
           targetVerseId={pendingConnection.target}
           connectionTypes={connectionTypes}
+          linkedTypeIds={linkedTypeIds}
           onCancel={() => setPendingConnection(null)}
           onConfirm={handleConfirmConnection}
         />

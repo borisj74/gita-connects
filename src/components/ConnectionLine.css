@@ -1,0 +1,66 @@
+/* Line drawn while dragging a new connection */
+.drag-line-path {
+  stroke: var(--terracotta-500);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 6 6;
+  transition: stroke var(--transition-fast), stroke-width var(--transition-fast);
+}
+
+.drag-line-end {
+  fill: var(--terracotta-500);
+  stroke: var(--surface);
+  stroke-width: 2;
+  transition: r var(--transition-fast), fill var(--transition-fast);
+}
+
+/* Over another verse: the line locks on, solid and a touch heavier */
+.drag-line.is-snapped .drag-line-path {
+  stroke-width: 2.5;
+  stroke-dasharray: none;
+}
+
+.drag-line.is-snapped .drag-line-end {
+  stroke-width: 3;
+}
+
+/* Over its own card: nothing to connect to */
+.drag-line.is-invalid .drag-line-path {
+  stroke: var(--brown-400);
+  stroke-dasharray: 2 6;
+}
+
+.drag-line.is-invalid .drag-line-end {
+  fill: var(--brown-400);
+}
+
+/* A drag that did not land springs back into its dot */
+.snap-back {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  overflow: visible;
+}
+
+.snap-back line {
+  stroke: var(--terracotta-500);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 6 6;
+}
+
+.snap-back circle {
+  fill: var(--terracotta-500);
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+
+.snap-back.is-reject line {
+  stroke: var(--brown-400);
+  stroke-dasharray: 2 6;
+}
+
+.snap-back.is-reject circle {
+  fill: var(--brown-400);
+}

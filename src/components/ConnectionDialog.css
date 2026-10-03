@@ -40,6 +40,24 @@
   background: rgba(202, 117, 88, 0.1);
 }
 
+/* A type that already links these two verses: shown, not pickable */
+.type-chip.is-linked,
+.type-chip.is-linked:hover {
+  cursor: not-allowed;
+  opacity: 0.55;
+  border-color: var(--beige-300);
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+}
+
+.type-chip-linked {
+  margin-left: auto;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--brown-600);
+}
+
 .type-chip-color {
   width: 12px;
   height: 12px;

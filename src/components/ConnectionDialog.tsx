@@ -8,6 +8,8 @@ interface ConnectionDialogProps {
   sourceVerseId: string;
   targetVerseId: string;
   connectionTypes: ConnectionTypeDef[];
+  /** Types that already link these two verses; offered but not pickable. */
+  linkedTypeIds?: string[];
   onCancel: () => void;
   onConfirm: (params: {
     typeId: string;
@@ -23,11 +25,13 @@ export default function ConnectionDialog({
   sourceVerseId,
   targetVerseId,
   connectionTypes,
+  linkedTypeIds = [],
   onCancel,
   onConfirm,
 }: ConnectionDialogProps) {
+  const isLinked = (id: string) => linkedTypeIds.includes(id);
   const [selectedTypeId, setSelectedTypeId] = useState<string>(
-    connectionTypes[0]?.id ?? 'thematic',
+    () => connectionTypes.find((t) => !isLinked(t.id))?.id ?? '',
   );
   const [description, setDescription] = useState('');
   const [strength, setStrength] = useState(5);
@@ -69,6 +73,10 @@ export default function ConnectionDialog({
       return;
     }
 
+    if (!selectedTypeId || isLinked(selectedTypeId)) {
+      setError('These verses are already linked by every type. Add a custom type instead.');
+      return;
+    }
     onConfirm({
       typeId: selectedTypeId,
       description: description.trim() || 'User-created connection',
@@ -103,14 +111,17 @@ export default function ConnectionDialog({
                   <button
                     key={t.id}
                     type="button"
-                    className={`type-chip ${selectedTypeId === t.id ? 'selected' : ''}`}
+                    className={`type-chip ${selectedTypeId === t.id ? 'selected' : ''} ${isLinked(t.id) ? 'is-linked' : ''}`}
                     onClick={() => setSelectedTypeId(t.id)}
+                    disabled={isLinked(t.id)}
+                    title={isLinked(t.id) ? `Already linked as ${t.label}` : undefined}
                   >
                     <span
                       className="type-chip-color"
                       style={{ background: t.color }}
                     />
                     <span className="type-chip-label">{t.label}</span>
+                    {isLinked(t.id) && <span className="type-chip-linked">linked</span>}
                   </button>
                 ))}
                 <button

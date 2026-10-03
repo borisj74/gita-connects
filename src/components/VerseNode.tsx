@@ -24,6 +24,10 @@ interface VerseNodeProps {
     connectPulse?: 'source' | 'target' | null;
     /** Color of the new connection's type, used by the pulse ring. */
     pulseColor?: string;
+    /** A connection is being dragged over this card. */
+    connectHover?: 'valid' | 'invalid' | null;
+    /** A connection was just dropped back on its own card. */
+    connectReject?: boolean;
   };
 }
 
@@ -31,7 +35,7 @@ function VerseNode({ data }: VerseNodeProps) {
   const {
     verse, onSelect, onRemove, onExpand, isSelected, connectedCount = 0,
     conceptFilter = null, onConceptSelect, hasNote = false, onOpenNote,
-    connectPulse = null, pulseColor,
+    connectPulse = null, pulseColor, connectHover = null, connectReject = false,
   } = data;
 
   // Cards always lead with English. Curated verses carry a summary; the rest
@@ -56,7 +60,13 @@ function VerseNode({ data }: VerseNodeProps) {
 
   return (
     <div
-      className={`verse-node ${isSelected ? 'selected' : ''} ${connectPulse ? `connect-pulse-${connectPulse}` : ''}`}
+      className={[
+        'verse-node',
+        isSelected && 'selected',
+        connectPulse && `connect-pulse-${connectPulse}`,
+        connectHover && `connect-target-${connectHover}`,
+        connectReject && 'connect-reject',
+      ].filter(Boolean).join(' ')}
       style={pulseColor ? ({ '--pulse-color': pulseColor } as React.CSSProperties) : undefined}
       onClick={onSelect}
     >
