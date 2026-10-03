@@ -199,6 +199,8 @@
 .tb-menu-item-label {
   flex: 1;
   min-width: 0;
+  /* Menu labels are short: the menu grows to fit them rather than wrapping */
+  white-space: nowrap;
 }
 
 .tb-menu-item-hint {
@@ -495,10 +497,18 @@
   }
 }
 
-/* Email beside "Your account" in the ⋯ menu: long addresses must not stretch it */
+/* "Your account" with the signed-in address on a quieter second line */
+.tb-menu-item-stack {
+  display: grid;
+}
+
+/* Long addresses end in an ellipsis rather than stretching the menu */
 .tb-menu-item-email {
-  max-width: 130px;
+  max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--brown-600);
 }

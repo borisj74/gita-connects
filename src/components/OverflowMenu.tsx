@@ -93,8 +93,16 @@ export default function OverflowMenu({
               <div className="tb-menu-divider" role="separator" />
               <button type="button" role="menuitem" className="tb-menu-item" onClick={run(onOpenAccount)}>
                 <UserRound size={16} />
-                <span className="tb-menu-item-label">{accountEmail ? 'Your account' : 'Sign in'}</span>
-                {accountEmail && <span className="tb-menu-item-hint tb-menu-item-email">{accountEmail}</span>}
+                {/* The address sits under the label, not beside it: beside it, a
+                    long address squeezed "Your account" onto two lines. */}
+                <span className="tb-menu-item-label tb-menu-item-stack">
+                  <span>{accountEmail ? 'Your account' : 'Sign in'}</span>
+                  {accountEmail && (
+                    <span className="tb-menu-item-email" title={accountEmail}>
+                      {accountEmail}
+                    </span>
+                  )}
+                </span>
               </button>
             </>
           )}
