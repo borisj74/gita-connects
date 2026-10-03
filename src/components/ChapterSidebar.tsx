@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ChevronDown, ChevronRight, GripVertical, Check, Plus, X } from 'lucide-react';
 import type { Concept } from '../concepts.js';
 import { chapters, verses } from '../data/index.js';
+import { fetchVerseText } from '../hooks/useVerseText.js';
 import './ChapterSidebar.css';
 
 interface ChapterSidebarProps {
@@ -50,6 +51,9 @@ export default function ChapterSidebar({
   const handleDragStart = (e: React.DragEvent, verseId: string) => {
     e.dataTransfer.setData('verseId', verseId);
     e.dataTransfer.effectAllowed = 'copy';
+    // Start fetching the card's translation now, so it is often ready by
+    // the time the verse is dropped. Failures surface on the card itself.
+    fetchVerseText(verseId).catch(() => {});
 
     // Add visual feedback
     const target = e.currentTarget as HTMLElement;

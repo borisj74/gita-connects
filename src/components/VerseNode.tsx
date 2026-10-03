@@ -97,14 +97,21 @@ function VerseNode({ data }: VerseNodeProps) {
         )}
       </div>
 
+      {/* Fetched translations keep a fixed four-line slot from the first
+          frame, so the card does not grow (and jump) when the text lands. */}
       {body ? (
-        <div className="node-translation">{body}</div>
+        <div className={`node-translation ${verse.summary ? '' : 'is-fetched'}`}>{body}</div>
+      ) : text.status === 'loading' || text.status === 'idle' ? (
+        <div className="node-translation node-translation-skeleton" aria-busy="true">
+          <span className="node-visually-hidden">Loading translation…</span>
+          <span className="node-skeleton-line" aria-hidden="true" />
+          <span className="node-skeleton-line" aria-hidden="true" />
+          <span className="node-skeleton-line" aria-hidden="true" />
+          <span className="node-skeleton-line" aria-hidden="true" />
+        </div>
       ) : (
-        <div
-          className={`node-translation node-translation-fallback ${text.status === 'loading' ? 'is-loading' : ''}`}
-          aria-busy={text.status === 'loading'}
-        >
-          {text.status === 'loading' ? 'Loading translation…' : verse.transliteration}
+        <div className="node-translation node-translation-fallback">
+          {verse.transliteration}
         </div>
       )}
 

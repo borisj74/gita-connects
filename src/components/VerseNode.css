@@ -249,14 +249,56 @@
   overflow: hidden;
 }
 
-/* Transliteration stands in only while the translation loads or is unavailable */
+/* Transliteration stands in only when the translation is unavailable */
 .node-translation-fallback {
   color: var(--ink-muted);
   font-style: italic;
 }
 
-.node-translation-fallback.is-loading {
-  opacity: 0.7;
+/* A fetched translation, its placeholder and its fallback all hold the
+   same four-line slot (4 x line-height), so a card keeps its size while
+   the text loads. */
+.node-translation.is-fetched,
+.node-translation-fallback,
+.node-translation-skeleton {
+  min-height: 6.2em;
+}
+
+.node-translation.is-fetched {
+  animation: nodeTextIn 240ms ease-out;
+}
+
+@keyframes nodeTextIn {
+  from { opacity: 0; }
+}
+
+.node-translation-skeleton {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  height: 6.2em;
+}
+
+.node-skeleton-line {
+  display: block;
+  height: 0.7em;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--beige-100) 25%, var(--beige-200) 50%, var(--beige-100) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+.node-skeleton-line:last-of-type {
+  width: 60%;
+}
+
+.node-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .node-concepts {
