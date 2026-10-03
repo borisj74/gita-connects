@@ -46,22 +46,32 @@ export default function ConnectionEdge({
   const description = (data?.description as string | undefined) ?? '';
   const strength = (data?.strength as number | undefined) ?? null;
   const reduceMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
-  const justConnected = Boolean(data?.justConnected) && !reduceMotion;
+  // Set while this line should draw itself in: a connection just made, or
+  // one of a verse's scholarly links fanning out (each a little later).
+  const drawDelay = data?.drawDelay as number | undefined;
+  const drawingIn = drawDelay !== undefined && !reduceMotion;
+  const delay = drawDelay ?? 0;
   const strokeWidth = Number(style?.strokeWidth ?? 2);
 
   // The trace and the spark at its head share one clock, so the dot always
   // rides the tip of the line. Runs before paint so nothing flashes at the
-  // canvas origin; the fades that follow are plain CSS.
+  // canvas origin; the fades that follow are plain CSS, offset by the same
+  // delay through --draw-delay.
   const traceRef = useRef<SVGPathElement>(null);
   const haloRef = useRef<SVGPathElement>(null);
   const sparkRef = useRef<SVGCircleElement>(null);
   useLayoutEffect(() => {
-    if (!justConnected) return;
-    const start = performance.now();
+    if (!drawingIn) return;
+    const start = performance.now() + delay;
     let raf = 0;
     const step = (now: number) => {
       const trace = traceRef.current;
       if (!trace) return;
+      if (now < start) {
+        raf = requestAnimationFrame(step);
+        return;
+      }
+      sparkRef.current?.setAttribute('visibility', 'visible');
       const t = Math.min(1, (now - start) / DRAW_MS);
       const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
       const offset = String(1 - eased);
@@ -72,9 +82,11 @@ export default function ConnectionEdge({
       sparkRef.current?.setAttribute('cy', String(point.y));
       if (t < 1) raf = requestAnimationFrame(step);
     };
-    step(start);
+    step(performance.now());
     return () => cancelAnimationFrame(raf);
-  }, [justConnected]);
+    // The delay is fixed for the life of one draw-in.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [drawingIn]);
 
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -107,14 +119,18 @@ export default function ConnectionEdge({
         path={edgePath}
         // While the new line draws in, the real edge (and its arrowhead)
         // waits, then fades in under the trace as it lands.
-        style={justConnected ? { ...style, animation: 'edgeSettleIn 200ms ease-out 380ms backwards' } : style}
+        style={drawingIn ? { ...style, animation: `edgeSettleIn 200ms ease-out ${380 + delay}ms backwards` } : style}
         markerEnd={markerEnd}
       />
-      {justConnected && (
-        <g className="edge-draw" style={{ color: borderColor }} aria-hidden="true">
+      {drawingIn && (
+        <g
+          className="edge-draw"
+          style={{ color: borderColor, '--draw-delay': `${delay}ms` } as React.CSSProperties}
+          aria-hidden="true"
+        >
           <path ref={haloRef} className="edge-draw-halo" d={edgePath} pathLength={1} strokeWidth={strokeWidth + 8} />
           <path ref={traceRef} className="edge-draw-trace" d={edgePath} pathLength={1} strokeWidth={strokeWidth + 0.5} />
-          <circle ref={sparkRef} className="edge-draw-spark" r={4.5} cx={sourceX} cy={sourceY} />
+          <circle ref={sparkRef} className="edge-draw-spark" r={4.5} cx={sourceX} cy={sourceY} visibility="hidden" />
         </g>
       )}
       <EdgeLabelRenderer>
@@ -127,11 +143,16 @@ export default function ConnectionEdge({
             opacity: dimmed ? 0.15 : 1,
             transition: 'opacity 0.2s ease',
           }}
-          className={`edge-label-wrapper ${open ? 'open' : ''} ${justConnected ? 'just-connected' : ''}`}
+          className={`edge-label-wrapper ${open ? 'open' : ''} ${drawingIn ? 'just-connected' : ''}`}
         >
           <button
             className="edge-label"
-            style={{ borderColor, color: borderColor, transform: `translateY(${labelOffset}px)` }}
+            style={{
+              borderColor,
+              color: borderColor,
+              transform: `translateY(${labelOffset}px)`,
+              animationDelay: drawingIn ? `${380 + delay}ms` : undefined,
+            }}
             onClick={(e) => {
               e.stopPropagation();
               setOpen((v) => !v);

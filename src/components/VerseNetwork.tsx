@@ -92,6 +92,11 @@ function pairKey(a: string, b: string): string {
 
 const CONNECT_HINT_KEY = 'gita-connects-connect-hint-dismissed';
 
+// Scholarly links that arrive with a verse draw in this far apart...
+const FAN_OUT_STEP_MS = 60;
+// ...unless there are so many that the last would start later than this.
+const FAN_OUT_MAX_MS = 900;
+
 // Grid spacing for manually placed nodes (expand / drop / starter).
 // Compact cards are ~320 wide / ~340 tall.
 const COL_SPACING = 460;
@@ -177,11 +182,10 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       source: string;
       target: string;
     } | null>(null);
-    // A connection the reader just made: its line draws in and both verses
-    // pulse once in the type's color. Cleared once the animation is over, so
-    // undo, filters and later redraws never replay it.
+    // A connection the reader just made: both verses pulse once in the
+    // type's color (its line draws in through drawingIn below). Cleared once
+    // the animation is over, so undo, filters and later redraws never replay it.
     const [justConnected, setJustConnected] = useState<{
-      pair: string;
       source: string;
       target: string;
       color: string;
@@ -191,6 +195,25 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       const t = setTimeout(() => setJustConnected(null), 1600);
       return () => clearTimeout(t);
     }, [justConnected]);
+
+    // Lines that draw themselves in, keyed by node pair, with each line's
+    // start delay. A verse that arrives with scholarly links fans them out
+    // one after another instead of dropping them all at once.
+    const [drawingIn, setDrawingIn] = useState<Map<string, number> | null>(null);
+    useEffect(() => {
+      if (!drawingIn) return;
+      const last = Math.max(0, ...drawingIn.values());
+      const t = setTimeout(() => setDrawingIn(null), last + 1600);
+      return () => clearTimeout(t);
+    }, [drawingIn]);
+    const drawIn = useCallback((links: { source: string; target: string }[]) => {
+      const pairs = [...new Set(links.map((l) => pairKey(l.source, l.target)))];
+      if (pairs.length === 0) return;
+      // A big batch (starter set) tightens the spacing so the whole fan-out
+      // still lands in under a second.
+      const step = Math.min(FAN_OUT_STEP_MS, FAN_OUT_MAX_MS / pairs.length);
+      setDrawingIn(new Map(pairs.map((p, i) => [p, Math.round(i * step)])));
+    }, []);
     const expandRef = useRef<(verseId: string) => void>(() => {});
     const { fitView, setCenter } = useReactFlow();
 
@@ -369,15 +392,15 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         );
 
         setAllEdges((eds) => [...eds, newEdge]);
+        drawIn([newEdge]);
         setJustConnected({
-          pair: pairKey(newEdge.source, newEdge.target),
           source: newEdge.source,
           target: newEdge.target,
           color: getTypeColor(effectiveTypes, typeId),
         });
         setPendingConnection(null);
       },
-      [pendingConnection, connectionTypes, onAddCustomType, commit],
+      [pendingConnection, connectionTypes, onAddCustomType, commit, drawIn],
     );
 
   const handleDragOver = useCallback((event: React.DragEvent) => {
@@ -509,12 +532,13 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     const newEdges: Edge[] = links.map((l) => buildEdge(l.connection, connectionTypes));
 
     setAllEdges((eds) => [...eds, ...newEdges]);
+    drawIn(newEdges);
     setNetworkVerses(prev => new Set([...prev, ...connectedVerseIds]));
 
     setTimeout(() => {
       fitView({ duration: 400, padding: 0.2, maxZoom: 1 });
     }, 100);
-  }, [networkVerses, selectedVerseId, onVerseSelect, handleRemoveNode, setNodes, setAllEdges, fitView, connectionTypes, commit]);
+  }, [networkVerses, selectedVerseId, onVerseSelect, handleRemoveNode, setNodes, setAllEdges, fitView, connectionTypes, commit, drawIn]);
 
   useEffect(() => {
     expandRef.current = handleExpandNetwork;
@@ -562,9 +586,10 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
 
       if (newEdges.length > 0) {
         setAllEdges((eds) => [...eds, ...newEdges]);
+        drawIn(newEdges);
       }
     },
-    [networkVerses, setNodes, setAllEdges, onVerseSelect, selectedVerseId, handleRemoveNode, connectionTypes, commit],
+    [networkVerses, setNodes, setAllEdges, onVerseSelect, selectedVerseId, handleRemoveNode, connectionTypes, commit, drawIn],
   );
 
   // Add a batch of verses (used by starter buttons), wiring edges between
@@ -608,12 +633,15 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
 
       const existing = new Set([...finalSet].filter((id) => !toAdd.includes(id)));
       const newEdges: Edge[] = edgesJoining(toAdd, existing).map((c) => buildEdge(c, connectionTypes));
-      if (newEdges.length > 0) setAllEdges((eds) => [...eds, ...newEdges]);
+      if (newEdges.length > 0) {
+        setAllEdges((eds) => [...eds, ...newEdges]);
+        drawIn(newEdges);
+      }
 
       setNetworkVerses(finalSet);
       setTimeout(() => fitView({ duration: 400, padding: 0.2, maxZoom: 1 }), 100);
     },
-    [onVerseSelect, handleRemoveNode, selectedVerseId, connectionTypes, setNodes, setAllEdges, fitView, commit],
+    [onVerseSelect, handleRemoveNode, selectedVerseId, connectionTypes, setNodes, setAllEdges, fitView, commit, drawIn],
   );
 
   const addVerse = useCallback((verseId: string) => addVerses([verseId]), [addVerses]);
@@ -668,8 +696,8 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       });
       if (!exists) {
         setAllEdges((eds) => [...eds, newEdge]);
+        drawIn([newEdge]);
         setJustConnected({
-          pair: pairKey(fromId, toId),
           source: fromId,
           target: toId,
           color: getTypeColor(connectionTypes, conn.type),
@@ -679,7 +707,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       setNetworkVerses(finalSet);
       setTimeout(() => fitView({ duration: 400, padding: 0.2, maxZoom: 1 }), 120);
     },
-    [commit, onVerseSelect, handleRemoveNode, selectedVerseId, connectionTypes, setNodes, setAllEdges, fitView],
+    [commit, onVerseSelect, handleRemoveNode, selectedVerseId, connectionTypes, setNodes, setAllEdges, fitView, drawIn],
   );
 
   const handleAddRandom = useCallback(() => {
@@ -777,11 +805,11 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
           parallelIndex: 0,
           parallelTotal: 1,
           onDelete: handleDeleteEdge,
-          justConnected: justConnected?.pair === pairKey(edge.source, edge.target),
+          drawDelay: drawingIn?.get(pairKey(edge.source, edge.target)),
         },
       };
     });
-  }, [allEdges, activeFilters, connectionTypes, handleDeleteEdge, selectedVerseId, networkVerses, justConnected]);
+  }, [allEdges, activeFilters, connectionTypes, handleDeleteEdge, selectedVerseId, networkVerses, drawingIn]);
 
   useEffect(() => {
     setEdges(filteredEdges);

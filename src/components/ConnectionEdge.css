@@ -182,12 +182,12 @@
 }
 
 .edge-draw-trace {
-  animation: edgeFadeOut 400ms ease-out 650ms forwards;
+  animation: edgeFadeOut 400ms ease-out calc(650ms + var(--draw-delay, 0ms)) forwards;
 }
 
 .edge-draw-halo {
   opacity: 0.22;
-  animation: edgeFadeOut 700ms ease-out 450ms forwards;
+  animation: edgeFadeOut 700ms ease-out calc(450ms + var(--draw-delay, 0ms)) forwards;
 }
 
 .edge-draw-spark {
@@ -195,7 +195,7 @@
   stroke: var(--surface);
   stroke-width: 2;
   /* Hides once the line lands. */
-  animation: edgeFadeOut 250ms ease-out 450ms forwards;
+  animation: edgeFadeOut 250ms ease-out calc(450ms + var(--draw-delay, 0ms)) forwards;
 }
 
 @keyframes edgeFadeOut {
