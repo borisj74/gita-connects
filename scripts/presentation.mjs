@@ -19,7 +19,7 @@ if (existsSync(new URL('../private/bbt/bg.json', import.meta.url))) {
   console.log('✓ Using your local copy of Bhagavad-gita As It Is: verse text loads instantly, even offline.\n');
 } else try {
   const res = await fetch(PROBE, {
-    headers: { 'User-Agent': 'gita-connects (+https://gita-connects.vercel.app)' },
+    headers: { 'User-Agent': 'gita-connects (+https://gitaconnects.com)' },
     signal: AbortSignal.timeout(10_000),
   });
   if (res.ok) {

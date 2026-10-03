@@ -2,7 +2,7 @@
 
 Explore thematic connections between verses of the Bhagavad Gita as an interactive graph.
 
-**Live:** https://gita-connects.vercel.app
+**Live:** https://gitaconnects.com
 
 Drag verses from the chapter sidebar onto a canvas, and the app draws the scholarly
 connections between them — sequential, thematic, progression, contrast, goal, dependency,

@@ -102,7 +102,7 @@ Two things the CLI cannot do:
 
 1. **Auth redirect URLs** — in the Supabase dashboard under Authentication →
    URL Configuration, add the production origin (e.g.
-   `https://gita-connects.vercel.app`) to the redirect allow-list. `localhost`
+   `https://gitaconnects.com`) to the redirect allow-list. `localhost`
    is permitted by default, which is why development works with no setup.
 2. **Preview environment variables** — `VITE_SUPABASE_URL` and
    `VITE_SUPABASE_ANON_KEY` are set for Production and Development. The CLI

@@ -153,7 +153,7 @@ export async function GET(request: Request): Promise<Response> {
 
   try {
     const upstream = await fetch(source, {
-      headers: { 'User-Agent': 'gita-connects (+https://gita-connects.vercel.app)' },
+      headers: { 'User-Agent': 'gita-connects (+https://gitaconnects.com)' },
       signal: AbortSignal.timeout(8000),
     });
     if (!upstream.ok) {
