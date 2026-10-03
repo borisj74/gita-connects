@@ -114,6 +114,16 @@ describe('POST /api/check', () => {
     expect(inserted).toEqual([]);
   });
 
+  it('tells a missing key from a rejected one', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { AuthenticationError } = await import('@typesafe-ai/sdk');
+    systemOne.mockRejectedValue(new (AuthenticationError as unknown as new () => Error)());
+    expect((await (await call('good')).json()).reason).toBe('key-rejected');
+    vi.stubEnv('TYPESAFE_API_KEY', '');
+    vi.stubEnv('CLAUDE_CODE_REMOTE', '');
+    expect((await (await call('good')).json()).reason).toBe('missing-key');
+  });
+
   it('says so when accounts or the AI key are not configured', async () => {
     vi.stubEnv('TYPESAFE_API_KEY', '');
     vi.stubEnv('CLAUDE_CODE_REMOTE', '');

@@ -128,8 +128,9 @@ async function recordCheck(userId: string, links: number): Promise<void> {
 function typesafe(): TypeSafeClient | null {
   // In a Claude Code cloud session the egress proxy injects the credential,
   // so the SDK only needs a placeholder (as in scripts/generate-concepts-jev.ts).
+  // Pasting a key with its quotes is an easy slip in a dashboard form.
   const apiKey =
-    process.env.TYPESAFE_API_KEY?.trim() ||
+    process.env.TYPESAFE_API_KEY?.trim().replace(/^(['"])(.*)\1$/, '$2') ||
     (process.env.CLAUDE_CODE_REMOTE === 'true' ? 'injected-by-proxy' : undefined);
   if (!apiKey) {
     console.error('[api/check] TYPESAFE_API_KEY is not set');
@@ -166,7 +167,10 @@ export async function POST(request: Request): Promise<Response> {
 
   const client = typesafe();
   if (!client) {
-    return Response.json({ error: 'The AI check is not set up on this site yet.' }, { status: 503 });
+    return Response.json(
+      { error: 'The AI check is not set up on this site yet: no TypeSafe key found.', reason: 'missing-key' },
+      { status: 503 },
+    );
   }
 
   try {
@@ -184,7 +188,10 @@ export async function POST(request: Request): Promise<Response> {
     }
     if (error instanceof AuthenticationError) {
       console.error('[api/check] TypeSafe rejected the API key');
-      return Response.json({ error: 'The AI check is not set up on this site yet.' }, { status: 503 });
+      return Response.json(
+        { error: "The AI check is not set up on this site yet: TypeSafe didn't accept the key.", reason: 'key-rejected' },
+        { status: 503 },
+      );
     }
     console.error(`[api/check] TypeSafe failed: ${String(error)}`);
     return Response.json({ error: 'The AI check failed. Try again.' }, { status: 502 });
