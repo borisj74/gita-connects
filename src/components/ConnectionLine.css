@@ -20,10 +20,6 @@
   stroke-dasharray: none;
 }
 
-.drag-line.is-snapped .drag-line-end {
-  stroke-width: 3;
-}
-
 /* Over its own card: nothing to connect to */
 .drag-line.is-invalid .drag-line-path {
   stroke: var(--brown-400);

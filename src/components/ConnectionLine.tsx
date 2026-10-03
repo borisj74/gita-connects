@@ -50,7 +50,9 @@ export default function ConnectionLine({
   return (
     <g className={`drag-line ${state}`}>
       <path className="drag-line-path" d={path} fill="none" />
-      <circle className="drag-line-end" cx={endX} cy={endY} r={snapped ? 7 : 4} />
+      {/* Once snapped, the target's own top dot is the end point; a second
+          dot on top of it reads as a double. */}
+      {!snapped && <circle className="drag-line-end" cx={endX} cy={endY} r={4} />}
     </g>
   );
 }

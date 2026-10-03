@@ -569,9 +569,9 @@
 }
 
 .verse-node.connect-target-valid .node-handle.react-flow__handle-top {
-  width: 18px;
-  height: 18px;
-  box-shadow: 0 0 0 6px rgb(202 117 88 / 0.25);
+  width: 16px;
+  height: 16px;
+  box-shadow: 0 0 0 5px rgb(202 117 88 / 0.22);
 }
 
 /* Over its own card there is nothing to connect to */
