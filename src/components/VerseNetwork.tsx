@@ -76,6 +76,8 @@ export interface VerseNetworkRef {
   /** Render the whole canvas to a PNG data URL, framed to the cards. */
   captureImage: () => Promise<CanvasImage>;
   addVerse: (verseId: string) => void;
+  /** Change a connection's type in place (undoable); it redraws in the new colour. */
+  retypeConnection: (edgeId: string, typeId: string) => void;
   addConnection: (
     fromId: string,
     toId: string,
@@ -1090,6 +1092,25 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     );
   }, [commit]);
 
+  const retypeConnection = useCallback((edgeId: string, typeId: string) => {
+    const edge = allEdgesRef.current.find((e) => e.id === edgeId);
+    if (!edge) return;
+    commit();
+    const retyped = buildEdge(
+      {
+        from: edge.source,
+        to: edge.target,
+        type: typeId,
+        description: (edge.data?.description as string | undefined) ?? '',
+        strength: (edge.data?.strength as number | undefined) ?? 5,
+      },
+      connectionTypes,
+    );
+    // Keep the id so the reader's link stays the same link, just retyped.
+    setAllEdges((eds) => eds.map((e) => (e.id === edgeId ? { ...retyped, id: edgeId } : e)));
+    drawIn([edge]);
+  }, [commit, connectionTypes, drawIn]);
+
   const captureImage = useCallback(() => {
     const viewport = containerRef.current?.querySelector<HTMLElement>('.react-flow__viewport');
     if (!viewport || nodesRef.current.length === 0) return Promise.reject(new Error('Nothing on the canvas to export.'));
@@ -1108,6 +1129,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     captureImage,
     addVerse,
     addConnection,
+    retypeConnection,
   }));
 
   const showConnectHint = !connectHintDismissed && nodes.length >= 2;

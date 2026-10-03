@@ -663,6 +663,10 @@ function App() {
               onVerseSelect={handleVerseSelect}
               onAddVerse={(id) => verseNetworkRef.current?.addVerse(id)}
               defaultOpen={!isMobile}
+              cloudEnabled={cloudEnabled}
+              accessToken={session?.access_token ?? null}
+              onSignIn={() => setAccountOpen(true)}
+              onRetype={(edgeId, typeId) => verseNetworkRef.current?.retypeConnection(edgeId, typeId)}
             />
           )}
 

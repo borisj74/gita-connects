@@ -49,6 +49,13 @@ which would put them in the bundle:
 
 Without them the function falls back to fetching from vedabase.io.
 
+## AI check allowance: `ai_checks`
+
+One row per "Check with AI" request (who, when, how many links; no content), so
+`api/check.ts` can hold each reader to a daily allowance. Like `bbt_verses`, no
+browser can read or write it: only the function, with the service-role key.
+Created by `npm run db:migrate` (`0005_ai_checks.sql`).
+
 ## How syncing behaves
 
 Signing in starts a mirror; it never takes over. Reads always come from

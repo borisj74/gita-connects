@@ -20,6 +20,10 @@ Draw your own connections, filter by type, and save networks for later.
 - **What your network says** — a live panel that reads the canvas: its character from the
   mix of link types, shared concepts, the hub verse, themes covered, verses that
   open a theme not yet touched (one tap adds them), loose ends
+- **Check with AI** (signed-in readers) — TypeSafe judges whether each connection you drew
+  holds, whether another type fits it better (one tap changes it), what the network is
+  mostly about, and picks a reflection question. Sends only the app's own summaries,
+  concepts and your notes, never the translation. See [Check with AI](#check-with-ai)
 - **Filtering** — show/hide connection types; selection persists across reloads
 - **Verse detail** — Sanskrit, transliteration, translation, theme, concepts, and purport
 - **Search palette** — `Cmd/Ctrl+K` to jump to any verse; `Cmd/Ctrl+S` to save the network
@@ -183,3 +187,22 @@ updated or the request will be blocked.
 ## License
 
 [MIT](LICENSE)
+
+## Check with AI
+
+`api/check.ts` is a Vercel Function for signed-in readers. It verifies the reader's Supabase
+token, holds each reader to 20 checks a day, and asks TypeSafe typed questions about the
+network ([`src/aiCheck.ts`](src/aiCheck.ts)): a score for whether each of the reader's links
+holds, a choice of the best-fitting type, a choice of the main concept, and a choice among
+hand-written reflection questions. TypeSafe judges; the app words the result.
+
+Only the app's own scholarship is sent: verse ids, themes, summaries, concepts, link types
+and the reader's notes on their links. Never the Bhaktivedanta Book Trust's text.
+
+It needs, in Vercel (server-only, never `VITE_`-prefixed):
+
+- `TYPESAFE_API_KEY`: the TypeSafe key.
+- `SUPABASE_URL` and `SUPABASE_ANON_KEY` (each falls back to its `VITE_` twin) to verify sign-in.
+- `SUPABASE_SERVICE_ROLE_KEY` for the daily count, in the `ai_checks` table
+  (`npm run db:migrate` creates it). Without the key or the table, the limit is off and the
+  function logs why.

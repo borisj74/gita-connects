@@ -5,6 +5,7 @@ import { connections, getVerse } from '../data/index.js';
 import { analyzeNetwork, type NetworkInsights as Insights } from '../insights.js';
 import { getTypeColor, getTypeLabel, type ConnectionTypeDef } from '../connectionTypes.js';
 import { useDraggablePanel } from '../hooks/useDraggablePanel.js';
+import AiCheckSection from './AiCheckSection.js';
 import './NetworkInsights.css';
 
 const OPEN_KEY = 'gita-connects-insights-open';
@@ -20,6 +21,11 @@ interface NetworkInsightsProps {
   onVerseSelect: (verseId: string) => void;
   onAddVerse: (verseId: string) => void;
   defaultOpen: boolean;
+  /** For "Check with AI": accounts available, the reader's token, sign-in, retyping. */
+  cloudEnabled: boolean;
+  accessToken: string | null;
+  onSignIn: () => void;
+  onRetype: (edgeId: string, typeId: string) => void;
 }
 
 // What each section shows, as a string: when it changes, that section
@@ -49,6 +55,10 @@ export default function NetworkInsights({
   onVerseSelect,
   onAddVerse,
   defaultOpen,
+  cloudEnabled,
+  accessToken,
+  onSignIn,
+  onRetype,
 }: NetworkInsightsProps) {
   const [open, setOpen] = useState(() => {
     try {
@@ -270,6 +280,16 @@ export default function NetworkInsights({
               </div>
             </section>
           )}
+
+          <AiCheckSection
+            networkVerses={networkVerses}
+            networkEdges={networkEdges}
+            connectionTypes={connectionTypes}
+            cloudEnabled={cloudEnabled}
+            accessToken={accessToken}
+            onSignIn={onSignIn}
+            onRetype={onRetype}
+          />
         </div>
       )}
     </aside>
