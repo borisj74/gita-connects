@@ -20,6 +20,10 @@ interface VerseNodeProps {
     /** Personal note (App 29): badge when present, add button otherwise. */
     hasNote?: boolean;
     onOpenNote?: () => void;
+    /** A connection was just made: the line leaves the source, lands on the target. */
+    connectPulse?: 'source' | 'target' | null;
+    /** Color of the new connection's type, used by the pulse ring. */
+    pulseColor?: string;
   };
 }
 
@@ -27,6 +31,7 @@ function VerseNode({ data }: VerseNodeProps) {
   const {
     verse, onSelect, onRemove, onExpand, isSelected, connectedCount = 0,
     conceptFilter = null, onConceptSelect, hasNote = false, onOpenNote,
+    connectPulse = null, pulseColor,
   } = data;
 
   // Cards always lead with English. Curated verses carry a summary; the rest
@@ -51,7 +56,8 @@ function VerseNode({ data }: VerseNodeProps) {
 
   return (
     <div
-      className={`verse-node ${isSelected ? 'selected' : ''}`}
+      className={`verse-node ${isSelected ? 'selected' : ''} ${connectPulse ? `connect-pulse-${connectPulse}` : ''}`}
+      style={pulseColor ? ({ '--pulse-color': pulseColor } as React.CSSProperties) : undefined}
       onClick={onSelect}
     >
       <Handle type="target" position={Position.Top} className="node-handle" />

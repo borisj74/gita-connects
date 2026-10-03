@@ -1,9 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { BaseEdge, EdgeLabelRenderer, getSmoothStepPath, type EdgeProps } from 'reactflow';
 import { Trash2 } from 'lucide-react';
+import { useMediaQuery } from '../hooks/useMediaQuery.js';
 import './ConnectionEdge.css';
 
 const PARALLEL_OFFSET_PX = 56;
+// How long a new connection takes to draw from source to target.
+const DRAW_MS = 450;
 
 export default function ConnectionEdge({
   id,
@@ -42,6 +45,36 @@ export default function ConnectionEdge({
   const dimmed = Boolean(data?.dimmed);
   const description = (data?.description as string | undefined) ?? '';
   const strength = (data?.strength as number | undefined) ?? null;
+  const reduceMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
+  const justConnected = Boolean(data?.justConnected) && !reduceMotion;
+  const strokeWidth = Number(style?.strokeWidth ?? 2);
+
+  // The trace and the spark at its head share one clock, so the dot always
+  // rides the tip of the line. Runs before paint so nothing flashes at the
+  // canvas origin; the fades that follow are plain CSS.
+  const traceRef = useRef<SVGPathElement>(null);
+  const haloRef = useRef<SVGPathElement>(null);
+  const sparkRef = useRef<SVGCircleElement>(null);
+  useLayoutEffect(() => {
+    if (!justConnected) return;
+    const start = performance.now();
+    let raf = 0;
+    const step = (now: number) => {
+      const trace = traceRef.current;
+      if (!trace) return;
+      const t = Math.min(1, (now - start) / DRAW_MS);
+      const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      const offset = String(1 - eased);
+      trace.style.strokeDashoffset = offset;
+      if (haloRef.current) haloRef.current.style.strokeDashoffset = offset;
+      const point = trace.getPointAtLength(trace.getTotalLength() * eased);
+      sparkRef.current?.setAttribute('cx', String(point.x));
+      sparkRef.current?.setAttribute('cy', String(point.y));
+      if (t < 1) raf = requestAnimationFrame(step);
+    };
+    step(start);
+    return () => cancelAnimationFrame(raf);
+  }, [justConnected]);
 
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -72,9 +105,18 @@ export default function ConnectionEdge({
       <BaseEdge
         id={id}
         path={edgePath}
-        style={style}
+        // While the new line draws in, the real edge (and its arrowhead)
+        // waits, then fades in under the trace as it lands.
+        style={justConnected ? { ...style, animation: 'edgeSettleIn 200ms ease-out 380ms backwards' } : style}
         markerEnd={markerEnd}
       />
+      {justConnected && (
+        <g className="edge-draw" style={{ color: borderColor }} aria-hidden="true">
+          <path ref={haloRef} className="edge-draw-halo" d={edgePath} pathLength={1} strokeWidth={strokeWidth + 8} />
+          <path ref={traceRef} className="edge-draw-trace" d={edgePath} pathLength={1} strokeWidth={strokeWidth + 0.5} />
+          <circle ref={sparkRef} className="edge-draw-spark" r={4.5} cx={sourceX} cy={sourceY} />
+        </g>
+      )}
       <EdgeLabelRenderer>
         <div
           ref={wrapperRef}
@@ -85,7 +127,7 @@ export default function ConnectionEdge({
             opacity: dimmed ? 0.15 : 1,
             transition: 'opacity 0.2s ease',
           }}
-          className={`edge-label-wrapper ${open ? 'open' : ''}`}
+          className={`edge-label-wrapper ${open ? 'open' : ''} ${justConnected ? 'just-connected' : ''}`}
         >
           <button
             className="edge-label"

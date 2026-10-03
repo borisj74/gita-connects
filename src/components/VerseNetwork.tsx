@@ -177,6 +177,20 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       source: string;
       target: string;
     } | null>(null);
+    // A connection the reader just made: its line draws in and both verses
+    // pulse once in the type's color. Cleared once the animation is over, so
+    // undo, filters and later redraws never replay it.
+    const [justConnected, setJustConnected] = useState<{
+      pair: string;
+      source: string;
+      target: string;
+      color: string;
+    } | null>(null);
+    useEffect(() => {
+      if (!justConnected) return;
+      const t = setTimeout(() => setJustConnected(null), 1600);
+      return () => clearTimeout(t);
+    }, [justConnected]);
     const expandRef = useRef<(verseId: string) => void>(() => {});
     const { fitView, setCenter } = useReactFlow();
 
@@ -355,6 +369,12 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         );
 
         setAllEdges((eds) => [...eds, newEdge]);
+        setJustConnected({
+          pair: pairKey(newEdge.source, newEdge.target),
+          source: newEdge.source,
+          target: newEdge.target,
+          color: getTypeColor(effectiveTypes, typeId),
+        });
         setPendingConnection(null);
       },
       [pendingConnection, connectionTypes, onAddCustomType, commit],
@@ -642,13 +662,19 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         connectionTypes,
         `suggested-${Date.now().toString(36)}`,
       );
-      setAllEdges((eds) => {
-        const exists = eds.some((e) => {
-          const t = (e.data?.typeId as string | undefined) ?? (e.label as string);
-          return t === conn.type && pairKey(e.source, e.target) === pairKey(fromId, toId);
-        });
-        return exists ? eds : [...eds, newEdge];
+      const exists = allEdgesRef.current.some((e) => {
+        const t = (e.data?.typeId as string | undefined) ?? (e.label as string);
+        return t === conn.type && pairKey(e.source, e.target) === pairKey(fromId, toId);
       });
+      if (!exists) {
+        setAllEdges((eds) => [...eds, newEdge]);
+        setJustConnected({
+          pair: pairKey(fromId, toId),
+          source: fromId,
+          target: toId,
+          color: getTypeColor(connectionTypes, conn.type),
+        });
+      }
 
       setNetworkVerses(finalSet);
       setTimeout(() => fitView({ duration: 400, padding: 0.2, maxZoom: 1 }), 120);
@@ -751,10 +777,11 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
           parallelIndex: 0,
           parallelTotal: 1,
           onDelete: handleDeleteEdge,
+          justConnected: justConnected?.pair === pairKey(edge.source, edge.target),
         },
       };
     });
-  }, [allEdges, activeFilters, connectionTypes, handleDeleteEdge, selectedVerseId, networkVerses]);
+  }, [allEdges, activeFilters, connectionTypes, handleDeleteEdge, selectedVerseId, networkVerses, justConnected]);
 
   useEffect(() => {
     setEdges(filteredEdges);
@@ -794,11 +821,16 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
             onConceptSelect,
             hasNote: noteVerseIds?.has(node.id) ?? false,
             onOpenNote: onOpenNote ? () => onOpenNote(node.id) : undefined,
+            connectPulse:
+              justConnected?.source === node.id ? 'source'
+                : justConnected?.target === node.id ? 'target'
+                  : null,
+            pulseColor: justConnected?.color,
           },
         };
       });
     });
-  }, [selectedVerseId, networkVerses, allEdges, setNodes, conceptFilter, onConceptSelect, noteVerseIds, onOpenNote]);
+  }, [selectedVerseId, networkVerses, allEdges, setNodes, conceptFilter, onConceptSelect, noteVerseIds, onOpenNote, justConnected]);
 
   const getNetworkState = useCallback(() => {
     return { nodes, edges: allEdges };

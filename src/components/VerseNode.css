@@ -484,3 +484,76 @@
   color: var(--accent-terracotta-strong);
   font-weight: 500;
 }
+
+/* Connection made: the source card gives a small nudge as the line leaves,
+   the target card swells and rings in the connection's color as it lands
+   (timed to the edge draw-in in ConnectionEdge.css). */
+.verse-node::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.verse-node.connect-pulse-source {
+  animation: nodeNudge 420ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.verse-node.connect-pulse-source::after {
+  animation: nodeRing 700ms ease-out;
+}
+
+.verse-node.connect-pulse-target {
+  animation: nodeLand 620ms cubic-bezier(0.34, 1.56, 0.64, 1) 400ms;
+}
+
+.verse-node.connect-pulse-target::after {
+  animation: nodeRingStrong 900ms ease-out 400ms;
+}
+
+@keyframes nodeNudge {
+  40% { scale: 1.015; }
+  100% { scale: 1; }
+}
+
+@keyframes nodeLand {
+  35% { scale: 1.04; }
+  100% { scale: 1; }
+}
+
+@keyframes nodeRing {
+  0% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--pulse-color, rgb(177, 93, 67)) 35%, transparent);
+  }
+  100% {
+    opacity: 0;
+    box-shadow: 0 0 0 10px color-mix(in srgb, var(--pulse-color, rgb(177, 93, 67)) 0%, transparent);
+  }
+}
+
+@keyframes nodeRingStrong {
+  0% {
+    opacity: 1;
+    box-shadow:
+      0 0 0 2px var(--pulse-color, rgb(177, 93, 67)),
+      0 0 0 0 color-mix(in srgb, var(--pulse-color, rgb(177, 93, 67)) 45%, transparent);
+  }
+  100% {
+    opacity: 0;
+    box-shadow:
+      0 0 0 2px var(--pulse-color, rgb(177, 93, 67)),
+      0 0 0 22px color-mix(in srgb, var(--pulse-color, rgb(177, 93, 67)) 0%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .verse-node.connect-pulse-source,
+  .verse-node.connect-pulse-target,
+  .verse-node.connect-pulse-source::after,
+  .verse-node.connect-pulse-target::after {
+    animation: none;
+  }
+}
