@@ -109,6 +109,11 @@ Two things the CLI cannot do:
    prompt for Preview could not be completed non-interactively; add them from
    the Vercel dashboard if preview deployments need to sign in.
 
+**Supabase's newer keys.** Once legacy keys are disabled, the old anon key
+stops working. Set `VITE_SUPABASE_PUBLISHABLE_KEY` to the `sb_publishable_`
+key (Project Settings → API Keys) and redeploy; it wins over
+`VITE_SUPABASE_ANON_KEY` when both are set, so the old variable can stay.
+
 `VITE_`-prefixed variables are visible to anyone loading the site. That is
 correct here: the anon key is the publishable key, and row-level security is
 what actually protects the data.

@@ -44,6 +44,7 @@ beforeEach(() => {
   vi.stubEnv('SUPABASE_URL', 'https://db.example');
   vi.stubEnv('SUPABASE_ANON_KEY', 'anon');
   vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'service');
+  vi.stubEnv('VITE_SUPABASE_PUBLISHABLE_KEY', '');
   vi.stubEnv('VITE_SUPABASE_ANON_KEY', '');
   vi.stubEnv('SUPABASE_PUBLISHABLE_KEY', '');
   vi.stubEnv('SUPABASE_SECRET_KEY', '');
@@ -128,7 +129,8 @@ describe('POST /api/check', () => {
   });
 
   it('prefers the newer keys over legacy ones that rotation disabled', async () => {
-    vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'sb_publishable_new');
+    vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'legacy-disabled');
+    vi.stubEnv('VITE_SUPABASE_PUBLISHABLE_KEY', 'sb_publishable_new');
     vi.stubEnv('SUPABASE_SECRET_KEY', 'sb_secret_new');
     expect((await call('good')).status).toBe(200);
     const calls = vi.mocked(fetch).mock.calls.map(([url, init]) => ({

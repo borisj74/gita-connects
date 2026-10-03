@@ -8,7 +8,9 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 const url = import.meta.env.VITE_SUPABASE_URL;
-const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// The newer publishable key wins when set. It has its own name so it can be
+// added beside an old anon-key variable that can't be edited or removed.
+const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 /** Whether this build can talk to a cloud account at all. */
 export const cloudEnabled = Boolean(url && anonKey);

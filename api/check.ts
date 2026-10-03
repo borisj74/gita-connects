@@ -51,7 +51,10 @@ const supabaseUrl = () => process.env.SUPABASE_URL || process.env.VITE_SUPABASE_
 // behind a key rotation, so its newer publishable key is tried before the
 // legacy anon key.
 const anonKey = () =>
-  process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY;
+  process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  process.env.VITE_SUPABASE_ANON_KEY ||
+  process.env.SUPABASE_PUBLISHABLE_KEY ||
+  process.env.SUPABASE_ANON_KEY;
 /** The newer sb_secret_ key when the integration provides it, else the legacy service-role key. */
 const secretKey = () => process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
