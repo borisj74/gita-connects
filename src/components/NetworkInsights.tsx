@@ -4,9 +4,11 @@ import { ChevronDown, Plus, Sparkles } from 'lucide-react';
 import { connections, getVerse } from '../data/index.js';
 import { analyzeNetwork, type NetworkInsights as Insights } from '../insights.js';
 import { getTypeColor, getTypeLabel, type ConnectionTypeDef } from '../connectionTypes.js';
+import { useDraggablePanel } from '../hooks/useDraggablePanel.js';
 import './NetworkInsights.css';
 
 const OPEN_KEY = 'gita-connects-insights-open';
+const POS_KEY = 'gita-connects-insights-pos';
 type SectionKey = 'shape' | 'concepts' | 'hub' | 'clusters' | 'explore' | 'loose';
 
 interface NetworkInsightsProps {
@@ -68,6 +70,10 @@ export default function NetworkInsights({
     setUnseen(false);
   };
 
+  // The header doubles as a drag handle: drag to move the panel anywhere on
+  // the canvas, click to open or close it, arrow keys to nudge it.
+  const { panelRef, style, handleProps, consumeDragClick } = useDraggablePanel<HTMLElement>(POS_KEY);
+
   const insights = useMemo(
     () =>
       analyzeNetwork(
@@ -109,16 +115,29 @@ export default function NetworkInsights({
   const { verseCount, linkCount } = insights;
 
   return (
-    <aside className={`insights ${open ? 'is-open' : ''}`} aria-label="What your network says">
+    <aside
+      ref={panelRef}
+      className={`insights ${open ? 'is-open' : ''}`}
+      style={style}
+      aria-label="What your network says"
+    >
       <button
         type="button"
         className={`insights-toggle ${unseen ? 'has-news' : ''}`}
-        onClick={toggle}
+        onClick={() => {
+          if (!consumeDragClick()) toggle();
+        }}
+        {...handleProps}
         aria-expanded={open}
+        aria-describedby="insights-move-hint"
+        title="Drag to move"
       >
         <Sparkles size={15} strokeWidth={2.2} aria-hidden="true" />
         <span className="insights-title">What your network says</span>
         <ChevronDown size={15} className="insights-chevron" aria-hidden="true" />
+        <span id="insights-move-hint" className="insights-visually-hidden">
+          Arrow keys move the panel.
+        </span>
       </button>
 
       {open && (

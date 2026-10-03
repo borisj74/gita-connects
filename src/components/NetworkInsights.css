@@ -32,8 +32,24 @@
   font: inherit;
   font-size: 13px;
   font-weight: 600;
-  cursor: pointer;
+  cursor: grab;
   text-align: left;
+  /* Dragging the header must move the panel, not scroll the page */
+  touch-action: none;
+  user-select: none;
+}
+
+.insights-toggle:active {
+  cursor: grabbing;
+}
+
+.insights-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .insights-toggle svg:first-child {
