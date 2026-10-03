@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { analyzeNetwork, type InsightEdge } from './insights.js';
 import { CLUSTERS } from './clusters.js';
-import type { Verse } from './types.js';
+import type { Connection, Verse } from './types.js';
 import type { Concept } from './concepts.js';
 
 function verse(id: string, concepts: Concept[], cluster?: Verse['cluster'], theme?: string): Verse {
@@ -98,5 +98,20 @@ describe('analyzeNetwork', () => {
     const r = run(all, [{ source: '2.47', target: '3.9', typeId: 'thematic' }]);
     expect(r.looseEnds).toEqual(['9.22', '18.66', '2.20']);
     expect(run(all, []).character).toBeNull();
+  });
+
+  it('suggests verses from missing themes that link to the canvas, one per theme, strongest first', () => {
+    const scholarly: Connection[] = [
+      { from: '2.47', to: '2.20', type: 'contrast', description: '', strength: 6 },
+      { from: '9.22', to: '2.20', type: 'thematic', description: '', strength: 9 },
+      { from: '3.9', to: '18.66', type: 'goal', description: '', strength: 10 },
+      { from: '18.66', to: '9.22', type: 'goal', description: '', strength: 10 },
+    ];
+    const r = analyzeNetwork(['2.47', '3.9', '9.22'], [], byId, label, scholarly);
+    // 18.66 is in a theme already covered (via 9.22), so only 2.20 qualifies,
+    // reached through its strongest link.
+    expect(r.exploreNext).toEqual([
+      { verseId: '2.20', theme: 'The eternal soul', clusterLabel: 'Soul and self', viaId: '9.22', typeId: 'thematic' },
+    ]);
   });
 });

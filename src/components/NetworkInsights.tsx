@@ -1,14 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Edge } from 'reactflow';
-import { ChevronDown, Sparkles } from 'lucide-react';
-import { getVerse } from '../data/index.js';
+import { ChevronDown, Plus, Sparkles } from 'lucide-react';
+import { connections, getVerse } from '../data/index.js';
 import { analyzeNetwork, type NetworkInsights as Insights } from '../insights.js';
 import { getTypeColor, getTypeLabel, type ConnectionTypeDef } from '../connectionTypes.js';
 import './NetworkInsights.css';
 
 const OPEN_KEY = 'gita-connects-insights-open';
-const MISSING_SHOWN = 3;
-type SectionKey = 'shape' | 'concepts' | 'hub' | 'clusters' | 'loose';
+type SectionKey = 'shape' | 'concepts' | 'hub' | 'clusters' | 'explore' | 'loose';
 
 interface NetworkInsightsProps {
   networkVerses: Set<string>;
@@ -17,6 +16,7 @@ interface NetworkInsightsProps {
   conceptFilter: string | null;
   onConceptSelect: (concept: string) => void;
   onVerseSelect: (verseId: string) => void;
+  onAddVerse: (verseId: string) => void;
   defaultOpen: boolean;
 }
 
@@ -28,6 +28,7 @@ function signatures(r: Insights): Record<SectionKey, string> {
     concepts: r.sharedConcepts.map((c) => `${c.concept}:${c.count}`).join(),
     hub: r.hub ? `${r.hub.id}:${r.hub.links}` : '',
     clusters: r.coveredClusters.map((c) => c.id).join(),
+    explore: r.exploreNext.map((e) => e.verseId).join(),
     loose: r.looseEnds.join(),
   };
 }
@@ -44,6 +45,7 @@ export default function NetworkInsights({
   conceptFilter,
   onConceptSelect,
   onVerseSelect,
+  onAddVerse,
   defaultOpen,
 }: NetworkInsightsProps) {
   const [open, setOpen] = useState(() => {
@@ -77,6 +79,7 @@ export default function NetworkInsights({
         })),
         getVerse,
         (id) => getTypeLabel(connectionTypes, id),
+        connections,
       ),
     [networkVerses, networkEdges, connectionTypes],
   );
@@ -200,16 +203,36 @@ export default function NetworkInsights({
                 </li>
               ))}
             </ul>
-            {insights.missingClusters.length > 0 && (
-              <p className="insights-missing">
-                Nothing yet from{' '}
-                {insights.missingClusters.slice(0, MISSING_SHOWN).map((c) => c.label).join(', ')}
-                {insights.missingClusters.length > MISSING_SHOWN &&
-                  ` and ${insights.missingClusters.length - MISSING_SHOWN} more`}
-                .
-              </p>
-            )}
           </section>
+
+          {insights.exploreNext.length > 0 && (
+            <section className={sectionClass('explore')}>
+              <h3 className="insights-heading">Explore next</h3>
+              <p className="insights-hint">
+                Themes you haven't touched, through verses already linked to yours.
+              </p>
+              <div className="insights-explore">
+                {insights.exploreNext.map((e) => (
+                  <button
+                    key={e.verseId}
+                    type="button"
+                    className="insights-verse is-explore"
+                    onClick={() => onAddVerse(e.verseId)}
+                    aria-label={`Add ${e.verseId}, ${e.clusterLabel}, linked to ${e.viaId}`}
+                  >
+                    <span className="insights-verse-id">{e.verseId}</span>
+                    <span className="insights-explore-text">
+                      <span className="insights-verse-theme">{e.clusterLabel}</span>
+                      <span className="insights-explore-via">
+                        {getTypeLabel(connectionTypes, e.typeId)} with {e.viaId}
+                      </span>
+                    </span>
+                    <Plus size={16} className="insights-explore-add" aria-hidden="true" />
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
 
           {insights.looseEnds.length > 0 && linkCount > 0 && (
             <section className={sectionClass('loose')}>

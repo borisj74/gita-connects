@@ -661,6 +661,7 @@ function App() {
               conceptFilter={conceptFilter}
               onConceptSelect={handleConceptSelect}
               onVerseSelect={handleVerseSelect}
+              onAddVerse={(id) => verseNetworkRef.current?.addVerse(id)}
               defaultOpen={!isMobile}
             />
           )}

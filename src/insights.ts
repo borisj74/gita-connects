@@ -1,6 +1,6 @@
 import type { Concept } from './concepts.js';
 import { CLUSTERS, type ClusterId } from './clusters.js';
-import type { Verse } from './types.js';
+import type { Connection, Verse } from './types.js';
 
 /** One link on the canvas, reduced to what the analysis needs. */
 export interface InsightEdge {
@@ -19,6 +19,12 @@ export interface NetworkInsights {
   /** Theme clusters the network touches, most verses first. */
   coveredClusters: { id: ClusterId; label: string; count: number }[];
   missingClusters: { id: ClusterId; label: string }[];
+  /**
+   * Ways into themes the network has not touched: verses from a missing
+   * cluster with a scholarly link to a verse already on the canvas. One per
+   * cluster, strongest link first.
+   */
+  exploreNext: { verseId: string; theme?: string; clusterLabel: string; viaId: string; typeId: string }[];
   /** Links by type, most used first. */
   linkMix: { typeId: string; count: number }[];
   /** One line on what kind of network this is, from its dominant link type. */
@@ -28,6 +34,7 @@ export interface NetworkInsights {
 }
 
 const SHARED_CONCEPT_LIMIT = 5;
+const EXPLORE_LIMIT = 3;
 // A type sets the network's character once it carries this share of links.
 const DOMINANT_SHARE = 0.4;
 
@@ -55,6 +62,8 @@ export function analyzeNetwork(
   edges: InsightEdge[],
   verseById: (id: string) => Verse | undefined,
   typeLabel: (typeId: string) => string,
+  /** The dataset's scholarly connections, searched for ways into missing themes. */
+  scholarly: Connection[] = [],
 ): NetworkInsights {
   const verses = [...verseIds].map(verseById).filter((v): v is Verse => !!v);
   const onCanvas = new Set(verses.map((v) => v.id));
@@ -99,6 +108,30 @@ export function analyzeNetwork(
     label: c.label,
   }));
 
+  const missingIds = new Set<ClusterId>(missingClusters.map((c) => c.id));
+  const exploreNext: NetworkInsights['exploreNext'] = [];
+  if (verses.length > 0) {
+    const seenClusters = new Set<ClusterId>();
+    [...scholarly]
+      .filter((c) => onCanvas.has(c.from) !== onCanvas.has(c.to))
+      .sort((a, b) => b.strength - a.strength || a.from.localeCompare(b.from))
+      .forEach((c) => {
+        if (exploreNext.length >= EXPLORE_LIMIT) return;
+        const [viaId, otherId] = onCanvas.has(c.from) ? [c.from, c.to] : [c.to, c.from];
+        const other = verseById(otherId);
+        const cluster = other?.cluster;
+        if (!other || !cluster || !missingIds.has(cluster) || seenClusters.has(cluster)) return;
+        seenClusters.add(cluster);
+        exploreNext.push({
+          verseId: other.id,
+          theme: other.theme,
+          clusterLabel: CLUSTERS.find((k) => k.id === cluster)!.label,
+          viaId,
+          typeId: c.type,
+        });
+      });
+  }
+
   const typeCounts = new Map<string, number>();
   links.forEach((e) => typeCounts.set(e.typeId, (typeCounts.get(e.typeId) ?? 0) + 1));
   const linkMix = [...typeCounts]
@@ -124,6 +157,7 @@ export function analyzeNetwork(
     hub,
     coveredClusters,
     missingClusters,
+    exploreNext,
     linkMix,
     character,
     looseEnds,

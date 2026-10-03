@@ -259,11 +259,32 @@
   font-size: 12px;
 }
 
-.insights-missing {
-  margin: 6px 0 0;
+.insights-hint {
+  margin: -2px 0 8px;
   font-size: 12px;
   line-height: 1.45;
   color: var(--brown-600);
+}
+
+.insights-explore {
+  display: grid;
+  gap: 6px;
+}
+
+.insights-explore-text {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+}
+
+.insights-explore-via {
+  font-size: 12px;
+  color: var(--brown-600);
+}
+
+.insights-explore-add {
+  flex-shrink: 0;
+  color: var(--accent-terracotta-text);
 }
 
 @media (prefers-reduced-motion: reduce) {
