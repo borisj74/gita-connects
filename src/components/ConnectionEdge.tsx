@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { BaseEdge, EdgeLabelRenderer, getSmoothStepPath, type EdgeProps } from 'reactflow';
 import { Trash2 } from 'lucide-react';
 import { useMediaQuery } from '../hooks/useMediaQuery.js';
+import { CONNECTION_GUIDE } from '../connectionGuide.js';
 import './ConnectionEdge.css';
 
 const PARALLEL_OFFSET_PX = 56;
@@ -44,6 +45,8 @@ export default function ConnectionEdge({
   const borderColor = (data?.color as string | undefined) ?? 'rgb(177, 93, 67)';
   const dimmed = Boolean(data?.dimmed);
   const description = (data?.description as string | undefined) ?? '';
+  // What this kind of connection means, above this connection's own note.
+  const meaning = CONNECTION_GUIDE[(data?.typeId as string | undefined) ?? '']?.meaning;
   const strength = (data?.strength as number | undefined) ?? null;
   const reduceMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
   // Set while this line should draw itself in: a connection just made, or
@@ -189,6 +192,7 @@ export default function ConnectionEdge({
                   <span className="edge-popover-strength">Strength {strength}/10</span>
                 )}
               </div>
+              {meaning && <p className="edge-popover-meaning">{meaning}</p>}
               {description && (
                 <p className="edge-popover-description">{description}</p>
               )}

@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { X, Plus, ChevronDown } from 'lucide-react';
+import { X, Plus, ChevronDown, CircleHelp } from 'lucide-react';
 import type { ConnectionTypeDef } from '../connectionTypes.js';
 import { makeCustomTypeId, CUSTOM_TYPE_COLORS } from '../connectionTypes.js';
+import { CONNECTION_GUIDE } from '../connectionGuide.js';
 import './ConnectionDialog.css';
 
 interface ConnectionDialogProps {
@@ -17,6 +18,8 @@ interface ConnectionDialogProps {
     strength: number;
     newType?: ConnectionTypeDef;
   }) => void;
+  /** Open the guide to all the kinds of connection. */
+  onShowGuide?: () => void;
 }
 
 const DEFAULT_COLOR_PALETTE = CUSTOM_TYPE_COLORS;
@@ -28,6 +31,7 @@ export default function ConnectionDialog({
   linkedTypeIds = [],
   onCancel,
   onConfirm,
+  onShowGuide,
 }: ConnectionDialogProps) {
   const isLinked = (id: string) => linkedTypeIds.includes(id);
   const [selectedTypeId, setSelectedTypeId] = useState<string>(
@@ -133,6 +137,10 @@ export default function ConnectionDialog({
                   <span className="type-chip-label">Custom</span>
                 </button>
               </div>
+              <TypeMeaning
+                type={connectionTypes.find((t) => t.id === selectedTypeId)}
+                onShowGuide={onShowGuide}
+              />
             </>
           ) : (
             <>
@@ -222,6 +230,32 @@ export default function ConnectionDialog({
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * What the chosen kind means, right where the reader picks it, so the choice
+ * is an informed one. Custom kinds show the reader's own description.
+ */
+function TypeMeaning({ type, onShowGuide }: { type?: ConnectionTypeDef; onShowGuide?: () => void }) {
+  if (!type) return null;
+  const guide = CONNECTION_GUIDE[type.id];
+  const meaning = guide?.meaning ?? type.description;
+  return (
+    <div className="type-meaning" aria-live="polite" style={{ '--kind': type.color } as React.CSSProperties}>
+      <p className="type-meaning-head">
+        <strong>{type.label}</strong>
+        <span>{type.directional ? 'one-way →' : 'two-way ↔'}</span>
+      </p>
+      {meaning && <p className="type-meaning-text">{meaning}</p>}
+      {guide && <p className="type-meaning-ask">Ask yourself: {guide.ask}</p>}
+      {onShowGuide && (
+        <button type="button" className="type-meaning-link" onClick={onShowGuide}>
+          <CircleHelp size={13} aria-hidden="true" />
+          See all the kinds of connection
+        </button>
+      )}
     </div>
   );
 }

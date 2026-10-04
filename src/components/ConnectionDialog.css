@@ -192,3 +192,68 @@
     flex: 1;
   }
 }
+
+/* What the chosen kind means */
+.type-meaning {
+  display: grid;
+  gap: 4px;
+  margin-top: 0.75rem;
+  padding: 10px 12px;
+  border: 1px solid var(--beige-300);
+  border-left: 3px solid var(--kind);
+  border-radius: 10px;
+  background: var(--beige-50);
+}
+
+.type-meaning p {
+  margin: 0;
+}
+
+.type-meaning-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--brown-900);
+}
+
+.type-meaning-head span {
+  font-size: 12px;
+  color: var(--brown-600);
+}
+
+.type-meaning-text {
+  font-size: 13.5px;
+  line-height: 20px;
+  color: var(--brown-800);
+}
+
+.type-meaning-ask {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--brown-600);
+}
+
+.type-meaning-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  justify-self: start;
+  margin-top: 2px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent-terracotta-text);
+  font: 600 12.5px var(--font-ui);
+  cursor: pointer;
+}
+
+.type-meaning-link:hover {
+  text-decoration: underline;
+}
+
+.type-meaning-link:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}

@@ -61,6 +61,8 @@ interface VerseNetworkProps {
   onOpenChapters?: () => void;
   /** Opens the keyboard shortcuts / help overlay from the ? button. */
   onShowHelp?: () => void;
+  /** Open the guide to what each kind of connection means. */
+  onShowConnectionGuide?: () => void;
   isMobile?: boolean;
   theme?: 'light' | 'dark';
 }
@@ -177,6 +179,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       sidebarOpen = true,
       onOpenChapters,
       onShowHelp,
+      onShowConnectionGuide,
       isMobile = false,
       theme = 'light',
     },
@@ -1280,6 +1283,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
           linkedTypeIds={linkedTypeIds}
           onCancel={() => setPendingConnection(null)}
           onConfirm={handleConfirmConnection}
+          onShowGuide={onShowConnectionGuide}
         />
       )}
     </div>

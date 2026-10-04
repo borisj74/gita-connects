@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { ChevronDown, Trash2, Check, Plus, ArrowRight } from 'lucide-react';
+import { ChevronDown, Trash2, Check, Plus, ArrowRight, CircleHelp } from 'lucide-react';
 import type { Edge } from 'reactflow';
 import {
   CUSTOM_TYPE_COLORS,
@@ -20,6 +20,8 @@ interface ConnectionFiltersProps {
   onAddCustomType?: (type: ConnectionTypeDef) => void;
   /** Edges currently on the canvas, so counts reflect what is drawn. */
   networkEdges?: Edge[];
+  /** Open the guide to what each kind of connection means. */
+  onShowGuide?: () => void;
 }
 
 export default function ConnectionFilters({
@@ -30,6 +32,7 @@ export default function ConnectionFilters({
   onRemoveCustomType,
   onAddCustomType,
   networkEdges = [],
+  onShowGuide,
 }: ConnectionFiltersProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -201,6 +204,19 @@ export default function ConnectionFilters({
           </div>
 
           <div className="filters-footer">
+            {onShowGuide && !creating && (
+              <button
+                type="button"
+                className="filters-new-type filters-guide-link"
+                onClick={() => {
+                  setIsOpen(false);
+                  onShowGuide();
+                }}
+              >
+                <CircleHelp size={15} />
+                What do these mean?
+              </button>
+            )}
             {onAddCustomType && !creating && (
               <button type="button" className="filters-new-type" onClick={() => setCreating(true)}>
                 <Plus size={15} />

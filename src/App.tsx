@@ -13,7 +13,7 @@ import OverflowMenu from './components/OverflowMenu.js';
 import ClearCanvasDialog from './components/ClearCanvasDialog.js';
 import UndoToast from './components/UndoToast.js';
 import RestoreSessionCard from './components/RestoreSessionCard.js';
-import ShortcutsOverlay from './components/ShortcutsOverlay.js';
+import ShortcutsOverlay, { type HelpTab } from './components/ShortcutsOverlay.js';
 import DeleteLinkTypeDialog from './components/DeleteLinkTypeDialog.js';
 import { readAutosave, clearAutosave, type Autosave } from './autosave.js';
 import './components/Toolbar.css';
@@ -126,6 +126,14 @@ function App() {
   const [autosaveStatus, setAutosaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [typeToDelete, setTypeToDelete] = useState<ConnectionTypeDef | null>(null);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [helpTab, setHelpTab] = useState<HelpTab>('shortcuts');
+  // The help panel, on the tab asked for: "?" opens shortcuts, the
+  // "What do these mean?" links open the guide to the kinds of connection.
+  const openHelp = useCallback((tab: HelpTab = 'shortcuts') => {
+    setHelpTab(tab);
+    setShortcutsOpen(true);
+  }, []);
+  const openConnectionGuide = useCallback(() => openHelp('kinds'), [openHelp]);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const verseNetworkRef = useRef<VerseNetworkRef>(null);
   const saveLoadRef = useRef<SaveLoadControlsRef>(null);
@@ -278,7 +286,7 @@ function App() {
       // "?" — keyboard shortcuts overlay (the overlay closes itself)
       if (e.key === '?' && !shortcutsOpen) {
         e.preventDefault();
-        setShortcutsOpen(true);
+        openHelp('shortcuts');
         return;
       }
 
@@ -304,7 +312,7 @@ function App() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selectedVerseId, shortcutsOpen, conceptFilter, handleOpenNote, toggleInsights]);
+  }, [selectedVerseId, shortcutsOpen, conceptFilter, handleOpenNote, toggleInsights, openHelp]);
 
   // Clicking the active chip again clears the filter.
   const handleConceptSelect = useCallback((concept: string) => {
@@ -553,6 +561,7 @@ function App() {
                 onRemoveCustomType={handleRemoveCustomType}
                 onAddCustomType={handleAddCustomType}
                 networkEdges={networkEdges}
+                onShowGuide={openConnectionGuide}
               />
             </div>
             <button
@@ -584,7 +593,7 @@ function App() {
                 canClear={networkVerses.size > 0}
                 onOpenAccount={cloudEnabled ? () => setAccountOpen(true) : undefined}
                 accountEmail={session ? accountLabel(session) : null}
-                onShowShortcuts={() => setShortcutsOpen(true)}
+                onShowShortcuts={() => openHelp('shortcuts')}
                 insightsShown={!insightsHidden}
                 onToggleInsights={toggleInsights}
               />
@@ -611,6 +620,7 @@ function App() {
                       onRemoveCustomType={handleRemoveCustomType}
                       onAddCustomType={handleAddCustomType}
                       networkEdges={networkEdges}
+                      onShowGuide={openConnectionGuide}
                     />
                   </div>
                   <button
@@ -733,7 +743,8 @@ function App() {
                 onEdgesRemoved={handleEdgesRemoved}
                 sidebarOpen={sidebarOpen}
                 onOpenChapters={() => setSidebarOpen(true)}
-                onShowHelp={() => setShortcutsOpen(true)}
+                onShowHelp={() => openHelp('shortcuts')}
+                onShowConnectionGuide={openConnectionGuide}
                 isMobile={isMobile}
                 theme={theme}
               />
@@ -802,7 +813,7 @@ function App() {
         />
       )}
 
-      {shortcutsOpen && <ShortcutsOverlay onClose={() => setShortcutsOpen(false)} />}
+      {shortcutsOpen && <ShortcutsOverlay initialTab={helpTab} onClose={() => setShortcutsOpen(false)} />}
 
     </div>
   );
