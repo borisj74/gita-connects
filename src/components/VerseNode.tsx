@@ -38,15 +38,11 @@ function VerseNode({ data }: VerseNodeProps) {
     connectPulse = null, pulseColor, connectHover = null, connectReject = false,
   } = data;
 
-  // Cards always lead with English. Curated verses carry a summary; the rest
-  // show the first line of the translation, fetched on demand and cached for
-  // the session (see useVerseText for why it is never bundled).
-  const text = useVerseText(verse.summary ? null : verse.id);
-  // Summaries use *asterisks* for Sanskrit terms; cards render plain text.
-  const body = (
-    verse.summary ??
-    (text.status === 'ready' ? text.text.translation : null)
-  )?.replace(/\*/g, '');
+  // Every card leads with the translation, so cards read alike whether a verse
+  // is curated or not; the summary lives in the verse panel. Fetched on demand
+  // and cached for the session (see useVerseText for why it is never bundled).
+  const text = useVerseText(verse.id);
+  const body = text.status === 'ready' ? text.text.translation : null;
 
   const handleRemove = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -100,7 +96,7 @@ function VerseNode({ data }: VerseNodeProps) {
       {/* Fetched translations keep a fixed four-line slot from the first
           frame, so the card does not grow (and jump) when the text lands. */}
       {body ? (
-        <div className={`node-translation ${verse.summary ? '' : 'is-fetched'}`}>{body}</div>
+        <div className="node-translation is-fetched">{body}</div>
       ) : text.status === 'loading' || text.status === 'idle' ? (
         <div className="node-translation node-translation-skeleton" aria-busy="true">
           <span className="node-visually-hidden">Loading translation…</span>
