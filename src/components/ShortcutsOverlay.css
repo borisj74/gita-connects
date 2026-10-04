@@ -228,8 +228,7 @@
 
 .kg-item {
   padding: 12px 14px;
-  border: 1px solid var(--beige-300);
-  border-left: 3px solid var(--kind);
+  border: 1px solid var(--kind);
   border-radius: 10px;
   background: var(--surface);
 }
