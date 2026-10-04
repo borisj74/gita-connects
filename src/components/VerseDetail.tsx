@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import {
-  BookMarked, Tag, Link2, X, Plus, Check, Sparkles, ExternalLink,
+  BookMarked, Tag, Link2, X, Plus, Check, Sparkles,
   ChevronDown, ChevronRight, ChevronUp,
 } from 'lucide-react';
 import { verses, connections, chapters, vedabaseUrl } from '../data/index.js';
@@ -190,7 +190,8 @@ export default function VerseDetail({
 
   const sanskrit = live?.sanskrit || verse.sanskrit;
   const transliteration = live?.transliteration || verse.transliteration;
-  // Word-for-word synonyms come only from Vedabase; there is no local copy.
+  // Word-for-word synonyms come with the verse text (our copy of the book, or
+  // Vedabase as a fallback); the imported search index has none.
   const wordMeanings = live?.synonyms;
   const purport = live?.purport ?? [];
 
@@ -431,15 +432,14 @@ export default function VerseDetail({
         </section>
       )}
 
-      {/* Source: link out, plus the BBT credit their display-only permission
-          requires whenever their text is on screen. */}
-      <footer className="vd-footer">
-        <a className="vd-link" href={vedabaseUrl(verse)} target="_blank" rel="noopener noreferrer">
-          <ExternalLink size={13} />
-          Open {verse.id} on vedabase.io
-        </a>
-        {live && <div className="vedabase-attribution">{live.attribution}</div>}
-      </footer>
+      {/* The BBT credit their display-only permission requires whenever their
+          text is on screen. If the text fails to load, the message above links
+          to Vedabase instead. */}
+      {live && (
+        <footer className="vd-footer">
+          <div className="vedabase-attribution">{live.attribution}</div>
+        </footer>
+      )}
     </div>
   );
 

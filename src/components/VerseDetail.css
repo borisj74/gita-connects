@@ -375,24 +375,7 @@
   color: var(--brown-600);
 }
 
-.vd-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  align-self: flex-start;
-  font-family: var(--font-ui);
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 18px;
-  color: var(--accent-sage-text);
-  text-decoration: none;
-}
-
-.vd-link:hover {
-  text-decoration: underline;
-}
-
-/* Source footer — link out + BBT credit, at the very bottom */
+/* Source footer: the BBT credit, at the very bottom */
 .vd-footer {
   display: flex;
   flex-direction: column;
