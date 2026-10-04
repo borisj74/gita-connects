@@ -252,7 +252,6 @@ export default function VerseDetail({
         </div>
         <h3 className="vd-theme">{verse.theme ?? 'Uncurated verse'}</h3>
         {verse.cluster && <div className="vd-cluster">{clusterLabel(verse.cluster)}</div>}
-        {verse.summary && <p className="vd-summary">{verse.summary.replace(/\*/g, '')}</p>}
       </section>
 
       <Disclosure id="sanskrit" label="Sanskrit" open={openSections.sanskrit} onToggle={toggleSection}
@@ -313,29 +312,48 @@ export default function VerseDetail({
 
       <NoteSection verseId={verse.id} startEditing={startEditingNote} onSaved={onNoteSaved} />
 
-      {/* Key concepts */}
-      {verse.concepts.length > 0 && (
-        <section className="vd-section">
+      {/* About this verse: the app's own reading, kept apart from Prabhupada's
+          words above so the two are never mistaken for each other. */}
+      {(verse.summary || verse.concepts.length > 0) && (
+        <section className="vd-section vd-about">
           <div className="vd-label">
-            <Tag size={13} />
-            Key concepts
-            {verse.curated && !verse.reviewed && (
-              <span className="unreviewed-badge" title="Proposed by script; not yet checked by a person">
-                unreviewed
-              </span>
-            )}
+            <BookMarked size={13} />
+            About this verse
+            <span className="vd-label-aside">in our own words</span>
           </div>
-          <div className="vd-chips">
-            {verse.concepts.map((concept, i) => (
-              <span
-                key={concept}
-                className={`concept-badge ${i === 0 ? 'primary' : i === 1 ? 'secondary' : ''}`}
-                title={i === 0 ? 'Primary theme' : i === 1 ? 'Secondary theme' : undefined}
-              >
-                {concept}
-              </span>
-            ))}
-          </div>
+          {verse.summary && (
+            <>
+              {verse.summaryDraft && (
+                <span className="unreviewed-badge vd-about-badge" title="Written with AI from the Sanskrit and the verse's concepts; not yet checked by a person">
+                  draft summary
+                </span>
+              )}
+              <p className="vd-summary">{verse.summary.replace(/\*/g, '')}</p>
+            </>
+          )}
+          {verse.concepts.length > 0 && (
+            <>
+              <div className="vd-sublabel">
+                <Tag size={12} aria-hidden="true" /> Key concepts
+                {verse.curated && !verse.reviewed && (
+                  <span className="unreviewed-badge" title="Proposed by script; not yet checked by a person">
+                    unreviewed
+                  </span>
+                )}
+              </div>
+              <div className="vd-chips">
+                {verse.concepts.map((concept, i) => (
+                  <span
+                    key={concept}
+                    className={`concept-badge ${i === 0 ? 'primary' : i === 1 ? 'secondary' : ''}`}
+                    title={i === 0 ? 'Primary theme' : i === 1 ? 'Secondary theme' : undefined}
+                  >
+                    {concept}
+                  </span>
+                ))}
+              </div>
+            </>
+          )}
         </section>
       )}
 
