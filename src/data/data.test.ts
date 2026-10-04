@@ -152,6 +152,15 @@ describe('verses', () => {
     expect(url('1.36')).toBe('https://vedabase.io/en/library/bg/1/32-35/');
   });
 
+  it('ends 1.20, 1.26 and 1.27 where As It Is does, so the Sanskrit matches the translation', () => {
+    const roman = (id: string) => verses.find((v) => v.id === id)!.transliteration;
+    expect(roman('1.20')).toMatch(/idam āha mahī-pate$/);
+    expect(roman('1.21')).toMatch(/^arjuna uvācha senayor ubhayor madhye/);
+    expect(roman('1.26')).toMatch(/senayor ubhayor api$/);
+    expect(roman('1.27')).toMatch(/^tān samīkṣhya .* viṣhīdann idam abravīt$/);
+    expect(roman('1.28')).toMatch(/^arjuna uvācha dṛiṣhṭvemaṁ/);
+  });
+
   it('gives every curated verse a theme and at least one concept', () => {
     for (const verse of verses.filter((v) => v.curated)) {
       expect(verse.theme?.trim(), verse.id).not.toBe('');

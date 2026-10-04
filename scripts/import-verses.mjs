@@ -135,6 +135,37 @@ function realign(entries) {
   }
 }
 
+// Bhagavad-gita As It Is ends 1.20 and 1.26 a half-verse later than upstream,
+// and 1.27 with it, so the app's Sanskrit lines up with the translation shown
+// beside it. Each half-verse moves from the start of one verse (after any
+// speaker label) to the end of the verse before.
+const AS_IT_IS_BOUNDARIES = [
+  { from: '1.21', to: '1.20', sanskrit: 'हृषीकेशं तदा वाक्यमिदमाह महीपते', roman: 'hṛiṣhīkeśhaṁ tadā vākyam idam āha mahī-pate' },
+  { from: '1.27', to: '1.26', sanskrit: 'श्वशुरान्सुहृदश्चैव सेनयोरुभयोरपि', roman: 'śhvaśhurān suhṛidaśh chaiva senayor ubhayor api' },
+  { from: '1.28', to: '1.27', sanskrit: 'कृपया परयाऽऽविष्टो विषीदन्निदमब्रवीत्', roman: 'kṛipayā parayāviṣhṭo viṣhīdann idam abravīt' },
+];
+
+/** Move each half-verse in AS_IT_IS_BOUNDARIES; fails if upstream's text has changed. */
+function moveBoundaries(entries) {
+  const byId = new Map(entries.map((e) => [e.id, e]));
+  for (const move of AS_IT_IS_BOUNDARIES) {
+    const from = byId.get(move.from);
+    const to = byId.get(move.to);
+    if (!from || !to) continue;
+    const parts = [
+      ['sanskrit', `${move.sanskrit}। `, `। ${move.sanskrit}`],
+      ['transliteration', `${move.roman} `, ` ${move.roman}`],
+    ];
+    for (const [field, cut, add] of parts) {
+      if (!from[field].includes(cut)) {
+        throw new Error(`${move.from}: ${field} no longer holds "${cut.trim()}"; check AS_IT_IS_BOUNDARIES`);
+      }
+      from[field] = from[field].replace(cut, '');
+      to[field] = `${to[field]}${add}`;
+    }
+  }
+}
+
 const response = await fetch(SOURCE);
 if (!response.ok) {
   throw new Error(`Failed to fetch ${SOURCE}: HTTP ${response.status}`);
@@ -175,6 +206,7 @@ for (const [chapter, expected] of Object.entries(EXPECTED)) {
   });
 
   realign(entries);
+  moveBoundaries(entries);
   for (const entry of entries) {
     for (const field of ['sanskrit', 'transliteration']) {
       if (!entry[field]) throw new Error(`${entry.id} has an empty ${field}`);
