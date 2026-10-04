@@ -96,7 +96,9 @@ const romanLines = (s) =>
  * Realign one chapter's transliteration to its Devanagari. Each verse keeps
  * lines until it has its Devanagari's syllables; any lines past that belong to
  * the next verse. If the next verse already holds those lines (in another
- * spelling), the carried lines replace them; otherwise they are prepended.
+ * spelling), the carried lines replace them; otherwise they are prepended,
+ * after a leading speaker label such as "arjuna uvācha", which upstream's
+ * Devanagari also puts first.
  */
 function realign(entries) {
   let carried = [];
@@ -108,7 +110,10 @@ function realign(entries) {
       if (own === extra) lines = carried;
       else if (own.startsWith(extra) || extra.startsWith(own)) {
         throw new Error(`${entry.id}: carried lines only partly overlap its own; check by hand`);
-      } else lines = [...carried, ...lines];
+      } else {
+        const label = /\buvācha$/.test(lines[0] ?? '') ? lines.slice(0, 1) : [];
+        lines = [...label, ...carried, ...lines.slice(label.length)];
+      }
     }
     const target = devanagariSyllables(entry.sanskrit);
     const kept = [];
