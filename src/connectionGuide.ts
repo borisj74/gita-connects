@@ -1,7 +1,7 @@
 /**
  * What each kind of connection means, in plain words: shown when a reader
- * picks a kind in the connection dialog, when they open a line's label, and
- * in full in the help panel's "Kinds of connection" tab.
+ * picks a kind in the connection dialog, and in full in the help panel's
+ * "Kinds of connection" tab.
  *
  * Examples are real connections from the app's own curation, described in
  * the app's own words (connectionGuide.test.ts checks each one exists).
