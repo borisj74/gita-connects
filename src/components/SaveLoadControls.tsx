@@ -271,7 +271,6 @@ const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(
             >
               <Save size={16} />
               <span className="tb-menu-item-label">Save changes</span>
-              <span className="tb-menu-item-hint">⌘S</span>
             </button>
             <button
               type="button"
@@ -348,7 +347,6 @@ const SaveLoadControls = forwardRef<SaveLoadControlsRef, SaveLoadControlsProps>(
               >
                 <FileJson size={16} />
                 <span className="tb-menu-item-label">Export usage data</span>
-                <span className="tb-menu-item-hint">JSON</span>
               </button>
             )}
           </div>

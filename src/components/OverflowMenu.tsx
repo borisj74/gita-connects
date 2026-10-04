@@ -92,7 +92,7 @@ export default function OverflowMenu({
               <Sparkles size={16} />
               <span className="tb-menu-item-label">What your network says</span>
               <span className="tb-menu-item-hint tb-menu-item-check">
-                {insightsShown && <Check size={14} strokeWidth={2.6} aria-hidden="true" />}I
+                {insightsShown && <Check size={14} strokeWidth={2.6} aria-hidden="true" />}
               </span>
             </button>
           )}
@@ -106,7 +106,7 @@ export default function OverflowMenu({
           >
             <CircleHelp size={16} />
             <span className="tb-menu-item-label">Keyboard shortcuts</span>
-            <span className="tb-menu-item-hint">{onShowShortcuts ? '?' : 'Soon'}</span>
+            {!onShowShortcuts && <span className="tb-menu-item-hint">Soon</span>}
           </button>
           <a role="menuitem" className="tb-menu-item" href="/privacy">
             <Scale size={16} />
