@@ -7,7 +7,7 @@
  * button, named after that button. Nothing a reader does inside the app is
  * counted, and opening the app any other way sends nothing at all.
  */
-import { inject, pageview } from '@vercel/analytics';
+import { inject } from '@vercel/analytics';
 
 /** The landing page's buttons tag their link to the app with ?from=<place>. */
 export const FROM_PARAM = 'from';
@@ -17,12 +17,21 @@ const PLACE = /^[a-z][a-z-]{0,23}$/;
 // receives the counts on its own deployments only.
 const enabled = import.meta.env.PROD;
 
-// Automatic tracking stays off, so the script never counts anything on its
-// own (a later route change in the app, say). Each page sends the one view
-// it means to, by hand.
+// The script records the page view of the page it loads on by itself; that
+// is the one thing Vercel always does. A filter lets exactly that first view
+// through, under the name given here, and drops anything after it (a hash
+// link on the landing page, say), so each page load counts once.
 function countOnce(path: string): void {
-  inject({ mode: 'production', framework: 'vite', disableAutoTrack: true });
-  pageview({ path });
+  let sent = false;
+  inject({
+    mode: 'production',
+    framework: 'vite',
+    beforeSend: (event) => {
+      if (sent || event.type !== 'pageview') return null;
+      sent = true;
+      return { ...event, url: new URL(path, window.location.origin).href };
+    },
+  });
 }
 
 export function countLandingVisit(): void {
