@@ -28,7 +28,7 @@ const privacy: LegalDocument = {
     'You can use Gita Connects without an account, and then your work stays in your browser. If you sign in, we store your email address and the work you choose to sync, and nothing else about you. We do not sell data, show ads or track you.',
   body: (
     <>
-      <h2>Who we are</h2>
+      <h2 id="who-we-are">Who we are</h2>
       <p>
         Gita Connects (gitaconnects.com) is an independent project run from Serbia. We are the
         controller of the personal data described here. For anything about your data, email{' '}
@@ -39,7 +39,7 @@ const privacy: LegalDocument = {
         Data Protection Regulation (GDPR).
       </p>
 
-      <h2>Using the app without an account</h2>
+      <h2 id="using-the-app-without-an-account">Using the app without an account</h2>
       <p>
         Your canvas, saved networks, notes, link types and settings are kept in your own
         browser's storage. They never leave your device and we cannot see them. Clearing your
@@ -51,7 +51,7 @@ const privacy: LegalDocument = {
         verse number, not anything about you.
       </p>
 
-      <h2>What we collect, and why</h2>
+      <h2 id="what-we-collect-and-why">What we collect, and why</h2>
       <table>
         <thead>
           <tr>
@@ -94,7 +94,7 @@ const privacy: LegalDocument = {
         any AI service.
       </p>
 
-      <h2>Who processes data for us</h2>
+      <h2 id="who-processes-data-for-us">Who processes data for us</h2>
       <p>We use a small number of service providers, each bound by a data processing agreement:</p>
       <ul>
         <li>
@@ -123,7 +123,7 @@ const privacy: LegalDocument = {
         or any other third party.
       </p>
 
-      <h2>How long we keep it</h2>
+      <h2 id="how-long-we-keep-it">How long we keep it</h2>
       <ul>
         <li>
           <strong>Account, synced work and Check with AI records</strong>: until you delete them
@@ -139,7 +139,7 @@ const privacy: LegalDocument = {
         </li>
       </ul>
 
-      <h2>Your rights</h2>
+      <h2 id="your-rights">Your rights</h2>
       <p>You have the right to:</p>
       <ul>
         <li>see the personal data we hold about you and get a copy of it</li>
@@ -163,20 +163,20 @@ const privacy: LegalDocument = {
         ), or, if you live in the EU, to your local data protection authority.
       </p>
 
-      <h2>Security</h2>
+      <h2 id="security">Security</h2>
       <p>
         Data travels over encrypted connections. Each reader's synced work is protected by access
         rules in the database, so no one else can read it. Sign-in uses one-time email links, so
         there are no passwords to leak.
       </p>
 
-      <h2>Children</h2>
+      <h2 id="children">Children</h2>
       <p>
         Gita Connects is not aimed at children. If you are under 15, please ask a parent or guardian
         before creating an account.
       </p>
 
-      <h2>Changes to this policy</h2>
+      <h2 id="changes-to-this-policy">Changes to this policy</h2>
       <p>
         If we change what we collect or how we use it, for example by adding analytics, we will
         update this page and its date before the change takes effect. Anything that needs your
@@ -193,34 +193,34 @@ const terms: LegalDocument = {
     'Gita Connects is free to use for study and teaching. Your notes and networks are yours. Please respect the copyright of the Bhagavad-gītā text, and treat AI judgements as opinions, not authority.',
   body: (
     <>
-      <h2>About these terms</h2>
+      <h2 id="about-these-terms">About these terms</h2>
       <p>
         These terms apply when you use gitaconnects.com. By using the site, or by signing in, you
         agree to them. If you don't agree, please don't use the site. Questions: {mail}.
       </p>
 
-      <h2>The service</h2>
+      <h2 id="the-service">The service</h2>
       <p>
         Gita Connects helps you explore connections between verses of the Bhagavad Gita. It is free
         and offered as it is. We work to keep it accurate and available, but we can't promise it
         will always be either, and we may change, pause or end features at any time.
       </p>
 
-      <h2>Your account</h2>
+      <h2 id="your-account">Your account</h2>
       <p>
         An account is optional. If you create one, keep access to your email address secure, since
         sign-in links are sent there. You can delete your account at any time from{' '}
         <em>Your account</em> in the menu.
       </p>
 
-      <h2>Your content</h2>
+      <h2 id="your-content">Your content</h2>
       <p>
         The networks, connections and notes you create belong to you. You give us permission to
         store and process them only as needed to run the service for you, for example to sync them
         to your other devices, or to send them to Check with AI when you ask for a check.
       </p>
 
-      <h2>The text of the Bhagavad Gita</h2>
+      <h2 id="the-text-of-the-bhagavad-gita">The text of the Bhagavad Gita</h2>
       <p>
         The translation and purport of <em>Bhagavad-gītā As It Is</em> by A.C. Bhaktivedanta Swami
         Prabhupada are © The Bhaktivedanta Book Trust International, Inc., and are shown here with
@@ -229,14 +229,14 @@ const terms: LegalDocument = {
         domain source. The app's own themes, summaries and connections are ours.
       </p>
 
-      <h2>Check with AI</h2>
+      <h2 id="check-with-ai">Check with AI</h2>
       <p>
         AI verdicts and suggestions are automated opinions. They can be wrong, and they are not
         spiritual or scholarly authority. Use them as prompts for your own reflection. Each
         signed-in reader can run 20 checks a day.
       </p>
 
-      <h2>Fair use</h2>
+      <h2 id="fair-use">Fair use</h2>
       <p>Please don't:</p>
       <ul>
         <li>try to get around the daily limits or other protections</li>
@@ -246,20 +246,20 @@ const terms: LegalDocument = {
       </ul>
       <p>We may suspend accounts that do.</p>
 
-      <h2>Liability</h2>
+      <h2 id="liability">Liability</h2>
       <p>
         To the extent the law allows, we are not liable for indirect losses, or for loss of data
         you have not backed up, arising from your use of the site. Nothing in these terms limits
         rights you have as a consumer that cannot be limited by contract.
       </p>
 
-      <h2>Law</h2>
+      <h2 id="law">Law</h2>
       <p>
         These terms are governed by the law of the Republic of Serbia. If you live elsewhere, you
         keep the protection of the mandatory consumer laws of your country.
       </p>
 
-      <h2>Changes</h2>
+      <h2 id="changes">Changes</h2>
       <p>
         We may update these terms. The date at the top shows the latest version. If a change is
         significant, we will say so in the app.
@@ -275,7 +275,7 @@ const cookies: LegalDocument = {
     'Gita Connects sets no cookies today. It uses your browser\'s storage only to keep your work, your settings and, if you sign in, your session. If we add analytics, we will ask before turning them on.',
   body: (
     <>
-      <h2>Cookies and browser storage</h2>
+      <h2 id="cookies-and-browser-storage">Cookies and browser storage</h2>
       <p>
         Cookies are small files a website saves in your browser. Browser storage ("local storage")
         works the same way and is treated the same way by the law. Gita Connects sets{' '}
@@ -285,7 +285,7 @@ const cookies: LegalDocument = {
       </p>
       <p>Nothing stored here is shared with anyone, and none of it is used for tracking or ads.</p>
 
-      <h2>What we store in your browser</h2>
+      <h2 id="what-we-store-in-your-browser">What we store in your browser</h2>
       <table>
         <thead>
           <tr>
@@ -323,14 +323,14 @@ const cookies: LegalDocument = {
         </tbody>
       </table>
 
-      <h2>Clearing it</h2>
+      <h2 id="clearing-it">Clearing it</h2>
       <p>
         You can delete all of it in your browser's settings by clearing site data for
         gitaconnects.com. That signs you out and removes any work saved only in this browser, so
         save or sync anything you want to keep first.
       </p>
 
-      <h2>Analytics in the future</h2>
+      <h2 id="analytics-in-the-future">Analytics in the future</h2>
       <p>
         We may add analytics to learn which features help readers most. If we do, we will choose a
         privacy-friendly tool, update this page and the <a href="/privacy">Privacy Policy</a>{' '}
@@ -338,7 +338,7 @@ const cookies: LegalDocument = {
         change your mind at any time.
       </p>
 
-      <h2>Questions</h2>
+      <h2 id="questions">Questions</h2>
       <p>
         Email {mail}.
       </p>

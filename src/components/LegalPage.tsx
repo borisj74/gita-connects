@@ -17,6 +17,14 @@ export default function LegalPage({ slug }: { slug: LegalSlug }) {
     document.title = `${doc.title} · Gita Connects`;
   }, [doc.title]);
 
+  // Links such as /privacy#your-rights open at that section. The page is
+  // rendered after load and scrolls inside its own container, so the
+  // browser's own jump to the anchor never happens; do it here.
+  useEffect(() => {
+    const id = decodeURIComponent(window.location.hash.slice(1));
+    if (id) document.getElementById(id)?.scrollIntoView();
+  }, [slug]);
+
   return (
     <main className="legal-page">
       <div className="legal-column">
