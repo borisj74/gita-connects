@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { MoreHorizontal, Moon, Sun, CircleHelp, Trash2, UserRound, Sparkles, Check, Scale } from 'lucide-react';
+import { MoreHorizontal, Moon, Sun, CircleHelp, Trash2, UserRound, Sparkles, Check, Scale, Compass } from 'lucide-react';
 import './Toolbar.css';
 
 interface OverflowMenuProps {
@@ -15,6 +15,8 @@ interface OverflowMenuProps {
   /** Whether the "What your network says" panel is shown, and its toggle. */
   insightsShown?: boolean;
   onToggleInsights?: () => void;
+  /** Replay the guided tour. */
+  onTakeTour?: () => void;
 }
 
 /**
@@ -31,6 +33,7 @@ export default function OverflowMenu({
   onShowShortcuts,
   insightsShown = false,
   onToggleInsights,
+  onTakeTour,
 }: OverflowMenuProps) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -94,6 +97,12 @@ export default function OverflowMenu({
               <span className="tb-menu-item-hint tb-menu-item-check">
                 {insightsShown && <Check size={14} strokeWidth={2.6} aria-hidden="true" />}
               </span>
+            </button>
+          )}
+          {onTakeTour && (
+            <button type="button" role="menuitem" className="tb-menu-item" onClick={run(onTakeTour)}>
+              <Compass size={16} />
+              <span className="tb-menu-item-label">Take the tour</span>
             </button>
           )}
           <button
