@@ -84,9 +84,9 @@ const privacy: LegalDocument = {
           <tr>
             <td>
               Visit counts on the home page: the page opened, the site you came from, your country,
-              browser, operating system and device type, and which "Open the app" buttons are
-              pressed. No cookies, nothing stored in your browser, nothing that identifies you. The
-              app itself is not measured.
+              browser, operating system and device type. When you open the app from the home page,
+              we count that one visit and which button you used. No cookies, nothing stored in your
+              browser, nothing that identifies you. Nothing you do inside the app is counted.
             </td>
             <td>To learn which parts of the home page help people find the app</td>
             <td>Legitimate interest</td>
@@ -349,13 +349,14 @@ const cookies: LegalDocument = {
         The home page counts visits with Vercel Web Analytics, from our hosting provider. It sets no
         cookies and stores nothing in your browser, so there is nothing to accept and nothing to
         clear. It counts the page opened, the site you came from, your country, browser and device
-        type, and which "Open the app" buttons are pressed. Visitors are told apart for one day at
-        most, by a scrambled value that is then thrown away, so no one, including us, can see who
-        you are.
+        type. Visitors are told apart for one day at most, by a scrambled value that is then thrown
+        away, so no one, including us, can see who you are.
       </p>
       <p>
-        The app itself, where you read and build your networks, is not measured. If we ever want
-        to measure more, or use a tool that needs your consent, we will update this page and the{' '}
+        When you open the app from the home page, we count that one visit and which button you
+        used, so we know which parts of the page help. Nothing after that is counted: not what you
+        search, read, link or save. Opening the app any other way is not counted at all. If we ever
+        want to measure more, or use a tool that needs your consent, we will update this page and the{' '}
         <a href="/privacy">Privacy Policy</a> first and ask you before it runs.
       </p>
 
