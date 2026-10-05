@@ -140,8 +140,8 @@ const privacy: LegalDocument = {
           or your account.
         </li>
         <li>
-          <strong>Home page visit counts</strong>: kept only as totals, for as long as Vercel keeps
-          them for our plan. They cannot be traced back to you.
+          <strong>Home page visit counts</strong>: kept by Vercel only as totals, which we can see
+          for the last 30 days. They cannot be traced back to you.
         </li>
         <li>
           <strong>Server logs</strong>: for the short period our hosting provider keeps them,
