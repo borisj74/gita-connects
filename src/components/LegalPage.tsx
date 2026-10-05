@@ -28,7 +28,7 @@ export default function LegalPage({ slug }: { slug: LegalSlug }) {
   return (
     <main className="legal-page">
       <div className="legal-column">
-        <a className="legal-back" href="/">
+        <a className="legal-back" href="/app">
           <ArrowLeft size={15} aria-hidden="true" />
           Back to the canvas
         </a>
