@@ -24,7 +24,8 @@ const isSignIn = path === '/signin'
 
 // A returning reader (work saved here, or signed in) goes straight to the
 // canvas, without a reload; so does a sign-in link from an older email.
-if (!legal && !isSignIn && path !== '/app') {
+// /home always shows the landing page, for anyone who wants it back.
+if (!legal && !isSignIn && path !== '/app' && path !== '/home') {
   const to = appRedirect(window.location, localStorage)
   if (to) {
     window.history.replaceState(window.history.state, '', to)
