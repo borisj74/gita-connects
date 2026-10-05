@@ -7,7 +7,7 @@
 import type { ReactNode } from 'react';
 
 export const CONTACT_EMAIL = 'hello@gitaconnects.com';
-export const LEGAL_UPDATED = '3 October 2026';
+export const LEGAL_UPDATED = '5 October 2026';
 
 export type LegalSlug = 'privacy' | 'terms' | 'cookies';
 
@@ -82,6 +82,16 @@ const privacy: LegalDocument = {
             <td>Contract</td>
           </tr>
           <tr>
+            <td>
+              Visit counts on the home page: the page opened, the site you came from, your country,
+              browser, operating system and device type, and which "Open the app" buttons are
+              pressed. No cookies, nothing stored in your browser, nothing that identifies you. The
+              app itself is not measured.
+            </td>
+            <td>To learn which parts of the home page help people find the app</td>
+            <td>Legitimate interest</td>
+          </tr>
+          <tr>
             <td>Technical data in server logs, such as your IP address, browser type and the time of a request</td>
             <td>To run the site securely and fix problems</td>
             <td>Legitimate interest</td>
@@ -99,7 +109,7 @@ const privacy: LegalDocument = {
       <ul>
         <li>
           <strong>Vercel</strong>: hosts the site and runs our server functions. Keeps short-lived
-          request logs.
+          request logs, and counts visits to the home page (Vercel Web Analytics).
         </li>
         <li>
           <strong>Supabase</strong>: our database and sign-in system. Stores your account and
@@ -128,6 +138,10 @@ const privacy: LegalDocument = {
         <li>
           <strong>Account, synced work and Check with AI records</strong>: until you delete them
           or your account.
+        </li>
+        <li>
+          <strong>Home page visit counts</strong>: kept only as totals, for as long as Vercel keeps
+          them for our plan. They cannot be traced back to you.
         </li>
         <li>
           <strong>Server logs</strong>: for the short period our hosting provider keeps them,
@@ -178,8 +192,8 @@ const privacy: LegalDocument = {
 
       <h2 id="changes-to-this-policy">Changes to this policy</h2>
       <p>
-        If we change what we collect or how we use it, for example by adding analytics, we will
-        update this page and its date before the change takes effect. Anything that needs your
+        If we change what we collect or how we use it, we will update this page and its date
+        before the change takes effect. Anything that needs your
         consent will ask for it first.
       </p>
     </>
@@ -272,7 +286,7 @@ const cookies: LegalDocument = {
   slug: 'cookies',
   title: 'Cookie Policy',
   summary:
-    'Gita Connects sets no cookies today. It uses your browser\'s storage only to keep your work, your settings and, if you sign in, your session. If we add analytics, we will ask before turning them on.',
+    'Gita Connects sets no cookies. It uses your browser\'s storage only to keep your work, your settings and, if you sign in, your session. The home page counts visits anonymously, without cookies and without storing anything in your browser.',
   body: (
     <>
       <h2 id="cookies-and-browser-storage">Cookies and browser storage</h2>
@@ -330,12 +344,19 @@ const cookies: LegalDocument = {
         save or sync anything you want to keep first.
       </p>
 
-      <h2 id="analytics-in-the-future">Analytics in the future</h2>
+      <h2 id="visit-counts">Visit counts on the home page</h2>
       <p>
-        We may add analytics to learn which features help readers most. If we do, we will choose a
-        privacy-friendly tool, update this page and the <a href="/privacy">Privacy Policy</a>{' '}
-        first, and, if the tool needs your consent, ask you before it runs. You will be able to
-        change your mind at any time.
+        The home page counts visits with Vercel Web Analytics, from our hosting provider. It sets no
+        cookies and stores nothing in your browser, so there is nothing to accept and nothing to
+        clear. It counts the page opened, the site you came from, your country, browser and device
+        type, and which "Open the app" buttons are pressed. Visitors are told apart for one day at
+        most, by a scrambled value that is then thrown away, so no one, including us, can see who
+        you are.
+      </p>
+      <p>
+        The app itself, where you read and build your networks, is not measured. If we ever want
+        to measure more, or use a tool that needs your consent, we will update this page and the{' '}
+        <a href="/privacy">Privacy Policy</a> first and ask you before it runs.
       </p>
 
       <h2 id="questions">Questions</h2>
