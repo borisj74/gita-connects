@@ -13,7 +13,7 @@ Draw your own connections, filter by type, and save networks for later.
 
 - **Landing page** — `/` introduces the app to first-time visitors; the canvas lives at `/app`.
   Readers with work saved in the browser, or signed in, go straight to `/app`
-  (see [`src/landing/route.ts`](src/landing/route.ts))
+  (see [`src/landing/route.ts`](src/landing/route.ts)); `/home` always shows the landing page
 - **Verse network canvas** — React Flow graph; drag verses in, auto-arrange with dagre
 - **Typed connections** — ten relation types: the verse-relationship model's five
   (sequential, thematic, progression, contrast, goal) plus dependency, question–answer,
