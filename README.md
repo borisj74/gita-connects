@@ -11,6 +11,9 @@ Draw your own connections, filter by type, and save networks for later.
 
 ## Features
 
+- **Landing page** — `/` introduces the app to first-time visitors; the canvas lives at `/app`.
+  Readers with work saved in the browser, or signed in, go straight to `/app`
+  (see [`src/landing/route.ts`](src/landing/route.ts))
 - **Verse network canvas** — React Flow graph; drag verses in, auto-arrange with dagre
 - **Typed connections** — ten relation types: the verse-relationship model's five
   (sequential, thematic, progression, contrast, goal) plus dependency, question–answer,
@@ -100,7 +103,8 @@ npm run dev
 ```
 
 Opens on http://localhost:5173 (`strictPort` — the dev server fails rather than picking
-another port if 5173 is taken).
+another port if 5173 is taken). The landing page is at `/`, the canvas at `/app`. Once a
+browser has work saved, `/` forwards it to `/app`; clear site data to see the landing page again.
 
 ## Scripts
 
@@ -120,6 +124,10 @@ another port if 5173 is taken).
 
 ```
 src/
+  main.tsx              which page an address shows; each page loads lazily
+  landing/              the landing page at /: static markup, its CSS, and
+                        landing.ts for the hero window, the tour and the shaders
+  analytics.ts          visit counts (landing page, and arrivals at /app from it)
   App.tsx               top-level layout, theme, panel state
   data/                 verse text (imported) + curation (authored)
   types.ts              VerseText, VerseCuration, Verse, Connection, Chapter
@@ -215,7 +223,13 @@ The policy text lives in [`src/legal/documents.tsx`](src/legal/documents.tsx) an
 what the app actually does. Keep it in step with the code: when the app starts collecting,
 storing or sending something new (a new service, analytics, a new kind of synced data), update
 the matching page and move `LEGAL_UPDATED` forward in the same change. Anything that needs
-consent, such as most analytics, must ask before it runs.
+consent must ask before it runs.
+
+- **Visit counts.** [`src/analytics.ts`](src/analytics.ts) uses Vercel Web Analytics, which sets
+  no cookies and stores nothing in the browser. It counts landing-page visits, and one arrival
+  at `/app` when a landing-page button tagged `?from=<place>` opened it. Nothing inside the
+  app is counted; production builds only. The cookie policy describes exactly this, so
+  measuring anything more means updating it first.
 
 - **No third parties on load.** Fonts are self-hosted (`src/fonts.ts`), and the
   Content-Security-Policy in `vercel.json` only allows our own origin and Supabase.

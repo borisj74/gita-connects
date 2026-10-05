@@ -26,4 +26,21 @@ describe('LegalPage', () => {
     expect(screen.getByRole('link', { name: 'poverenik.rs' })).toBeTruthy();
     expect(screen.getAllByText(/Delete my account/).length).toBeGreaterThan(0);
   });
+
+  it('opens at the section named in the address', () => {
+    const scrolled: string[] = [];
+    const original = Element.prototype.scrollIntoView;
+    Element.prototype.scrollIntoView = function (this: Element) {
+      scrolled.push(this.id);
+    };
+    window.history.replaceState(null, '', '/privacy#your-rights');
+    try {
+      render(<LegalPage slug="privacy" />);
+      expect(scrolled).toEqual(['your-rights']);
+      expect(screen.getByRole('heading', { level: 2, name: 'Your rights' }).id).toBe('your-rights');
+    } finally {
+      Element.prototype.scrollIntoView = original;
+      window.history.replaceState(null, '', '/');
+    }
+  });
 });
