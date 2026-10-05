@@ -9,8 +9,8 @@ interface GuidedTourProps {
   isMobile: boolean;
   /** The tour is starting: make sure there is something to point at; returns the verse to talk about. */
   onBegin: () => string | null;
-  /** A stop is about to show (e.g. open the chapters list for it). */
-  onStepEnter?: (stepId: string) => void;
+  /** A stop is about to show (e.g. open the chapters list or the verse for it). */
+  onStepEnter?: (stepId: string, focusId: string | null) => void;
   onClose: (status: TourStatus) => void;
 }
 
@@ -110,8 +110,8 @@ export default function GuidedTour({ startAt, isMobile, onBegin, onStepEnter, on
 
   const stepId = step?.id;
   useEffect(() => {
-    if (stepId) onStepEnter?.(stepId);
-  }, [stepId, onStepEnter]);
+    if (stepId) onStepEnter?.(stepId, focusId);
+  }, [stepId, focusId, onStepEnter]);
 
   // Follow the target every frame: cards fan in, panels slide, the window resizes.
   const selectors = step ? step.targets(ctx).join('|') : '';

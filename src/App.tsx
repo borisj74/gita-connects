@@ -506,8 +506,17 @@ function App() {
     if (networkVersesRef.current.size > 0) return null;
     return verseNetworkRef.current?.addStarterSet() ?? null;
   }, []);
-  const enterTourStep = useCallback((stepId: string) => {
+  // Each stop gets the screen it talks about: the chapters list open for its
+  // stop, the verse open for "Read the verse", and the panel out of the way otherwise.
+  const enterTourStep = useCallback((stepId: string, focusId: string | null) => {
     if (stepId === 'chapters' && !isMobile) setSidebarOpen(true);
+    if (stepId === 'read') {
+      const verse = focusId ?? [...networkVersesRef.current][0] ?? null;
+      setSelectedVerseId(verse);
+      if (isMobile) setSidebarOpen(false);
+    } else {
+      setSelectedVerseId(null);
+    }
   }, [isMobile]);
   const closeTour = useCallback((status: TourStatus) => {
     saveTourStatus(status);

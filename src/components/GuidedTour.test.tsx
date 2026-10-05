@@ -25,7 +25,7 @@ describe('guided tour', () => {
     for (const [i, step] of TOUR_STEPS.entries()) {
       expect(screen.getByRole('heading', { name: step.title })).toBeTruthy();
       expect(screen.getByText(`${i + 1} of ${TOUR_STEPS.length}`)).toBeTruthy();
-      expect(onStepEnter).toHaveBeenLastCalledWith(step.id);
+      expect(onStepEnter).toHaveBeenLastCalledWith(step.id, '2.47');
       const last = i === TOUR_STEPS.length - 1;
       await userEvent.click(screen.getByRole('button', { name: last ? 'Finish' : 'Next' }));
     }

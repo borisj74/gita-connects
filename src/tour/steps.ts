@@ -37,6 +37,15 @@ export const TOUR_STEPS: TourStep[] = [
     targets: (ctx) => [node(ctx)],
   },
   {
+    id: 'read',
+    title: 'Read the verse',
+    body: (ctx) =>
+      ctx.isMobile
+        ? 'Tapping a card opens it here. Tap Sanskrit, Transliteration, Translation or Commentary to open or close that part. Further down: your own note, a short summary with key concepts, and the verses it connects to.'
+        : 'Clicking a card opens it here. Click Sanskrit, Transliteration, Translation or Commentary to open or close that part. Further down: your own note, a short summary with key concepts, and the verses it connects to. ↑ ↓ moves between verses.',
+    targets: () => ['.verse-detail'],
+  },
+  {
     id: 'lines',
     title: 'Lines show how verses relate',
     body: () =>
