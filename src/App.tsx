@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ReactFlowProvider } from 'reactflow';
 import type { Node, Edge } from 'reactflow';
-import { PanelRightOpen, Moon, Sun, Menu, Save, FolderOpen, LayoutGrid, Trash2, BookOpen, Check, Sparkles } from 'lucide-react';
+import { PanelRightOpen, Moon, Sun, Menu, Save, FolderOpen, LayoutGrid, Trash2, BookOpen, Check, Sparkles, Compass } from 'lucide-react';
 import { useMediaQuery, MOBILE_BREAKPOINT } from './hooks/useMediaQuery.js';
 import ChapterSidebar from './components/ChapterSidebar.js';
 import VerseNetwork, { type VerseNetworkRef } from './components/VerseNetwork.js';
@@ -13,8 +13,10 @@ import OverflowMenu from './components/OverflowMenu.js';
 import ClearCanvasDialog from './components/ClearCanvasDialog.js';
 import UndoToast from './components/UndoToast.js';
 import RestoreSessionCard from './components/RestoreSessionCard.js';
-import ShortcutsOverlay from './components/ShortcutsOverlay.js';
+import ShortcutsOverlay, { type HelpTab } from './components/ShortcutsOverlay.js';
 import DeleteLinkTypeDialog from './components/DeleteLinkTypeDialog.js';
+import GuidedTour from './components/GuidedTour.js';
+import { shouldWelcome, saveTourStatus, type TourStatus } from './tour/tourStore.js';
 import { readAutosave, clearAutosave, type Autosave } from './autosave.js';
 import './components/Toolbar.css';
 import {
@@ -126,8 +128,24 @@ function App() {
   const [autosaveStatus, setAutosaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [typeToDelete, setTypeToDelete] = useState<ConnectionTypeDef | null>(null);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [helpTab, setHelpTab] = useState<HelpTab>('shortcuts');
+  // The help panel, on the tab asked for: "?" opens shortcuts, the
+  // "What do these mean?" links open the guide to the kinds of connection.
+  const openHelp = useCallback((tab: HelpTab = 'shortcuts') => {
+    setHelpTab(tab);
+    setShortcutsOpen(true);
+  }, []);
+  const openConnectionGuide = useCallback(() => openHelp('kinds'), [openHelp]);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const verseNetworkRef = useRef<VerseNetworkRef>(null);
+  // The guided tour: a welcome on the first visit, and a replay from the menu.
+  // `run` remounts it so a replay starts clean.
+  const [tour, setTour] = useState<{ startAt: 'welcome' | 'tour'; run: number } | null>(
+    () => (shouldWelcome() ? { startAt: 'welcome', run: 0 } : null),
+  );
+  const takeTour = useCallback(() => {
+    setTour((t) => ({ startAt: 'tour', run: (t?.run ?? 0) + 1 }));
+  }, []);
   const saveLoadRef = useRef<SaveLoadControlsRef>(null);
 
   // Each of these runs on mount too, where nothing has really changed.
@@ -278,7 +296,7 @@ function App() {
       // "?" — keyboard shortcuts overlay (the overlay closes itself)
       if (e.key === '?' && !shortcutsOpen) {
         e.preventDefault();
-        setShortcutsOpen(true);
+        openHelp('shortcuts');
         return;
       }
 
@@ -304,7 +322,7 @@ function App() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selectedVerseId, shortcutsOpen, conceptFilter, handleOpenNote, toggleInsights]);
+  }, [selectedVerseId, shortcutsOpen, conceptFilter, handleOpenNote, toggleInsights, openHelp]);
 
   // Clicking the active chip again clears the filter.
   const handleConceptSelect = useCallback((concept: string) => {
@@ -476,6 +494,35 @@ function App() {
     return set;
   }, [selectedVerseId, networkEdges]);
 
+  // The tour needs something to point at: on an empty canvas it lays out a
+  // starter set and talks about its hub; otherwise it uses what is there.
+  const networkVersesRef = useRef(networkVerses);
+  useEffect(() => {
+    networkVersesRef.current = networkVerses;
+  }, [networkVerses]);
+  const beginTour = useCallback(() => {
+    setSelectedVerseId(null);
+    setMobileMenuOpen(false);
+    if (networkVersesRef.current.size > 0) return null;
+    return verseNetworkRef.current?.addStarterSet() ?? null;
+  }, []);
+  // Each stop gets the screen it talks about: the chapters list open for its
+  // stop, the verse open for "Read the verse", and the panel out of the way otherwise.
+  const enterTourStep = useCallback((stepId: string, focusId: string | null) => {
+    if (stepId === 'chapters' && !isMobile) setSidebarOpen(true);
+    if (stepId === 'read') {
+      const verse = focusId ?? [...networkVersesRef.current][0] ?? null;
+      setSelectedVerseId(verse);
+      if (isMobile) setSidebarOpen(false);
+    } else {
+      setSelectedVerseId(null);
+    }
+  }, [isMobile]);
+  const closeTour = useCallback((status: TourStatus) => {
+    saveTourStatus(status);
+    setTour(null);
+  }, []);
+
   const showSidebarBackdrop = isMobile && sidebarOpen;
   const showDetailBackdrop = isMobile && !!selectedVerseId;
 
@@ -553,6 +600,7 @@ function App() {
                 onRemoveCustomType={handleRemoveCustomType}
                 onAddCustomType={handleAddCustomType}
                 networkEdges={networkEdges}
+                onShowGuide={openConnectionGuide}
               />
             </div>
             <button
@@ -565,7 +613,7 @@ function App() {
               <LayoutGrid size={15} />
               Auto Arrange
             </button>
-            <div className="tb-desktop-only">
+            <div className="tb-desktop-only" data-tour="networks">
               <SaveLoadControls
                 ref={saveLoadRef}
                 getNetworkState={getNetworkState}
@@ -576,7 +624,7 @@ function App() {
                 onExportUsage={() => downloadJson(`gita-usage-${new Date().toISOString().slice(0, 10)}.json`, collectUsage())}
               />
             </div>
-            <div className="tb-desktop-only">
+            <div className="tb-desktop-only" data-tour="more">
               <OverflowMenu
                 theme={theme}
                 onToggleTheme={toggleTheme}
@@ -584,9 +632,10 @@ function App() {
                 canClear={networkVerses.size > 0}
                 onOpenAccount={cloudEnabled ? () => setAccountOpen(true) : undefined}
                 accountEmail={session ? accountLabel(session) : null}
-                onShowShortcuts={() => setShortcutsOpen(true)}
+                onShowShortcuts={() => openHelp('shortcuts')}
                 insightsShown={!insightsHidden}
                 onToggleInsights={toggleInsights}
+                onTakeTour={takeTour}
               />
             </div>
 
@@ -611,6 +660,7 @@ function App() {
                       onRemoveCustomType={handleRemoveCustomType}
                       onAddCustomType={handleAddCustomType}
                       networkEdges={networkEdges}
+                      onShowGuide={openConnectionGuide}
                     />
                   </div>
                   <button
@@ -638,6 +688,12 @@ function App() {
                     onClick={() => { toggleInsights(); setMobileMenuOpen(false); }}
                   >
                     <Sparkles size={16} /> {insightsHidden ? 'Show' : 'Hide'} what your network says
+                  </button>
+                  <button
+                    className="mobile-menu-item"
+                    onClick={() => { takeTour(); setMobileMenuOpen(false); }}
+                  >
+                    <Compass size={16} /> Take the tour
                   </button>
                   <button
                     className="mobile-menu-item"
@@ -730,10 +786,12 @@ function App() {
                 onAddCustomType={handleAddCustomType}
                 onAutosaveStatus={handleAutosaveStatus}
                 showEmptyState={!pendingRestore}
+                hideHints={tour !== null}
                 onEdgesRemoved={handleEdgesRemoved}
                 sidebarOpen={sidebarOpen}
                 onOpenChapters={() => setSidebarOpen(true)}
-                onShowHelp={() => setShortcutsOpen(true)}
+                onShowHelp={() => openHelp('shortcuts')}
+                onShowConnectionGuide={openConnectionGuide}
                 isMobile={isMobile}
                 theme={theme}
               />
@@ -802,7 +860,18 @@ function App() {
         />
       )}
 
-      {shortcutsOpen && <ShortcutsOverlay onClose={() => setShortcutsOpen(false)} />}
+      {shortcutsOpen && <ShortcutsOverlay initialTab={helpTab} onClose={() => setShortcutsOpen(false)} />}
+
+      {tour && (
+        <GuidedTour
+          key={tour.run}
+          startAt={tour.startAt}
+          isMobile={isMobile}
+          onBegin={beginTour}
+          onStepEnter={enterTourStep}
+          onClose={closeTour}
+        />
+      )}
 
     </div>
   );

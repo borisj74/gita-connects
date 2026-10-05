@@ -36,6 +36,8 @@ export interface Verse extends VerseText {
   theme?: string;
   concepts: Concept[];
   summary?: string;
+  /** The summary is an AI draft nobody has checked yet (src/data/summaries.draft.ts). */
+  summaryDraft?: boolean;
   /** Has any curation at all, hand-written or generated. */
   curated: boolean;
   /** Curation has been checked by a person. Always false when !curated. */

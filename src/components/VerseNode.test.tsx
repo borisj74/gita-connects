@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ReactFlowProvider } from 'reactflow';
@@ -32,19 +32,33 @@ function renderNode(data: Partial<Parameters<typeof VerseNode>[0]['data']> = {})
   return { onSelect, onRemove, onExpand };
 }
 
+// Placeholder text: the book's real translation is never committed.
+const TRANSLATION = 'Translation text for this verse.';
+
 describe('VerseNode', () => {
-  it('renders the verse id, theme, summary, and concepts', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ translation: TRANSLATION }))));
+  });
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('renders the verse id, theme, translation, and concepts', async () => {
     renderNode();
     expect(screen.getByText('2.47')).toBeInTheDocument();
     expect(screen.getByText('Selfless action')).toBeInTheDocument();
-    expect(screen.getByText(verse.summary!)).toBeInTheDocument();
+    expect(await screen.findByText(TRANSLATION)).toBeInTheDocument();
     expect(screen.getByText('duty')).toBeInTheDocument();
     expect(screen.getByText('detachment')).toBeInTheDocument();
   });
 
+  it('leads with the translation even when the verse has a summary', async () => {
+    renderNode({ verse: { ...verse, id: '2.48' } });
+    expect(await screen.findByText(TRANSLATION)).toBeInTheDocument();
+    expect(screen.queryByText(verse.summary!)).not.toBeInTheDocument();
+  });
+
   it('calls onSelect when the node body is clicked', async () => {
     const { onSelect } = renderNode();
-    await userEvent.click(screen.getByText(verse.summary!));
+    await userEvent.click(await screen.findByText(TRANSLATION));
     expect(onSelect).toHaveBeenCalledOnce();
   });
 
@@ -90,8 +104,6 @@ describe('VerseNode', () => {
   });
 
   describe('without a summary', () => {
-    afterEach(() => vi.unstubAllGlobals());
-
     const uncurated: Verse = {
       ...verse,
       id: '7.3',
@@ -103,11 +115,8 @@ describe('VerseNode', () => {
     };
 
     it('leads with the fetched English translation', async () => {
-      vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({
-        translation: 'Out of many thousands among men, one may endeavor for perfection.',
-      }))));
       renderNode({ verse: uncurated });
-      expect(await screen.findByText(/Out of many thousands/)).toBeInTheDocument();
+      expect(await screen.findByText(TRANSLATION)).toBeInTheDocument();
       expect(screen.queryByText(uncurated.transliteration)).not.toBeInTheDocument();
     });
 

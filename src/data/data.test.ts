@@ -57,6 +57,73 @@ describe('verses', () => {
     }
   });
 
+  // The upstream transliteration ran some verses on into the next (2.42 held
+  // all of 2.43). scripts/import-verses.mjs realigns it; these guard that.
+  describe('transliteration holds only its own verse', () => {
+    /** Letters only, with spelling variants folded, so "śhṛiṇu" and "śṛṇu" compare equal. */
+    const skeleton = (s: string) =>
+      s
+        .normalize('NFD')
+        .toLowerCase()
+        .replace(/ṛi/g, 'r')
+        .replace(/[̀-ͯ]/g, '')
+        .replace(/w/g, 'v')
+        .replace(/[^a-z]/g, '')
+        .replace(/h/g, '')
+        .replace(/[mn]/g, 'n');
+    /** Text after a leading "arjuna uvācha" or "śhrī-bhagavān uvācha", which many verses share. */
+    const body = (s: string) => s.replace(/^(\S+\s+){1,2}?uvācha\s+/, '');
+    // About the first three or four words.
+    const opening = (s: string) => skeleton(body(s)).slice(0, 24);
+
+    // Lines the Gita itself repeats, so these verses really do open with
+    // words found in another verse.
+    const REPEATS = new Set(['3.35>18.47', '18.47>3.35', '6.15>6.28', '6.28>6.15', '9.34>18.65', '18.65>9.34', '16.18>18.53', '18.53>16.18', '18.5>18.3']);
+
+    it("contains no other verse's opening words", () => {
+      const bodies = verses.map((v) => [v.id, skeleton(body(v.transliteration))] as const);
+      const found: string[] = [];
+      for (const verse of verses) {
+        const start = opening(verse.transliteration);
+        expect(start.length, verse.id).toBe(24);
+        for (const [id, text] of bodies) {
+          if (id !== verse.id && text.includes(start) && !REPEATS.has(`${verse.id}>${id}`)) {
+            found.push(`${verse.id} opens inside ${id}`);
+          }
+        }
+      }
+      expect(found).toEqual([]);
+    });
+
+    it('is roman script, not Devanagari', () => {
+      for (const verse of verses) {
+        expect(verse.transliteration, verse.id).not.toMatch(/[ऀ-ॿ]/);
+      }
+    });
+
+    it('has as many syllables as its Devanagari, so it holds no more and no less', () => {
+      const devanagari = (s: string) => {
+        const chars = [...s];
+        let n = 0;
+        chars.forEach((ch, i) => {
+          const c = ch.codePointAt(0)!;
+          if ((c >= 0x0905 && c <= 0x0914) || c === 0x0950 || c === 0x0960 || c === 0x0961) n++;
+          else if ((c >= 0x0915 && c <= 0x0939) || (c >= 0x0958 && c <= 0x095f)) {
+            const next = chars[i + 1] === '़' ? chars[i + 2] : chars[i + 1];
+            if (next !== '्') n++;
+          }
+        });
+        return n;
+      };
+      const roman = (s: string) =>
+        (s.normalize('NFD').toLowerCase().replace(/[rl]̣̄?i?/g, 'R').replace(/[̀-ͯ]/g, '').match(/ai|au|[aeiouR]/g) ?? []).length;
+      for (const verse of verses) {
+        // A syllable or two of slack for spelling slips in the Devanagari.
+        expect(Math.abs(roman(verse.transliteration) - devanagari(verse.sanskrit)), verse.id).toBeLessThanOrEqual(3);
+      }
+    });
+  });
+
   it('carries no English word glosses, which have no stated source', () => {
     for (const verse of verses) {
       expect(verse, verse.id).not.toHaveProperty('wordMeanings');
@@ -83,6 +150,15 @@ describe('verses', () => {
     expect(url('1.40')).toBe('https://vedabase.io/en/library/bg/1/39/');
     expect(url('1.47')).toBe('https://vedabase.io/en/library/bg/1/46/');
     expect(url('1.36')).toBe('https://vedabase.io/en/library/bg/1/32-35/');
+  });
+
+  it('ends 1.20, 1.26 and 1.27 where As It Is does, so the Sanskrit matches the translation', () => {
+    const roman = (id: string) => verses.find((v) => v.id === id)!.transliteration;
+    expect(roman('1.20')).toMatch(/idam āha mahī-pate$/);
+    expect(roman('1.21')).toMatch(/^arjuna uvācha senayor ubhayor madhye/);
+    expect(roman('1.26')).toMatch(/senayor ubhayor api$/);
+    expect(roman('1.27')).toMatch(/^tān samīkṣhya .* viṣhīdann idam abravīt$/);
+    expect(roman('1.28')).toMatch(/^arjuna uvācha dṛiṣhṭvemaṁ/);
   });
 
   it('gives every curated verse a theme and at least one concept', () => {

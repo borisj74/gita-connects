@@ -54,6 +54,8 @@ interface VerseNetworkProps {
   onAutosaveStatus?: (status: 'saving' | 'saved') => void;
   /** Hide the empty-state card (e.g. while a restore prompt is showing). */
   showEmptyState?: boolean;
+  /** Hold back one-time tips (e.g. while the guided tour is showing). */
+  hideHints?: boolean;
   /** Links the reader just removed (popover or Delete key), for an undo toast. */
   onEdgesRemoved?: (removed: { source: string; target: string; label: string }[]) => void;
   /** Whether the chapters sidebar is open — the empty state's copy depends on it. */
@@ -61,6 +63,8 @@ interface VerseNetworkProps {
   onOpenChapters?: () => void;
   /** Opens the keyboard shortcuts / help overlay from the ? button. */
   onShowHelp?: () => void;
+  /** Open the guide to what each kind of connection means. */
+  onShowConnectionGuide?: () => void;
   isMobile?: boolean;
   theme?: 'light' | 'dark';
 }
@@ -77,6 +81,8 @@ export interface VerseNetworkRef {
   /** Render the whole canvas to a PNG data URL, framed to the cards. */
   captureImage: () => Promise<CanvasImage>;
   addVerse: (verseId: string) => void;
+  /** Add a random starter set; returns its hub verse, or null if nothing was added. */
+  addStarterSet: () => string | null;
   /** Change a connection's type in place (undoable); it redraws in the new colour. */
   retypeConnection: (edgeId: string, typeId: string) => void;
   addConnection: (
@@ -173,10 +179,12 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       onHistoryChange,
       onAutosaveStatus,
       showEmptyState = true,
+      hideHints = false,
       onEdgesRemoved,
       sidebarOpen = true,
       onOpenChapters,
       onShowHelp,
+      onShowConnectionGuide,
       isMobile = false,
       theme = 'light',
     },
@@ -821,12 +829,13 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     addVerses([pick.id]);
   }, [addVerses]);
 
-  const handleAddStarterSet = useCallback(() => {
+  const handleAddStarterSet = useCallback((): string | null => {
     const set = pickStarterSet(connections);
-    if (set.length === 0) return;
+    if (set.length === 0) return null;
     addVerses(set);
     // Auto-arrange once the new nodes have mounted.
     setTimeout(() => handleAutoArrange(), 120);
+    return set[0];
   }, [addVerses, handleAutoArrange]);
 
   // Re-apply current registry styling, filter, and parallel-edge offsets
@@ -1116,11 +1125,12 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     focusNode,
     captureImage,
     addVerse,
+    addStarterSet: handleAddStarterSet,
     addConnection,
     retypeConnection,
   }));
 
-  const showConnectHint = !connectHintDismissed && nodes.length >= 2;
+  const showConnectHint = !connectHintDismissed && !hideHints && nodes.length >= 2;
 
   return (
     <div
@@ -1280,6 +1290,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
           linkedTypeIds={linkedTypeIds}
           onCancel={() => setPendingConnection(null)}
           onConfirm={handleConfirmConnection}
+          onShowGuide={onShowConnectionGuide}
         />
       )}
     </div>

@@ -1,6 +1,7 @@
 import type { Verse, VerseText } from '../types.js';
 import { verseCuration, connections } from './curation.js';
 import { generatedCuration } from './curation.generated.js';
+import { draftSummaries } from './summaries.draft.js';
 import { chapters } from './chapters.js';
 import { clusterOf } from '../clusters.js';
 
@@ -40,7 +41,9 @@ export const verses: Verse[] = verseTexts.map((text) => {
     ...text,
     theme: curation?.theme,
     concepts: curation?.concepts ?? [],
-    summary: curation?.summary,
+    // A hand-written summary always wins over a draft.
+    summary: curation?.summary ?? draftSummaries[text.id],
+    summaryDraft: !curation?.summary && draftSummaries[text.id] !== undefined,
     curated: curation !== undefined,
     reviewed: curation !== undefined && curation.reviewed !== false,
     cluster: clusterOf(curation?.concepts ?? []),

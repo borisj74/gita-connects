@@ -264,6 +264,37 @@
   color: var(--brown-700);
 }
 
+/* About this verse: the app's own reading, under the reader's note */
+.vd-about {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vd-label-aside {
+  margin-left: auto;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-soft);
+}
+
+.vd-about-badge {
+  align-self: flex-start;
+  margin-left: 0;
+}
+
+.vd-about .vd-summary {
+  margin: 0;
+}
+
+.vd-about .vd-sublabel {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+}
+
 /* Disclosures */
 .vd-disclosure-header {
   display: flex;
@@ -375,24 +406,7 @@
   color: var(--brown-600);
 }
 
-.vd-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  align-self: flex-start;
-  font-family: var(--font-ui);
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 18px;
-  color: var(--accent-sage-text);
-  text-decoration: none;
-}
-
-.vd-link:hover {
-  text-decoration: underline;
-}
-
-/* Source footer — link out + BBT credit, at the very bottom */
+/* Source footer: the BBT credit, at the very bottom */
 .vd-footer {
   display: flex;
   flex-direction: column;
