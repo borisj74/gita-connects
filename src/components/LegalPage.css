@@ -77,6 +77,7 @@
   font-weight: 600;
   letter-spacing: -0.025em;
   line-height: 1.15;
+  color: var(--brown-900);
 }
 
 .legal-updated {
@@ -102,6 +103,7 @@
   font-weight: 600;
   letter-spacing: -0.015em;
   line-height: 1.25;
+  color: var(--brown-900);
 }
 
 .legal-doc p {
