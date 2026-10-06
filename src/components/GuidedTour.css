@@ -112,14 +112,15 @@
 .tour-card-title,
 .tour-modal-title {
   margin: 0;
-  font-family: var(--font-display);
+  font-family: var(--font-ui);
   font-weight: 600;
+  letter-spacing: -0.02em;
   color: var(--brown-900);
 }
 
 .tour-card-title {
-  font-size: 25px;
-  line-height: 28px;
+  font-size: 20px;
+  line-height: 26px;
 }
 
 .tour-card-body {
@@ -219,9 +220,9 @@
 }
 
 .tour-modal-title {
-  font-size: 36px;
-  font-weight: 500;
-  line-height: 40px;
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 36px;
 }
 
 .tour-modal-body {

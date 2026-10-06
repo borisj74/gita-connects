@@ -37,7 +37,7 @@ export default class ErrorBoundary extends Component<Props, State> {
             textAlign: 'center',
           }}
         >
-          <h1 style={{ fontFamily: 'var(--font-display, serif)', fontWeight: 400 }}>
+          <h1 style={{ fontFamily: 'var(--font-ui, sans-serif)', fontWeight: 600, letterSpacing: '-0.02em' }}>
             Something went wrong
           </h1>
           <p>The canvas hit an unexpected error. Your saved networks are safe.</p>

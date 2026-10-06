@@ -241,7 +241,7 @@ a{color:inherit}
 .ipanel .ih svg{width:15px;height:15px;stroke:var(--terra)}
 .ipanel .ib{padding:12px 14px 14px;display:flex;flex-direction:column;gap:12px}
 .ipanel .shape{font-size:.78rem;color:var(--ink-2)}
-.ipanel .shape b{display:block;font-family:var(--display);font-size:1.15rem;font-weight:500;color:var(--ink);margin-bottom:2px}
+.ipanel .shape b{display:block;font-family:var(--ui);font-size:.95rem;font-weight:500;color:var(--ink);margin-bottom:2px}
 .ipanel h4{margin:0 0 6px;font-size:.66rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .ipanel .chips{display:flex;flex-wrap:wrap;gap:6px}
 .ipanel .chips span{font-size:.72rem;background:var(--chip-bg);border:1px solid var(--chip-border);border-radius:999px;padding:3px 9px}
