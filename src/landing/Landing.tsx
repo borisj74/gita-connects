@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 import '@fontsource/cormorant-garamond/400-italic.css';
-import '@fontsource/cormorant-garamond/500-italic.css';
 import markup from './landing.html?raw';
 import { startLanding } from './landing.js';
 import { countLandingVisit } from '../analytics.js';

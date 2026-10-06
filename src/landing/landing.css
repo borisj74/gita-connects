@@ -32,7 +32,7 @@ html{scroll-behavior:smooth}
 body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--ui);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:100;opacity:.05;mix-blend-mode:multiply;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
-h1,h2,h3{font-family:var(--display);font-weight:500;margin:0;text-wrap:balance;letter-spacing:-.012em}
+h1,h2,h3{font-family:var(--ui);font-weight:600;margin:0;text-wrap:balance;letter-spacing:-.03em}
 p{margin:0}
 a{color:inherit}
 :focus-visible{outline:2px solid var(--terra);outline-offset:3px;border-radius:6px}
@@ -48,7 +48,7 @@ a{color:inherit}
 .nav{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);left:50%;transform:translateX(-50%);z-index:50;width:max-content;max-width:calc(100% - 24px);
   display:flex;align-items:center;gap:6px;padding:7px 7px 7px 18px;border-radius:999px;background:color-mix(in srgb,var(--surface) 82%,transparent);
   backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);border:1px solid var(--rule);box-shadow:0 10px 30px -18px rgb(58 53 48 / .35)}
-.mark{display:flex;align-items:center;gap:9px;font-family:var(--display);font-size:1.3rem;font-weight:600;text-decoration:none;margin-right:22px;white-space:nowrap}
+.mark{display:flex;align-items:center;gap:9px;font-family:var(--ui);font-size:1.05rem;font-weight:650;letter-spacing:-.02em;text-decoration:none;margin-right:22px;white-space:nowrap}
 .mark svg{width:22px;height:22px;flex:none}
 .nav a.l{font-size:.84rem;color:var(--ink-2);text-decoration:none;padding:8px 12px;border-radius:999px}
 .nav a.l:hover{background:var(--paper-2)}
@@ -64,8 +64,8 @@ a{color:inherit}
 /* in the hero each line is a chapter: lines sit on the 18 chapter centres */
 .hero .cols{border-right:0}
 .hero-copy{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;text-align:center;gap:26px;padding-inline:20px;max-width:900px;margin:0 auto}
-.hero h1{font-size:clamp(3rem,7.6vw,6.1rem);line-height:.98;font-weight:400}
-.hero h1 em{font-style:italic;color:var(--terra)}
+.hero h1{font-size:clamp(2.5rem,6vw,4.8rem);line-height:1.04;letter-spacing:-.04em}
+.hero h1 em{font-style:normal;color:var(--terra)}
 .hero .sub{font-size:clamp(1.02rem,1.6vw,1.18rem);color:var(--ink-2);max-width:52ch}
 .ctas{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 .fine{font-size:.8rem;color:var(--muted);display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
@@ -199,15 +199,15 @@ a{color:inherit}
 .tour-pin{position:sticky;top:0;height:100svh;display:grid;grid-template-columns:minmax(300px,390px) minmax(0,1fr);gap:clamp(24px,4vw,64px);align-items:center;max-width:1280px;margin:0 auto;padding:84px 20px 28px}
 .tcap{display:flex;flex-direction:column;gap:0;min-width:0}
 .tcap .eyebrow{margin-bottom:12px}
-.tcap h2{font-size:clamp(2rem,3.2vw,2.9rem);line-height:1;font-weight:400;margin-bottom:18px}
-.tcap h2 em{font-style:italic;color:var(--terra)}
+.tcap h2{font-size:clamp(1.8rem,2.7vw,2.4rem);line-height:1.08;margin-bottom:18px}
+.tcap h2 em{font-style:normal;color:var(--terra)}
 .tsteps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;position:relative}
 .tsteps::before{content:"";position:absolute;left:0;top:0;bottom:0;width:1px;background:var(--rule)}
 .tsteps li{position:relative;padding:9px 0 9px 22px;cursor:pointer;opacity:.42;transition:opacity .45s var(--ease)}
 .tsteps li::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:2px;margin-left:-.5px;background:var(--terra);transform:scaleY(0);transform-origin:top;transition:transform .5s var(--ease)}
 .tsteps li.on{opacity:1}.tsteps li.on::before{transform:scaleY(1)}
 .tsteps .n{font:500 .72rem var(--ui);letter-spacing:.12em;color:var(--muted);font-variant-numeric:tabular-nums}
-.tsteps h3{font-size:1.35rem;line-height:1.15;font-weight:500;margin:2px 0 0}
+.tsteps h3{font-size:1.1rem;line-height:1.25;letter-spacing:-.01em;margin:2px 0 0}
 .tsteps p{font-size:.86rem;line-height:1.5;color:var(--ink-2);margin-top:4px}
 .tsteps li{transition:opacity .6s var(--ease)}
 .twrap{position:relative;height:min(760px,calc(100svh - 120px));min-width:0}
@@ -267,8 +267,8 @@ a{color:inherit}
 /* how it works: Function-style step panels that stack as you scroll, each with a real screenshot of the app */
 .how{padding-block:clamp(80px,10vw,128px) clamp(60px,8vw,100px);padding-inline:20px}
 .how-head{text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:clamp(40px,6vw,64px)}
-.how h2{font-size:clamp(2.8rem,6vw,4.6rem);line-height:1;font-weight:400}
-.how h2 em{font-style:italic;color:var(--terra)}
+.how h2{font-size:clamp(2.2rem,4.8vw,3.7rem);line-height:1.06;letter-spacing:-.035em}
+.how h2 em{font-style:normal;color:var(--terra)}
 .how-head p{color:var(--ink-2);max-width:46ch}
 .hp-list{display:flex;flex-direction:column;gap:24px}
 .hp{position:sticky;top:calc(96px + var(--i)*18px);display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(28px,5vw,72px);align-items:center;
@@ -276,7 +276,7 @@ a{color:inherit}
   box-shadow:0 1px 2px rgb(58 53 48 / .04),0 -6px 18px -14px rgb(58 53 48 / .22)}
 .hp-k{font:600 .76rem/1 var(--ui);letter-spacing:.1em;text-transform:uppercase;color:var(--terra);display:flex;gap:10px;align-items:center}
 .hp-k i{width:3px;height:3px;border-radius:50%;background:currentColor}
-.hp h3{font-size:clamp(2.1rem,3.6vw,3.1rem);line-height:1.05;font-weight:400;margin:18px 0 14px}
+.hp h3{font-size:clamp(1.7rem,2.9vw,2.5rem);line-height:1.1;margin:18px 0 14px}
 .hp p{color:var(--ink-2);font-size:1rem;max-width:40ch}
 .hp ul{list-style:none;padding:0;margin:22px 0 30px;display:flex;flex-direction:column;gap:10px;font-size:.92rem;color:var(--ink-2)}
 .hp li{display:flex;gap:10px;align-items:flex-start}
@@ -291,13 +291,13 @@ a{color:inherit}
 /* trust: Shop 2x2 */
 .trust{padding-block:clamp(88px,11vw,140px);padding-inline:20px}
 .trust-head{display:flex;flex-direction:column;gap:14px;margin-bottom:56px;max-width:60ch}
-.trust-head h2{font-size:clamp(2.4rem,4.8vw,3.6rem);line-height:1.02;font-weight:400}
+.trust-head h2{font-size:clamp(2rem,3.9vw,2.9rem);line-height:1.08}
 .tgrid{display:grid;grid-template-columns:1fr 1fr;position:relative}
 .tgrid::before{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:1px solid var(--rule)}
 .tgrid::after{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px solid var(--rule)}
 .tcell{padding:44px clamp(20px,5vw,72px) 52px;display:flex;flex-direction:column;gap:14px}
 .tcell:nth-child(odd){padding-left:0}
-.tcell h3{font-size:clamp(2rem,3.6vw,2.9rem);line-height:1;font-weight:500;max-width:11ch}
+.tcell h3{font-size:clamp(1.55rem,2.8vw,2.2rem);line-height:1.12;max-width:12ch}
 .tcell p{font-size:1.02rem;color:var(--ink-2);max-width:38ch}
 .tcell a{font-size:.95rem;color:var(--ink);text-underline-offset:4px;text-decoration-thickness:1px;align-self:flex-start}
 .tcell a:hover{color:var(--terra)}
@@ -308,13 +308,13 @@ a{color:inherit}
 .faq{padding-block:clamp(40px,6vw,80px) clamp(88px,11vw,140px);padding-inline:20px}
 .faq .wrap{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,7fr);gap:clamp(32px,6vw,96px);align-items:start}
 .faq-head{display:flex;flex-direction:column;gap:14px;position:sticky;top:110px}
-.faq-head h2{font-size:clamp(2.4rem,4.8vw,3.6rem);line-height:1.02;font-weight:400}
-.faq-head h2 em{font-style:italic;color:var(--terra)}
+.faq-head h2{font-size:clamp(2rem,3.9vw,2.9rem);line-height:1.08}
+.faq-head h2 em{font-style:normal;color:var(--terra)}
 .faq-head p{color:var(--ink-2);max-width:32ch}
 .faq-head a{color:var(--ink);text-underline-offset:4px;text-decoration-thickness:1px}
 .faq-list{border-top:1px solid var(--rule);interpolate-size:allow-keywords}
 .faq details{border-bottom:1px solid var(--rule)}
-.faq summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:24px;padding:26px 0;font-family:var(--display);font-size:clamp(1.35rem,2.2vw,1.7rem);line-height:1.2;color:var(--ink)}
+.faq summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:24px;padding:26px 0;font-family:var(--ui);font-size:clamp(1.05rem,1.6vw,1.25rem);font-weight:500;letter-spacing:-.01em;line-height:1.2;color:var(--ink)}
 .faq summary::-webkit-details-marker{display:none}
 .faq summary:hover{color:var(--terra)}
 .faq summary:focus-visible{outline:2px solid var(--terra);outline-offset:4px;border-radius:4px}
@@ -335,8 +335,8 @@ a{color:inherit}
 .close-card::after{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(60% 70% at 50% 50%,rgb(60 28 18 / .28),transparent 75%)}
 .close-in{display:flex;flex-direction:column;align-items:center;gap:24px;max-width:780px;margin:0 auto}
 .close .eyebrow{color:rgb(251 243 236 / .78)}
-.close h2{font-size:clamp(2.8rem,6.4vw,5.2rem);line-height:.98;font-weight:400;color:#fff8f2}
-.close h2 em{font-style:italic;color:#ffd9c6}
+.close h2{font-size:clamp(2.2rem,5.2vw,4.2rem);line-height:1.05;letter-spacing:-.04em;color:#fff8f2}
+.close h2 em{font-style:normal;color:#ffd9c6}
 .close p{color:rgb(251 243 236 / .86);max-width:46ch}
 .close .btn.light{background:#fff8f2;color:#8f4a36;box-shadow:0 14px 30px -14px rgb(40 18 10 / .6)}
 .close .btn.light:hover{background:#fff}
@@ -346,7 +346,7 @@ footer{padding:0 0 calc(26px + env(safe-area-inset-bottom,0px));margin-top:clamp
 .wrap{max-width:1200px;margin-inline:auto}
 footer .wrap{border-top:1px solid var(--rule);padding-top:26px}
 footer .wrap{display:flex;flex-wrap:wrap;gap:12px 26px;align-items:center;font-size:.84rem;color:var(--muted)}
-footer .mark{font-size:1.1rem;color:var(--ink)}
+footer .mark{font-size:1rem;color:var(--ink)}
 footer a{text-decoration:none;color:var(--ink-2)}
 footer a:hover{color:var(--terra)}
 
