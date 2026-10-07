@@ -1,0 +1,17 @@
+# Gita Connects
+
+> A free canvas for studying the Bhagavad Gita: follow the threads between its 701 verses (shared themes, questions and their answers, ideas that grow from one chapter into the next), then draw your own.
+
+Gita Connects runs entirely in the browser. No account is needed; work is saved in the browser, and signing in only syncs it across devices.
+
+- Find: search by verse number, theme or concept, or open any of the eighteen chapters, and put a verse on the canvas.
+- Connect: one click fans out the verses it is linked to. There are 1,057 curated links, each with a type (thematic, progression, goal, question and answer, contrast, parallel, sequential, dependency, definition, illustration), a strength from 1 to 10 and a one-line reason.
+- Keep: add notes, save networks, and export them as PNG or PDF.
+
+## Pages
+
+- [Home](https://gitaconnects.com/home): what Gita Connects is and how it works
+- [The app](https://gitaconnects.com/app): the canvas
+- [Privacy policy](https://gitaconnects.com/privacy)
+- [Terms of use](https://gitaconnects.com/terms)
+- [Cookie policy](https://gitaconnects.com/cookies)
