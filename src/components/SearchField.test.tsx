@@ -1,15 +1,15 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import SearchField from './SearchField.js';
 
-function setup() {
+function setup(networkVerses = new Set<string>()) {
   const onVerseSelect = vi.fn();
   const onAddVerse = vi.fn();
   render(
     <SearchField
       onVerseSelect={onVerseSelect}
       onAddVerse={onAddVerse}
-      networkVerses={new Set()}
+      networkVerses={networkVerses}
     />,
   );
   const input = screen.getByRole('combobox');
@@ -66,5 +66,35 @@ describe('SearchField dismissal', () => {
     const { input } = setup();
     fireEvent.mouseDown(input);
     expect(dropdown()).not.toBeNull();
+  });
+});
+
+describe('SearchField picking a result', () => {
+  it('adds the highlighted verse to the canvas on Enter, then selects it', () => {
+    const { input, onVerseSelect, onAddVerse } = setup();
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(onAddVerse).toHaveBeenCalledTimes(1);
+    const id = onAddVerse.mock.calls[0][0];
+    expect(onVerseSelect).toHaveBeenCalledWith(id);
+    expect(dropdown()).toBeNull();
+  });
+
+  it('adds the verse to the canvas when a result is clicked', () => {
+    const { onVerseSelect, onAddVerse } = setup();
+    const first = document.querySelector('.sf-result-main') as HTMLElement;
+    fireEvent.click(first);
+    expect(onAddVerse).toHaveBeenCalledTimes(1);
+    expect(onVerseSelect).toHaveBeenCalledWith(onAddVerse.mock.calls[0][0]);
+  });
+
+  it('only selects a verse that is already on the canvas', () => {
+    const probe = setup();
+    fireEvent.keyDown(probe.input, { key: 'Enter' });
+    const id = probe.onAddVerse.mock.calls[0][0];
+    cleanup();
+    const { input, onVerseSelect, onAddVerse } = setup(new Set([id]));
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(onAddVerse).not.toHaveBeenCalled();
+    expect(onVerseSelect).toHaveBeenCalledWith(id);
   });
 });

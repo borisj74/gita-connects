@@ -111,7 +111,11 @@ const SearchField = forwardRef<SearchFieldRef, SearchFieldProps>(
         .slice(0, 8);
     }, [query]);
 
+    // Picking a result, by click or Enter, puts the verse on the canvas (if it
+    // is not there yet) and then selects it, so the search ends where the
+    // verse is rather than only opening its detail.
     const select = (verseId: string) => {
+      if (!networkVerses.has(verseId)) onAddVerse(verseId);
       onVerseSelect(verseId);
       setOpen(false);
       setExpanded(false);
