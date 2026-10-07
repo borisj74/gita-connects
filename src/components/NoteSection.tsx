@@ -15,6 +15,11 @@ const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigat
  * "My note" in the verse panel (App 30/31 + Note flow). Three looks: a dashed
  * "Add a note" pill when empty, a sage-bordered editor, and the saved note
  * with an edit link. Saving an empty note removes it.
+ *
+ * Nothing typed is lost to a stray click: the note also saves when focus
+ * leaves the editor, when the panel closes or moves to another verse, and
+ * when the page is hidden. Only Cancel and Esc discard. Clicking away from
+ * an emptied note keeps the old one; removing it takes an explicit Save.
  */
 export default function NoteSection({ verseId, startEditing = false, onSaved }: NoteSectionProps) {
   const note = useNote(verseId);
@@ -51,11 +56,49 @@ export default function NoteSection({ verseId, startEditing = false, onSaved }: 
     onSaved?.(verseId);
   };
 
+  // Keep what was typed when the reader moves on without pressing Save.
+  const keepDraft = () => {
+    if (!dirty || !draft.trim()) return;
+    save();
+  };
+
+  // The panel closing or switching verse unmounts this; the page may be
+  // closed or hidden. Both save the draft from the latest render.
+  const latest = useRef({ editing, draft, saved: note?.text ?? '', verseId, onSaved });
+  useEffect(() => {
+    latest.current = { editing, draft, saved: note?.text ?? '', verseId, onSaved };
+  });
+  useEffect(() => {
+    const flush = () => {
+      const l = latest.current;
+      if (!l.editing || !l.draft.trim() || l.draft.trim() === l.saved) return;
+      saveNote(l.verseId, l.draft);
+      l.saved = l.draft.trim();
+      l.onSaved?.(l.verseId);
+    };
+    const onHide = () => {
+      if (document.visibilityState === 'hidden') flush();
+    };
+    document.addEventListener('visibilitychange', onHide);
+    window.addEventListener('pagehide', flush);
+    return () => {
+      document.removeEventListener('visibilitychange', onHide);
+      window.removeEventListener('pagehide', flush);
+      flush();
+    };
+  }, []);
+
   if (editing) {
     return (
       <section className="vd-section vd-note">
         <div className="vd-label vd-note-label">My note</div>
-        <div className="vd-note-editor">
+        <div
+          className="vd-note-editor"
+          onBlur={(e) => {
+            // Focus moving to Cancel or Save stays inside; anywhere else saves.
+            if (!e.currentTarget.contains(e.relatedTarget as globalThis.Node | null)) keepDraft();
+          }}
+        >
           <textarea
             ref={textareaRef}
             className="vd-note-textarea"
@@ -78,11 +121,13 @@ export default function NoteSection({ verseId, startEditing = false, onSaved }: 
           />
           <div className="vd-note-footer">
             <span className="vd-note-hint">
-              {draft.trim() ? `${isMac ? '⌘' : 'Ctrl'}↵ to save · Esc to discard` : 'Saved to this device'}
+              {draft.trim() ? `Saves when you click away · ${isMac ? '⌘' : 'Ctrl'}↵ · Esc to discard` : 'Saved to this device'}
             </span>
             <span className="vd-note-actions">
-              <button type="button" className="vd-note-cancel" onClick={cancel}>Cancel</button>
-              <button type="button" className="vd-note-save" onClick={save} disabled={!dirty}>Save</button>
+              {/* Keep focus in the textarea on press (Safari gives buttons none), so
+                  pressing Cancel is not first taken as clicking away. */}
+              <button type="button" className="vd-note-cancel" onMouseDown={(e) => e.preventDefault()} onClick={cancel}>Cancel</button>
+              <button type="button" className="vd-note-save" onMouseDown={(e) => e.preventDefault()} onClick={save} disabled={!dirty}>Save</button>
             </span>
           </div>
         </div>
