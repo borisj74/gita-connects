@@ -72,10 +72,12 @@
 
 .legal-title {
   margin: 0;
-  font-family: var(--font-display);
-  font-size: 38px;
+  font-family: var(--font-ui);
+  font-size: 32px;
   font-weight: 600;
+  letter-spacing: -0.025em;
   line-height: 1.15;
+  color: var(--brown-900);
 }
 
 .legal-updated {
@@ -95,10 +97,13 @@
 
 .legal-doc h2 {
   margin: 30px 0 8px;
-  font-family: var(--font-display);
-  font-size: 24px;
+  scroll-margin-top: 24px;
+  font-family: var(--font-ui);
+  font-size: 20px;
   font-weight: 600;
+  letter-spacing: -0.015em;
   line-height: 1.25;
+  color: var(--brown-900);
 }
 
 .legal-doc p {

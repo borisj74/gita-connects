@@ -16,7 +16,7 @@ export default function SignInPage() {
   return (
     <main className="signin-page">
       <div className="signin-card">
-        <a className="signin-back" href="/">
+        <a className="signin-back" href="/app">
           <ArrowLeft size={15} />
           Back to the canvas
         </a>
@@ -101,7 +101,7 @@ export default function SignInPage() {
 
       <p className="signin-optout">
         Rather not?{' '}
-        <a href="/">Keep reading without an account</a> — nothing here is locked.
+        <a href="/app">Keep reading without an account</a> — nothing here is locked.
       </p>
     </main>
   );
