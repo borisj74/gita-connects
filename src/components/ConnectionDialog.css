@@ -256,3 +256,37 @@
   outline-offset: 2px;
   border-radius: 4px;
 }
+
+/* "Linking 2.62 → 2.71" with a Swap button to reverse it */
+.cd-direction {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cd-swap {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--beige-300);
+  border-radius: 999px;
+  background: var(--surface);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--brown-700);
+  cursor: pointer;
+}
+
+.cd-swap:hover {
+  background: var(--beige-100);
+  color: var(--brown-900);
+}
+
+.cd-swap:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}

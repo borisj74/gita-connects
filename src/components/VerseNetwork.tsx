@@ -404,21 +404,34 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
       return () => window.removeEventListener('pointermove', onMove);
     }, [connectingFrom, updateConnectTarget]);
 
+    // Either dot starts a link. React Flow reports a link begun on a top
+    // (target) dot and dropped on a bottom (source) dot the other way round,
+    // so remember which kind of dot the drag began on.
+    const startedOnTargetRef = useRef(false);
     const onConnectStart = useCallback(
-      (_event: React.MouseEvent | React.TouchEvent, { nodeId }: { nodeId: string | null }) => {
+      (
+        _event: React.MouseEvent | React.TouchEvent,
+        { nodeId, handleType }: { nodeId: string | null; handleType: string | null },
+      ) => {
         madeConnectionRef.current = false;
         pointerNodeIdRef.current = null;
+        startedOnTargetRef.current = handleType === 'target';
         setConnectingFrom(nodeId);
       },
       [],
     );
 
+    // The link always runs from the card the drag began on to the card it
+    // was dropped on, whichever dots were used.
     const onConnect = useCallback((params: RFConnection) => {
       if (!params.source || !params.target) return;
       if (params.source === params.target) return;
       madeConnectionRef.current = true;
       dismissConnectHint();
-      setPendingConnection({ source: params.source, target: params.target });
+      const [source, target] = startedOnTargetRef.current
+        ? [params.target, params.source]
+        : [params.source, params.target];
+      setPendingConnection({ source, target });
     }, [dismissConnectHint]);
 
     // React Flow only connects when the drop lands on (or snaps to) a dot.
@@ -961,11 +974,13 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
             pulseColor: justConnected?.color,
             connectHover: connectTarget?.id === node.id ? (connectTarget.valid ? 'valid' : 'invalid') : null,
             connectReject: shakeId === node.id,
+            // Mid-drag, every other card shows it can take the link.
+            connectCandidate: !!connectingFrom && connectingFrom !== node.id,
           },
         };
       });
     });
-  }, [selectedVerseId, networkVerses, allEdges, setNodes, conceptFilter, onConceptSelect, noteVerseIds, onOpenNote, justConnected, connectTarget, shakeId]);
+  }, [selectedVerseId, networkVerses, allEdges, setNodes, conceptFilter, onConceptSelect, noteVerseIds, onOpenNote, justConnected, connectTarget, shakeId, connectingFrom]);
 
   const getNetworkState = useCallback(() => {
     return { nodes, edges: allEdges };
@@ -1135,7 +1150,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
   return (
     <div
       ref={containerRef}
-      className={`verse-network ${showConnectHint ? 'connect-hint-active' : ''} ${isMobile ? 'is-mobile' : ''}`}
+      className={`verse-network ${showConnectHint ? 'connect-hint-active' : ''} ${isMobile ? 'is-mobile' : ''} ${connectingFrom ? 'is-connecting' : ''}`}
       onDragOver={isMobile ? undefined : handleDragOver}
       onDrop={isMobile ? undefined : handleDrop}
       onKeyDownCapture={handleCanvasKeyDown}
@@ -1222,8 +1237,8 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
             <div className="connect-hint-title">Connect two verses</div>
             <div className="connect-hint-body">
               {isMobile
-                ? 'Touch and drag from the dot under one card to the dot above another.'
-                : 'Drag from the dot under one card to the dot above another.'}
+                ? 'Touch and drag from either dot on a card onto another card.'
+                : 'Drag from either dot on a card onto another card.'}
             </div>
           </div>
           <button
@@ -1289,6 +1304,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
           connectionTypes={connectionTypes}
           linkedTypeIds={linkedTypeIds}
           onCancel={() => setPendingConnection(null)}
+          onSwap={() => setPendingConnection((pc) => (pc ? { source: pc.target, target: pc.source } : pc))}
           onConfirm={handleConfirmConnection}
           onShowGuide={onShowConnectionGuide}
         />

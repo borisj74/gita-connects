@@ -56,8 +56,8 @@ export const TOUR_STEPS: TourStep[] = [
     id: 'draw',
     title: 'Draw your own connection',
     body: (ctx) =>
-      `${ctx.isMobile ? 'Touch and drag' : 'Drag'} from the dot under one card to the dot above another. Then say what kind of connection it is, and why.`,
-    targets: (ctx) => [`${node(ctx)} .react-flow__handle-bottom`],
+      `${ctx.isMobile ? 'Touch and drag' : 'Drag'} from either dot on a card onto another card. The link runs from the card you start on. Then say what kind of connection it is, and why.`,
+    targets: (ctx) => [`${node(ctx)} .react-flow__handle-top`, `${node(ctx)} .react-flow__handle-bottom`],
   },
   {
     id: 'insights',

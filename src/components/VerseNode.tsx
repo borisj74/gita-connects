@@ -26,6 +26,8 @@ interface VerseNodeProps {
     pulseColor?: string;
     /** A connection is being dragged over this card. */
     connectHover?: 'valid' | 'invalid' | null;
+    /** A link is being dragged from another card: this one can take it. */
+    connectCandidate?: boolean;
     /** A connection was just dropped back on its own card. */
     connectReject?: boolean;
   };
@@ -35,7 +37,7 @@ function VerseNode({ data }: VerseNodeProps) {
   const {
     verse, onSelect, onRemove, onExpand, isSelected, connectedCount = 0,
     conceptFilter = null, onConceptSelect, hasNote = false, onOpenNote,
-    connectPulse = null, pulseColor, connectHover = null, connectReject = false,
+    connectPulse = null, pulseColor, connectHover = null, connectReject = false, connectCandidate = false,
   } = data;
 
   // Every card leads with the translation, so cards read alike whether a verse
@@ -62,6 +64,7 @@ function VerseNode({ data }: VerseNodeProps) {
         connectPulse && `connect-pulse-${connectPulse}`,
         connectHover && `connect-target-${connectHover}`,
         connectReject && 'connect-reject',
+        connectCandidate && 'connect-candidate',
       ].filter(Boolean).join(' ')}
       style={pulseColor ? ({ '--pulse-color': pulseColor } as React.CSSProperties) : undefined}
       onClick={onSelect}

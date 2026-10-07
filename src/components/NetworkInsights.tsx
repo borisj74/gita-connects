@@ -175,7 +175,7 @@ export default function NetworkInsights({
               {verseCount} verses · {linkCount} {linkCount === 1 ? 'link' : 'links'}
             </p>
             <p className="insights-character">
-              {insights.character ?? 'No links yet. Drag from the dot under a verse onto another verse.'}
+              {insights.character ?? 'No links yet. Drag from either dot on a verse onto another verse.'}
             </p>
             {insights.linkMix.length > 0 && (
               <div

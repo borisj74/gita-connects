@@ -405,18 +405,39 @@
   transform: translate(-50%, 50%);
 }
 
-/* Hovering the card lights the source handle with a soft halo and pins
-   the instruction to it — the how-to lives on the thing you manipulate. */
-.verse-node:hover .node-handle.react-flow__handle-bottom,
+/* Either dot starts a link. Hovering a card grows both dots into "+"
+   buttons, and the one under the pointer says what it does — the how-to
+   lives on the thing you manipulate. */
+.verse-node:hover .node-handle,
 .node-handle:hover {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  min-height: 18px;
   background: var(--terracotta-500);
   box-shadow: 0 0 0 5px rgb(202 117 88 / 0.22);
 }
 
-.node-handle.react-flow__handle-bottom::after {
+.node-handle::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    linear-gradient(white, white) center / 8px 2px no-repeat,
+    linear-gradient(white, white) center / 2px 8px no-repeat;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-fast);
+}
+
+.verse-node:hover .node-handle::before {
+  opacity: 1;
+}
+
+.node-handle::after {
   content: 'Drag to connect';
   position: absolute;
-  top: calc(100% + 9px);
   left: 50%;
   translate: -50%;
   padding: 5px 10px;
@@ -433,13 +454,39 @@
   transition: opacity var(--transition-fast);
 }
 
-.verse-node:hover .node-handle.react-flow__handle-bottom::after {
+.node-handle.react-flow__handle-bottom::after {
+  top: calc(100% + 9px);
+}
+
+.node-handle.react-flow__handle-top::after {
+  bottom: calc(100% + 9px);
+}
+
+/* The card shows the bottom dot's label; pointing at the top dot moves it there. */
+.verse-node:hover .node-handle.react-flow__handle-bottom::after,
+.node-handle.react-flow__handle-top:hover::after {
   opacity: 1;
 }
 
-/* Hide the label once the reader is mid-drag: it has done its job */
-.react-flow.connecting .node-handle.react-flow__handle-bottom::after {
+.verse-node:has(.react-flow__handle-top:hover) .node-handle.react-flow__handle-bottom::after {
   opacity: 0;
+}
+
+/* Hide the labels and "+" once the reader is mid-drag: they have done their job */
+.verse-network.is-connecting .verse-node .node-handle.react-flow__handle-bottom::after,
+.verse-network.is-connecting .verse-node .node-handle.react-flow__handle-top::after,
+.verse-network.is-connecting .verse-node .node-handle::before {
+  opacity: 0;
+}
+
+/* Mid-drag, every other card is a place the link can land. */
+.verse-node.connect-candidate {
+  outline: 2px dashed rgb(202 117 88 / 0.5);
+  outline-offset: 5px;
+}
+
+.verse-node.connect-candidate.connect-target-valid {
+  outline-color: transparent;
 }
 
 .node-handle.react-flow__handle-top:hover {

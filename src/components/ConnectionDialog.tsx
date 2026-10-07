@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Plus, ChevronDown, CircleHelp } from 'lucide-react';
+import { X, Plus, ChevronDown, CircleHelp, ArrowLeftRight } from 'lucide-react';
 import type { ConnectionTypeDef } from '../connectionTypes.js';
 import { makeCustomTypeId, CUSTOM_TYPE_COLORS } from '../connectionTypes.js';
 import { CONNECTION_GUIDE } from '../connectionGuide.js';
@@ -12,6 +12,8 @@ interface ConnectionDialogProps {
   /** Types that already link these two verses; offered but not pickable. */
   linkedTypeIds?: string[];
   onCancel: () => void;
+  /** Reverse the link, so it runs from the second verse to the first. */
+  onSwap?: () => void;
   onConfirm: (params: {
     typeId: string;
     description: string;
@@ -30,6 +32,7 @@ export default function ConnectionDialog({
   connectionTypes,
   linkedTypeIds = [],
   onCancel,
+  onSwap,
   onConfirm,
   onShowGuide,
 }: ConnectionDialogProps) {
@@ -102,9 +105,23 @@ export default function ConnectionDialog({
         </div>
 
         <div className="modal-body">
-          <p className="modal-description">
-            Linking <strong>{sourceVerseId}</strong> &rarr;{' '}
-            <strong>{targetVerseId}</strong>
+          <p className="modal-description cd-direction">
+            <span>
+              Linking <strong>{sourceVerseId}</strong> &rarr;{' '}
+              <strong>{targetVerseId}</strong>
+            </span>
+            {onSwap && (
+              <button
+                type="button"
+                className="cd-swap"
+                onClick={onSwap}
+                title="Swap direction"
+                aria-label={`Swap direction: link ${targetVerseId} to ${sourceVerseId} instead`}
+              >
+                <ArrowLeftRight size={14} />
+                Swap
+              </button>
+            )}
           </p>
 
           {!showCustomForm ? (

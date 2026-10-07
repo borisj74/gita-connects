@@ -236,7 +236,7 @@ export default function ShortcutsOverlay({ onClose, initialTab = 'shortcuts' }: 
               </div>
               <div className="sc-footer">
                 <p className="sc-footer-lead">
-                  <strong>Connect two verses:</strong> drag from the dot under one card onto another card,
+                  <strong>Connect two verses:</strong> drag from either dot on a card onto another card,
                   then pick how they relate.
                 </p>
                 <h3 className="sc-heading sc-footer-heading">What a connection does</h3>
