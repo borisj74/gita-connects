@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { Handle, Position } from 'reactflow';
-import { X, Plus, AlignLeft, FilePlus2, Check } from 'lucide-react';
+import { X, Plus, AlignLeft, FilePlus2, Check, Link2 } from 'lucide-react';
 import type { Verse } from '../types.js';
 import { vedabaseUrl } from '../data/index.js';
 import { useVerseText } from '../hooks/useVerseText.js';
@@ -30,6 +30,10 @@ interface VerseNodeProps {
     connectCandidate?: boolean;
     /** A connection was just dropped back on its own card. */
     connectReject?: boolean;
+    /** Tap to connect: start a link from this card without dragging. */
+    onStartConnect?: () => void;
+    /** Tap to connect: this card is the link's start, waiting for the other verse. */
+    connectSource?: boolean;
   };
 }
 
@@ -38,6 +42,7 @@ function VerseNode({ data }: VerseNodeProps) {
     verse, onSelect, onRemove, onExpand, isSelected, connectedCount = 0,
     conceptFilter = null, onConceptSelect, hasNote = false, onOpenNote,
     connectPulse = null, pulseColor, connectHover = null, connectReject = false, connectCandidate = false,
+    onStartConnect, connectSource = false,
   } = data;
 
   // Every card leads with the translation, so cards read alike whether a verse
@@ -65,6 +70,7 @@ function VerseNode({ data }: VerseNodeProps) {
         connectHover && `connect-target-${connectHover}`,
         connectReject && 'connect-reject',
         connectCandidate && 'connect-candidate',
+        connectSource && 'connect-source',
       ].filter(Boolean).join(' ')}
       style={pulseColor ? ({ '--pulse-color': pulseColor } as React.CSSProperties) : undefined}
       onClick={onSelect}
@@ -80,6 +86,21 @@ function VerseNode({ data }: VerseNodeProps) {
         <div className={`node-theme ${verse.curated && !verse.reviewed ? 'unreviewed' : ''}`}>
           {verse.theme ?? 'Uncurated'}
         </div>
+        {onStartConnect && (
+          <button
+            type="button"
+            className={`node-connect nodrag ${connectSource ? 'is-active' : ''}`}
+            data-tip={connectSource ? 'Now tap another verse' : 'Connect to another verse'}
+            aria-label={connectSource ? `Cancel connecting from ${verse.id}` : `Connect ${verse.id} to another verse`}
+            aria-pressed={connectSource}
+            onClick={(e) => {
+              e.stopPropagation();
+              onStartConnect();
+            }}
+          >
+            <Link2 size={15} strokeWidth={2.2} />
+          </button>
+        )}
         {onOpenNote && (
           <button
             type="button"

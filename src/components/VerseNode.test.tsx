@@ -127,4 +127,18 @@ describe('VerseNode', () => {
       expect(await screen.findByText(uncurated.transliteration)).toBeInTheDocument();
     });
   });
+
+  it('starts a tap-to-connect link from its link button, without opening the verse', async () => {
+    const onStartConnect = vi.fn();
+    const { onSelect } = renderNode({ onStartConnect });
+    await userEvent.click(screen.getByRole('button', { name: 'Connect 2.47 to another verse' }));
+    expect(onStartConnect).toHaveBeenCalledOnce();
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it('shows when it is the card a tap-to-connect link starts from', () => {
+    renderNode({ onStartConnect: vi.fn(), connectSource: true });
+    const button = screen.getByRole('button', { name: 'Cancel connecting from 2.47' });
+    expect(button.getAttribute('aria-pressed')).toBe('true');
+  });
 });

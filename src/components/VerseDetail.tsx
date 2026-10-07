@@ -10,6 +10,7 @@ import { suggestSimilar, suggestionConnection } from '../suggestions.js';
 import { useBottomSheet } from '../hooks/useBottomSheet.js';
 import { PREDEFINED_CONNECTION_TYPES, getTypeLabel } from '../connectionTypes.js';
 import NoteSection from './NoteSection.js';
+import ConnectToPicker from './ConnectToPicker.js';
 import { persistWithSignal } from '../settingsStore.js';
 import './VerseDetail.css';
 
@@ -26,6 +27,8 @@ interface VerseDetailProps {
   startEditingNote?: boolean;
   onNoteSaved?: (verseId: string) => void;
   isMobile?: boolean;
+  /** "Connect to…": link this verse to another one picked from a list. */
+  onConnectTo?: (fromId: string, toId: string) => void;
 }
 
 type SectionKey = 'sanskrit' | 'transliteration' | 'translation' | 'commentary';
@@ -103,6 +106,7 @@ export default function VerseDetail({
   startEditingNote = false,
   onNoteSaved,
   isMobile = false,
+  onConnectTo,
 }: VerseDetailProps) {
   const { sheetClassName, sheetStyle, grabberProps } = useBottomSheet({
     enabled: isMobile && !!verseId,
@@ -116,6 +120,7 @@ export default function VerseDetail({
   // Open/closed state persists across verses: if you opened Transliteration
   // on 2.47 it stays open on 2.48, so the pager doesn't make you re-open it.
   const [openSections, setOpenSections] = useState(loadOpenSections);
+  const [pickingTarget, setPickingTarget] = useState(false);
   const toggleSection = useCallback((id: SectionKey) => {
     setOpenSections((prev) => {
       const next = { ...prev, [id]: !prev[id] };
@@ -206,6 +211,31 @@ export default function VerseDetail({
       {inNetwork ? <Check size={14} /> : <Plus size={14} />}
       {inNetwork ? 'In network' : 'Add to network'}
     </button>
+  );
+
+  const connectButton = onConnectTo && (
+    <button
+      type="button"
+      className="vd-connect"
+      onClick={() => setPickingTarget(true)}
+      onPointerDown={(e) => e.stopPropagation()}
+      aria-label={`Connect ${verse.id} to another verse`}
+    >
+      <Link2 size={14} />
+      Connect to…
+    </button>
+  );
+
+  const picker = pickingTarget && onConnectTo && (
+    <ConnectToPicker
+      fromId={verse.id}
+      networkVerses={networkVerses}
+      onCancel={() => setPickingTarget(false)}
+      onPick={(toId) => {
+        setPickingTarget(false);
+        onConnectTo(verse.id, toId);
+      }}
+    />
   );
 
   const pager = (
@@ -481,12 +511,16 @@ export default function VerseDetail({
                 <div className="vd-id">{verse.id}</div>
                 <div className="vd-chapter">Chapter {verse.chapter} • Verse {verse.verse}</div>
               </div>
-              {addButton}
+              <div className="vd-actions">
+                {connectButton}
+                {addButton}
+              </div>
             </div>
           </div>
           {pager}
         </div>
         <div className="bottom-sheet-body">{body}</div>
+        {picker}
       </div>
     );
   }
@@ -498,7 +532,10 @@ export default function VerseDetail({
           <div className="vd-id">{verse.id}</div>
           <div className="vd-chapter">Chapter {verse.chapter} • Verse {verse.verse}</div>
         </div>
-        {addButton}
+        <div className="vd-actions">
+          {connectButton}
+          {addButton}
+        </div>
         <button
           type="button"
           className="vd-close"
@@ -511,6 +548,7 @@ export default function VerseDetail({
       </header>
       {pager}
       {body}
+      {picker}
     </div>
   );
 }

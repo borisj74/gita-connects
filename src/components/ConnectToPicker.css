@@ -1,0 +1,183 @@
+/* "Connect to…": pick the other verse from a list instead of dragging */
+.ctp-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: var(--scrim);
+}
+
+.ctp-dialog {
+  display: flex;
+  flex-direction: column;
+  width: min(460px, 100%);
+  max-height: min(620px, calc(100dvh - 32px));
+  box-sizing: border-box;
+  padding: 20px;
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: 0 20px 50px rgb(0 0 0 / 0.25);
+  font-family: var(--font-ui);
+  color: var(--brown-900);
+}
+
+.ctp-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.ctp-title {
+  flex: 1;
+  margin: 0;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 24px;
+}
+
+.ctp-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin: -6px -6px 0 0;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--brown-600);
+  cursor: pointer;
+}
+
+.ctp-close:hover {
+  background: var(--beige-100);
+}
+
+.ctp-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--beige-300);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.ctp-field:focus-within {
+  border-color: var(--terracotta-400);
+  box-shadow: 0 0 0 3px rgb(202 117 88 / 0.15);
+}
+
+.ctp-icon {
+  color: var(--brown-400);
+  flex-shrink: 0;
+}
+
+.ctp-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: 16px; /* 16px keeps iOS from zooming in on focus */
+  color: var(--brown-900);
+}
+
+.ctp-sublabel {
+  margin: 14px 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.ctp-list {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-y: auto;
+}
+
+.ctp-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  font: inherit;
+  text-align: left;
+  color: var(--brown-900);
+  cursor: pointer;
+}
+
+.ctp-item.is-active {
+  background: var(--beige-100);
+}
+
+.ctp-id {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--brown-900);
+  color: var(--surface);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ctp-theme {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 14px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ctp-on-canvas {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--accent-sage-text);
+}
+
+.ctp-empty {
+  padding: 16px 10px;
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
+.ctp-close:focus-visible,
+.ctp-item:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  .ctp-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .ctp-dialog {
+    width: 100%;
+    max-height: 85dvh;
+    border-radius: 18px 18px 0 0;
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+  }
+}

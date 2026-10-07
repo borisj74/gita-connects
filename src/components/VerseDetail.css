@@ -113,6 +113,42 @@
   color: var(--brown-600);
 }
 
+.vd-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* "Connect to…": link this verse to another one picked from a list */
+.vd-connect {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid var(--terracotta-300);
+  border-radius: 8px;
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--accent-terracotta-text);
+  cursor: pointer;
+  white-space: nowrap;
+  touch-action: manipulation;
+}
+
+.vd-connect:hover {
+  background: var(--terracotta-50);
+}
+
+.vd-connect:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
 .vd-add {
   flex-shrink: 0;
   display: inline-flex;

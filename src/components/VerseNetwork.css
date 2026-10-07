@@ -567,3 +567,76 @@
     height: 44px;
   }
 }
+
+/* Tap to connect: says what the next tap does, with a way out */
+.tap-connect-bar {
+  position: absolute;
+  top: 76px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: calc(100% - 32px);
+  box-sizing: border-box;
+  padding: 8px 8px 8px 16px;
+  border-radius: 999px;
+  background: var(--overlay-bg);
+  color: var(--overlay-text);
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+  z-index: var(--z-fixed);
+  animation: connectHintIn 0.2s ease-out;
+}
+
+.tap-connect-bar strong {
+  color: white;
+}
+
+.tap-connect-cancel {
+  height: 32px;
+  padding: 0 14px;
+  border: 1px solid rgb(255 255 255 / 0.25);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--overlay-text);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.tap-connect-cancel:hover {
+  background: rgb(255 255 255 / 0.1);
+}
+
+.tap-connect-cancel:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+
+@media (hover: none) {
+  .tap-connect-cancel {
+    height: 40px;
+  }
+}
+
+/* On a phone the bar sits at the bottom, full width, where the thumb is. */
+.verse-network.is-mobile .tap-connect-bar {
+  top: auto;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  left: 16px;
+  right: 16px;
+  transform: none;
+  max-width: none;
+  justify-content: space-between;
+  border-radius: 16px;
+  padding: 10px 10px 10px 16px;
+  font-size: 15px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tap-connect-bar {
+    animation: none;
+  }
+}

@@ -249,6 +249,13 @@ function App() {
     verseNetworkRef.current?.addVerse(verseId);
   }, []);
 
+  // "Connect to…" in the verse panel. On a phone the panel makes way for the
+  // New connection dialog; on a wide screen it stays open beside it.
+  const handleConnectTo = useCallback((fromId: string, toId: string) => {
+    if (isMobile) setSelectedVerseId(null);
+    verseNetworkRef.current?.connectVerses(fromId, toId);
+  }, [isMobile]);
+
   // A search result goes onto the canvas; one already there is brought into view.
   const handlePlaceFromSearch = useCallback((verseId: string) => {
     if (networkVerses.has(verseId)) verseNetworkRef.current?.focusNode(verseId);
@@ -818,6 +825,7 @@ function App() {
             connectedNeighbors={connectedNeighbors}
             onNavigate={handleVerseSelect}
             isMobile={isMobile}
+            onConnectTo={handleConnectTo}
           />
         )}
       </div>

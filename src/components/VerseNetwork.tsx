@@ -81,6 +81,8 @@ export interface VerseNetworkRef {
   /** Render the whole canvas to a PNG data URL, framed to the cards. */
   captureImage: () => Promise<CanvasImage>;
   addVerse: (verseId: string) => void;
+  /** Open the New connection dialog for two verses, adding either to the canvas if missing. */
+  connectVerses: (fromId: string, toId: string) => void;
   /** Add a random starter set; returns its hub verse, or null if nothing was added. */
   addStarterSet: () => string | null;
   /** Change a connection's type in place (undoable); it redraws in the new colour. */
@@ -357,6 +359,27 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     // card is under the pointer (or whose top dot it has snapped to). Any
     // card is a drop target, not just its dot.
     const [connectingFrom, setConnectingFrom] = useState<string | null>(null);
+    // Tap to connect: the card whose Connect button was tapped, waiting for
+    // the reader to tap the other verse. No dragging, so it suits a phone.
+    const [tapFrom, setTapFrom] = useState<string | null>(null);
+    const toggleTapFrom = useCallback((id: string) => {
+      setTapFrom((cur) => (cur === id ? null : id));
+    }, []);
+    const finishTap = useCallback((targetId: string) => {
+      if (tapFrom && tapFrom !== targetId) setPendingConnection({ source: tapFrom, target: targetId });
+      setTapFrom(null);
+    }, [tapFrom]);
+    useEffect(() => {
+      if (!tapFrom) return;
+      const onKey = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          e.stopPropagation();
+          setTapFrom(null);
+        }
+      };
+      window.addEventListener('keydown', onKey, true);
+      return () => window.removeEventListener('keydown', onKey, true);
+    }, [tapFrom]);
     const [connectTarget, setConnectTarget] = useState<ConnectTarget>(null);
     const connectTargetRef = useRef<ConnectTarget>(null);
     const madeConnectionRef = useRef(false);
@@ -771,6 +794,16 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
 
   const addVerse = useCallback((verseId: string) => addVerses([verseId]), [addVerses]);
 
+  // "Connect to…" from the verse panel: both verses go on the canvas, then
+  // the reader picks the kind of connection as usual.
+  const connectVerses = useCallback((fromId: string, toId: string) => {
+    if (fromId === toId) return;
+    const missing = [fromId, toId].filter((id) => !netRef.current.has(id));
+    if (missing.length > 0) addVerses(missing);
+    setTapFrom(null);
+    setPendingConnection({ source: fromId, target: toId });
+  }, [addVerses]);
+
   // Add a (possibly suggested) connection: ensure both verses are on the
   // canvas, then create the edge. Skips exact duplicate pair+type.
   const addConnection = useCallback(
@@ -974,13 +1007,17 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
             pulseColor: justConnected?.color,
             connectHover: connectTarget?.id === node.id ? (connectTarget.valid ? 'valid' : 'invalid') : null,
             connectReject: shakeId === node.id,
-            // Mid-drag, every other card shows it can take the link.
-            connectCandidate: !!connectingFrom && connectingFrom !== node.id,
+            // Mid-drag or mid-tap, every other card shows it can take the link.
+            connectCandidate: (!!connectingFrom && connectingFrom !== node.id) || (!!tapFrom && tapFrom !== node.id),
+            connectSource: tapFrom === node.id,
+            onStartConnect: () => toggleTapFrom(node.id),
+            // While a tap-to-connect link waits, tapping a card finishes it.
+            onSelect: tapFrom ? () => finishTap(node.id) : () => onVerseSelect(node.id),
           },
         };
       });
     });
-  }, [selectedVerseId, networkVerses, allEdges, setNodes, conceptFilter, onConceptSelect, noteVerseIds, onOpenNote, justConnected, connectTarget, shakeId, connectingFrom]);
+  }, [selectedVerseId, networkVerses, allEdges, setNodes, conceptFilter, onConceptSelect, noteVerseIds, onOpenNote, justConnected, connectTarget, shakeId, connectingFrom, tapFrom, toggleTapFrom, finishTap, onVerseSelect]);
 
   const getNetworkState = useCallback(() => {
     return { nodes, edges: allEdges };
@@ -1141,11 +1178,12 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     captureImage,
     addVerse,
     addStarterSet: handleAddStarterSet,
+    connectVerses,
     addConnection,
     retypeConnection,
   }));
 
-  const showConnectHint = !connectHintDismissed && !hideHints && nodes.length >= 2;
+  const showConnectHint = !connectHintDismissed && !hideHints && !tapFrom && nodes.length >= 2;
 
   return (
     <div
@@ -1170,7 +1208,10 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
           onNodesDelete={handleNodesDelete}
           onEdgesDelete={(deleted) => removeEdges(deleted.map((e) => e.id))}
           // Clicking empty canvas closes the verse panel and lifts the spotlight.
-          onPaneClick={() => onVerseSelect('')}
+          onPaneClick={() => {
+            if (tapFrom) setTapFrom(null);
+            else onVerseSelect('');
+          }}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           deleteKeyCode={isMobile ? null : ['Delete', 'Backspace']}
@@ -1230,6 +1271,17 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         </ReactFlow>
       </ConnectTargetContext.Provider>
 
+      {tapFrom && (
+        <div className="tap-connect-bar" role="status">
+          <span>
+            {isMobile ? 'Tap' : 'Click'} the verse to connect <strong>{tapFrom}</strong> to
+          </span>
+          <button type="button" className="tap-connect-cancel" onClick={() => setTapFrom(null)}>
+            Cancel
+          </button>
+        </div>
+      )}
+
       {showConnectHint && (
         <div className="connect-hint" role="status">
           <MousePointer2 size={17} className="connect-hint-icon" />
@@ -1237,8 +1289,8 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
             <div className="connect-hint-title">Connect two verses</div>
             <div className="connect-hint-body">
               {isMobile
-                ? 'Touch and drag from either dot on a card onto another card.'
-                : 'Drag from either dot on a card onto another card.'}
+                ? 'Tap the link button on a card, then tap the verse to connect it to.'
+                : 'Drag from either dot on a card onto another card, or click the link button and then the other card.'}
             </div>
           </div>
           <button
