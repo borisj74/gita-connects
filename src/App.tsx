@@ -245,9 +245,12 @@ function App() {
     }
   }, [isMobile]);
 
+  // On a phone the chapters list covers the canvas: close it after adding,
+  // so the reader sees the verse land.
   const handleAddVerseToNetwork = useCallback((verseId: string) => {
     verseNetworkRef.current?.addVerse(verseId);
-  }, []);
+    if (isMobile) setSidebarOpen(false);
+  }, [isMobile]);
 
   // "Connect to…" in the verse panel. On a phone the panel makes way for the
   // New connection dialog; on a wide screen it stays open beside it.

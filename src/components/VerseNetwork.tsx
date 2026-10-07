@@ -14,7 +14,7 @@ import ReactFlow, {
   type EdgeTypes,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { X, MousePointer2, Undo2, Redo2, BookOpen, CircleHelp } from 'lucide-react';
+import { X, MousePointer2, Undo2, Redo2, BookOpen, CircleHelp, Link2 } from 'lucide-react';
 import { verses, connections } from '../data/index.js';
 import { expandableNeighbors, edgesJoining } from '../neighbors.js';
 import { pickStarterSet } from '../starterSet.js';
@@ -362,24 +362,38 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     // Tap to connect: the card whose Connect button was tapped, waiting for
     // the reader to tap the other verse. No dragging, so it suits a phone.
     const [tapFrom, setTapFrom] = useState<string | null>(null);
+    // The phone's Connect button: first tap picks where the link starts.
+    const [pickingSource, setPickingSource] = useState(false);
+    const tapping = pickingSource || !!tapFrom;
+    const cancelTap = useCallback(() => {
+      setTapFrom(null);
+      setPickingSource(false);
+    }, []);
     const toggleTapFrom = useCallback((id: string) => {
+      setPickingSource(false);
       setTapFrom((cur) => (cur === id ? null : id));
     }, []);
-    const finishTap = useCallback((targetId: string) => {
-      if (tapFrom && tapFrom !== targetId) setPendingConnection({ source: tapFrom, target: targetId });
+    // A tapped card is the start (when picking one) or the other end.
+    const tapCard = useCallback((id: string) => {
+      if (pickingSource) {
+        setPickingSource(false);
+        setTapFrom(id);
+        return;
+      }
+      if (tapFrom && tapFrom !== id) setPendingConnection({ source: tapFrom, target: id });
       setTapFrom(null);
-    }, [tapFrom]);
+    }, [pickingSource, tapFrom]);
     useEffect(() => {
-      if (!tapFrom) return;
+      if (!tapping) return;
       const onKey = (e: KeyboardEvent) => {
         if (e.key === 'Escape') {
           e.stopPropagation();
-          setTapFrom(null);
+          cancelTap();
         }
       };
       window.addEventListener('keydown', onKey, true);
       return () => window.removeEventListener('keydown', onKey, true);
-    }, [tapFrom]);
+    }, [tapping, cancelTap]);
     const [connectTarget, setConnectTarget] = useState<ConnectTarget>(null);
     const connectTargetRef = useRef<ConnectTarget>(null);
     const madeConnectionRef = useRef(false);
@@ -800,9 +814,9 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     if (fromId === toId) return;
     const missing = [fromId, toId].filter((id) => !netRef.current.has(id));
     if (missing.length > 0) addVerses(missing);
-    setTapFrom(null);
+    cancelTap();
     setPendingConnection({ source: fromId, target: toId });
-  }, [addVerses]);
+  }, [addVerses, cancelTap]);
 
   // Add a (possibly suggested) connection: ensure both verses are on the
   // canvas, then create the edge. Skips exact duplicate pair+type.
@@ -1008,16 +1022,19 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
             connectHover: connectTarget?.id === node.id ? (connectTarget.valid ? 'valid' : 'invalid') : null,
             connectReject: shakeId === node.id,
             // Mid-drag or mid-tap, every other card shows it can take the link.
-            connectCandidate: (!!connectingFrom && connectingFrom !== node.id) || (!!tapFrom && tapFrom !== node.id),
+            connectCandidate:
+              (!!connectingFrom && connectingFrom !== node.id) || pickingSource || (!!tapFrom && tapFrom !== node.id),
             connectSource: tapFrom === node.id,
-            onStartConnect: () => toggleTapFrom(node.id),
-            // While a tap-to-connect link waits, tapping a card finishes it.
-            onSelect: tapFrom ? () => finishTap(node.id) : () => onVerseSelect(node.id),
+            // On a phone the canvas Connect button does this job; a link
+            // button on a zoomed-out card is too small to tap.
+            onStartConnect: isMobile ? undefined : () => toggleTapFrom(node.id),
+            // While tap-to-connect is under way, tapping a card is part of it.
+            onSelect: tapping ? () => tapCard(node.id) : () => onVerseSelect(node.id),
           },
         };
       });
     });
-  }, [selectedVerseId, networkVerses, allEdges, setNodes, conceptFilter, onConceptSelect, noteVerseIds, onOpenNote, justConnected, connectTarget, shakeId, connectingFrom, tapFrom, toggleTapFrom, finishTap, onVerseSelect]);
+  }, [selectedVerseId, networkVerses, allEdges, setNodes, conceptFilter, onConceptSelect, noteVerseIds, onOpenNote, justConnected, connectTarget, shakeId, connectingFrom, tapFrom, pickingSource, tapping, toggleTapFrom, tapCard, onVerseSelect, isMobile]);
 
   const getNetworkState = useCallback(() => {
     return { nodes, edges: allEdges };
@@ -1183,7 +1200,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
     retypeConnection,
   }));
 
-  const showConnectHint = !connectHintDismissed && !hideHints && !tapFrom && nodes.length >= 2;
+  const showConnectHint = !connectHintDismissed && !hideHints && !tapping && nodes.length >= 2;
 
   return (
     <div
@@ -1209,7 +1226,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
           onEdgesDelete={(deleted) => removeEdges(deleted.map((e) => e.id))}
           // Clicking empty canvas closes the verse panel and lifts the spotlight.
           onPaneClick={() => {
-            if (tapFrom) setTapFrom(null);
+            if (tapping) cancelTap();
             else onVerseSelect('');
           }}
           nodeTypes={nodeTypes}
@@ -1271,15 +1288,33 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
         </ReactFlow>
       </ConnectTargetContext.Provider>
 
-      {tapFrom && (
+      {tapping && (
         <div className="tap-connect-bar" role="status">
           <span>
-            {isMobile ? 'Tap' : 'Click'} the verse to connect <strong>{tapFrom}</strong> to
+            {pickingSource ? (
+              <>{isMobile ? 'Tap' : 'Click'} the verse to start from</>
+            ) : (
+              <>Now {isMobile ? 'tap' : 'click'} the verse to connect <strong>{tapFrom}</strong> to</>
+            )}
           </span>
-          <button type="button" className="tap-connect-cancel" onClick={() => setTapFrom(null)}>
+          <button type="button" className="tap-connect-cancel" onClick={cancelTap}>
             Cancel
           </button>
         </div>
+      )}
+
+      {isMobile && nodes.length >= 2 && !tapping && !pendingConnection && (
+        <button
+          type="button"
+          className="mobile-connect-fab"
+          onClick={() => {
+            setPickingSource(true);
+            dismissConnectHint();
+          }}
+        >
+          <Link2 size={18} aria-hidden="true" />
+          Connect verses
+        </button>
       )}
 
       {showConnectHint && (
@@ -1289,7 +1324,7 @@ const VerseNetwork = forwardRef<VerseNetworkRef, VerseNetworkProps>(
             <div className="connect-hint-title">Connect two verses</div>
             <div className="connect-hint-body">
               {isMobile
-                ? 'Tap the link button on a card, then tap the verse to connect it to.'
+                ? 'Tap Connect verses at the bottom, then tap the two verses you want to link.'
                 : 'Drag from either dot on a card onto another card, or click the link button and then the other card.'}
             </div>
           </div>

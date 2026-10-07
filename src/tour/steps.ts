@@ -57,11 +57,11 @@ export const TOUR_STEPS: TourStep[] = [
     title: 'Draw your own connection',
     body: (ctx) =>
       ctx.isMobile
-        ? 'Tap the link button on a card, then tap the verse to connect it to. Or open a verse and use its Connect to… button. Then say what kind of connection it is, and why.'
+        ? 'Tap Connect verses, then tap the verse to start from and the verse to link it to. Or open a verse and use its Connect to… button. Then say what kind of connection it is, and why.'
         : 'Drag from either dot on a card onto another card, or click the link button and then the other card. Then say what kind of connection it is, and why.',
     targets: (ctx) =>
       ctx.isMobile
-        ? [`${node(ctx)} .node-connect`]
+        ? ['.mobile-connect-fab']
         : [`${node(ctx)} .react-flow__handle-top`, `${node(ctx)} .react-flow__handle-bottom`],
   },
   {
