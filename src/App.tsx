@@ -249,6 +249,12 @@ function App() {
     verseNetworkRef.current?.addVerse(verseId);
   }, []);
 
+  // A search result goes onto the canvas; one already there is brought into view.
+  const handlePlaceFromSearch = useCallback((verseId: string) => {
+    if (networkVerses.has(verseId)) verseNetworkRef.current?.focusNode(verseId);
+    else verseNetworkRef.current?.addVerse(verseId);
+  }, [networkVerses]);
+
   const handleCloseDetail = () => {
     setSelectedVerseId(null);
   };
@@ -584,7 +590,7 @@ function App() {
             <SearchField
               ref={searchRef}
               onVerseSelect={handleVerseSelect}
-              onAddVerse={(id) => verseNetworkRef.current?.addVerse(id)}
+              onAddVerse={handlePlaceFromSearch}
               networkVerses={networkVerses}
             />
           </div>

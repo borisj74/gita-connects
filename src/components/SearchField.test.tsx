@@ -68,3 +68,28 @@ describe('SearchField dismissal', () => {
     expect(dropdown()).not.toBeNull();
   });
 });
+
+describe('SearchField choosing a result', () => {
+  it('puts the highlighted verse on the canvas on Enter, without opening it', () => {
+    const { input, onVerseSelect, onAddVerse } = setup();
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(onAddVerse).toHaveBeenCalledOnce();
+    expect(onVerseSelect).not.toHaveBeenCalled();
+    expect(dropdown()).toBeNull();
+  });
+
+  it('puts a clicked result on the canvas', () => {
+    const { onVerseSelect, onAddVerse } = setup();
+    const first = document.querySelector<HTMLButtonElement>('.sf-result-main')!;
+    fireEvent.click(first);
+    expect(onAddVerse).toHaveBeenCalledOnce();
+    expect(onVerseSelect).not.toHaveBeenCalled();
+  });
+
+  it('opens a verse to read, without adding it, from the book button', () => {
+    const { onVerseSelect, onAddVerse } = setup();
+    fireEvent.click(screen.getAllByRole('button', { name: /without adding it/ })[0]);
+    expect(onVerseSelect).toHaveBeenCalledOnce();
+    expect(onAddVerse).not.toHaveBeenCalled();
+  });
+});

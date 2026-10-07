@@ -1,7 +1,7 @@
 import {
   forwardRef, useImperativeHandle, useEffect, useMemo, useRef, useState,
 } from 'react';
-import { Search, SearchX, Plus, Check, X } from 'lucide-react';
+import { Search, SearchX, BookOpen, Check, X } from 'lucide-react';
 import { verses } from '../data/index.js';
 import { useMediaQuery, MOBILE_BREAKPOINT } from '../hooks/useMediaQuery.js';
 import './SearchField.css';
@@ -12,7 +12,9 @@ export interface SearchFieldRef {
 }
 
 interface SearchFieldProps {
+  /** Open the verse in the reading panel, without touching the canvas. */
   onVerseSelect: (verseId: string) => void;
+  /** Put the verse on the canvas (or bring it into view if it is already there). */
   onAddVerse: (verseId: string) => void;
   networkVerses: Set<string>;
 }
@@ -111,11 +113,20 @@ const SearchField = forwardRef<SearchFieldRef, SearchFieldProps>(
         .slice(0, 8);
     }, [query]);
 
-    const select = (verseId: string) => {
-      onVerseSelect(verseId);
+    // Choosing a result (click or Enter) puts it on the canvas; the book
+    // button beside it only opens it to read.
+    const done = () => {
       setOpen(false);
       setExpanded(false);
       inputRef.current?.blur();
+    };
+    const read = (verseId: string) => {
+      onVerseSelect(verseId);
+      done();
+    };
+    const select = (verseId: string) => {
+      onAddVerse(verseId);
+      done();
     };
 
     const clear = () => {
@@ -244,6 +255,11 @@ const SearchField = forwardRef<SearchFieldRef, SearchFieldProps>(
                       <span className="sf-result-head">
                         <span className="sf-result-id">{highlight(verse.id, query)}</span>
                         <span className="sf-result-chapter">Ch. {verse.chapter}</span>
+                        {inNetwork && (
+                          <span className="sf-result-on-canvas">
+                            <Check size={12} strokeWidth={2.6} aria-hidden="true" /> On canvas
+                          </span>
+                        )}
                       </span>
                       <span className="sf-result-theme">
                         {highlight(verse.theme ?? verse.transliteration, query)}
@@ -256,13 +272,12 @@ const SearchField = forwardRef<SearchFieldRef, SearchFieldProps>(
                     </button>
                     <button
                       type="button"
-                      className={`sf-result-add ${inNetwork ? 'is-in-network' : ''}`}
-                      onClick={() => { if (!inNetwork) onAddVerse(verse.id); }}
-                      disabled={inNetwork}
-                      title={inNetwork ? 'Already on the canvas' : 'Add to the canvas'}
-                      aria-label={inNetwork ? `${verse.id} is already on the canvas` : `Add ${verse.id} to the canvas`}
+                      className="sf-result-add"
+                      onClick={() => read(verse.id)}
+                      title="Read without adding"
+                      aria-label={`Read ${verse.id} without adding it`}
                     >
-                      {inNetwork ? <Check size={16} /> : <Plus size={16} />}
+                      <BookOpen size={16} />
                     </button>
                   </div>
                 );
