@@ -30,15 +30,3 @@
   font-style: italic;
   color: var(--accent-terracotta-text);
 }
-
-/* Keeps the brand on screen once the sidebar is collapsed */
-.brand-mark-floating {
-  position: absolute;
-  top: 20px;
-  left: 136px;
-  width: 28px;
-  height: 28px;
-  color: var(--brown-900);
-  z-index: var(--z-sticky);
-  pointer-events: none;
-}

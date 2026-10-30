@@ -4,7 +4,7 @@ import type { Node, Edge } from 'reactflow';
 import { PanelRightOpen, Moon, Sun, Menu, Save, FolderOpen, LayoutGrid, Trash2, BookOpen, Check, Sparkles, Compass } from 'lucide-react';
 import { useMediaQuery, MOBILE_BREAKPOINT } from './hooks/useMediaQuery.js';
 import ChapterSidebar from './components/ChapterSidebar.js';
-import BrandLogo, { BrandMark } from './components/BrandLogo.js';
+import BrandLogo from './components/BrandLogo.js';
 import VerseNetwork, { type VerseNetworkRef } from './components/VerseNetwork.js';
 import VerseDetail from './components/VerseDetail.js';
 import SearchField, { type SearchFieldRef } from './components/SearchField.js';
@@ -594,8 +594,6 @@ function App() {
             <span className="chapters-fab-label">Chapters</span>
           </button>
         )}
-
-        {!sidebarOpen && !isMobile && <BrandMark className="brand-mark-floating" />}
 
         <div className="main-content">
           {/* Toolbar row: search centred, canvas tools to its right */}
