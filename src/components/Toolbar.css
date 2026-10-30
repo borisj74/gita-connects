@@ -115,9 +115,9 @@
   pointer-events: auto;
 }
 
-/* Chapters FAB (12px + 114px + gap) sits in the row when the sidebar is closed */
+/* Chapters FAB (12px + 114px) and the brand mark sit in the row when the sidebar is closed */
 .canvas-toolbar.sidebar-collapsed {
-  left: 142px;
+  left: 174px;
 }
 
 /* ---- Search field: centred in the space before the tools ---- */
