@@ -1,0 +1,44 @@
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid var(--beige-200);
+  background: var(--surface);
+  color: var(--brown-900);
+}
+
+.brand-logo-mark {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.brand-logo-name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  color: inherit;
+}
+
+.brand-logo-name em {
+  font-weight: 400;
+  font-style: italic;
+  color: var(--accent-terracotta-text);
+}
+
+/* Keeps the brand on screen once the sidebar is collapsed */
+.brand-mark-floating {
+  position: absolute;
+  top: 20px;
+  left: 136px;
+  width: 28px;
+  height: 28px;
+  color: var(--brown-900);
+  z-index: var(--z-sticky);
+  pointer-events: none;
+}
